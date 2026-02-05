@@ -1,0 +1,65 @@
+{
+  "name": "mcp-app-tase-end-of-day",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "MCP App for TASE (Tel Aviv Stock Exchange) end of day data visualization",
+  "license": "MIT",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "bin": {
+    "mcp-server-tase-end-of-day": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && cross-env INPUT=end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=uptrend-symbols-widget.html vite build && cross-env INPUT=end-of-day-symbols-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && tsc -p tsconfig.server.json",
+    "build:eod": "cross-env INPUT=end-of-day-widget.html vite build",
+    "build:spirit": "cross-env INPUT=market-spirit-widget.html vite build",
+    "build:uptrend": "cross-env INPUT=uptrend-symbols-widget.html vite build",
+    "build:end-of-day-symbols": "cross-env INPUT=end-of-day-symbols-widget.html vite build",
+    "build:candlestick": "cross-env INPUT=symbol-candlestick-widget.html vite build",
+    "watch": "cross-env INPUT=end-of-day-widget.html vite build --watch",
+    "serve": "node dist/main.js",
+    "serve:dev": "tsx main.ts",
+    "start": "node dist/main.js",
+    "dev": "cross-env NODE_ENV=development concurrently 'npm run watch' 'tsx --watch main.ts'"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.7.69",
+    "@clerk/mcp-tools": "^0.3.1",
+    "@modelcontextprotocol/ext-apps": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@tanstack/react-table": "^8.21.3",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "lightweight-charts": "^5.1.0",
+    "lightweight-charts-react-components": "^1.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.0",
+    "@types/node": "^25.2.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.1.3",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.0"
+  }
+}

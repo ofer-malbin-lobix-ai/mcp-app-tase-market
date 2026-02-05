@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription - TASE Data Hub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 3rem 2rem;
+    }
+
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .icon.success { color: #00c853; }
+    .icon.cancelled { color: #ffc107; }
+    .icon.error { color: #ff5252; }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .message {
+      color: #aaa;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .plan-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #00c853, #00e676);
+      color: #000;
+    }
+
+    .instructions {
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: #80d8ff;
+    }
+
+    .close-note {
+      margin-top: 2rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div id="content">
+        <!-- Content will be injected by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const contentDiv = document.getElementById('content');
+
+    if (urlParams.get('success') === 'true') {
+      const plan = urlParams.get('plan') || 'subscription';
+      contentDiv.innerHTML = `
+        <div class="icon success">&#10004;</div>
+        <h1>Subscription Activated!</h1>
+        <div class="plan-badge">${plan} Plan</div>
+        <p class="message">
+          Thank you for subscribing to TASE Data Hub.<br>
+          Your subscription is now active.
+        </p>
+        <div class="instructions">
+          You can now return to Claude Desktop and use the TASE data tools with full access.
+        </div>
+        <p class="close-note">You can close this window.</p>
+      `;
+    } else if (urlParams.get('cancelled') === 'true') {
+      contentDiv.innerHTML = `
+        <div class="icon cancelled">&#10006;</div>
+        <h1>Checkout Cancelled</h1>
+        <p class="message">
+          Your subscription checkout was cancelled.<br>
+          No charges have been made.
+        </p>
+        <div class="instructions">
+          You can try again anytime by asking Claude to subscribe you to a plan.
+        </div>
+        <p class="close-note">You can close this window.</p>
+      `;
+    } else if (urlParams.get('error')) {
+      const error = urlParams.get('error').replace(/_/g, ' ');
+      const status = urlParams.get('status');
+      contentDiv.innerHTML = `
+        <div class="icon error">&#9888;</div>
+        <h1>Something Went Wrong</h1>
+        <p class="message">
+          There was an issue processing your subscription.<br>
+          Error: ${error}${status ? ` (Status: ${status})` : ''}
+        </p>
+        <div class="instructions">
+          Please try again or contact support if the issue persists.
+        </div>
+        <p class="close-note">You can close this window.</p>
+      `;
+    } else {
+      contentDiv.innerHTML = `
+        <div class="icon">&#128269;</div>
+        <h1>Page Not Found</h1>
+        <p class="message">
+          This page should only be accessed after a PayPal checkout.
+        </p>
+        <p class="close-note">You can close this window.</p>
+      `;
+    }
+  </script>
+</body>
+</html>

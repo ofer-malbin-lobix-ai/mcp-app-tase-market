@@ -1,0 +1,278 @@
+.main {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: var(--border-radius-lg, 12px);
+  overflow: hidden;
+}
+
+.main.fullscreen {
+  border-radius: 0;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: var(--font-heading-lg-size, 1.5rem);
+  font-weight: var(--font-weight-semibold, 600);
+  margin: 0;
+  color: var(--color-text-primary, inherit);
+}
+
+.subtitle {
+  font-size: var(--font-text-md-size, 1rem);
+  color: var(--color-text-secondary, #666);
+  margin-top: 0.25rem;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryCard {
+  background: var(--color-background-secondary, #f5f5f5);
+  border-radius: var(--border-radius-md, 8px);
+  padding: 1rem;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+  font-size: var(--font-heading-md-size, 1.25rem);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.gainers {
+  color: #10b981;
+}
+
+.losers {
+  color: #ef4444;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.controls select,
+.controls button,
+.selector {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-background-primary, #fff);
+  color: var(--color-text-primary, inherit);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.selector:focus {
+  outline: none;
+  border-color: var(--color-accent-primary, #2563eb);
+}
+
+.controls button {
+  background: var(--color-accent-primary, #2563eb);
+  color: white;
+  border: none;
+}
+
+.controls button:hover {
+  opacity: 0.9;
+}
+
+.fullscreenButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-background-secondary, #f5f5f5);
+  color: var(--color-text-primary, inherit);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fullscreenButton:hover {
+  background: var(--color-background-tertiary, #eee);
+}
+
+.dateLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--color-text-secondary, #666);
+}
+
+.dateInput {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-background-primary, #fff);
+  color: var(--color-text-primary, inherit);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--color-accent-primary, #2563eb);
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-accent-primary, #2563eb);
+  color: white;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.refreshButton:hover {
+  opacity: 0.9;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-text-sm-size, 0.875rem);
+}
+
+.table th,
+.table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+}
+
+.table th {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-secondary, #666);
+  background: var(--color-background-secondary, #f5f5f5);
+  cursor: pointer;
+  user-select: none;
+}
+
+.table th:hover {
+  background: var(--color-background-tertiary, #eee);
+}
+
+.table td {
+  font-family: var(--font-mono, monospace);
+}
+
+.symbolCell {
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.nameCell {
+  font-family: var(--font-sans, system-ui);
+  color: var(--color-text-secondary, #666);
+}
+
+.priceCell {
+  text-align: right;
+}
+
+.changeCell {
+  text-align: right;
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.volumeCell {
+  text-align: right;
+  color: var(--color-text-secondary, #666);
+}
+
+.numericCell {
+  text-align: right;
+}
+
+.textCell {
+  white-space: nowrap;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--color-text-secondary, #666);
+}
+
+.error {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: var(--border-radius-md, 8px);
+  margin: 1rem 0;
+}
+
+.tableInfo {
+  margin-top: 1rem;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--color-text-secondary, #666);
+}
+
+@media (prefers-color-scheme: dark) {
+  .summaryCard {
+    background: var(--color-background-secondary, #2a2a2a);
+  }
+
+  .table th {
+    background: var(--color-background-secondary, #2a2a2a);
+  }
+
+  .table th:hover {
+    background: var(--color-background-tertiary, #333);
+  }
+
+  .error {
+    background: #450a0a;
+    color: #fca5a5;
+  }
+}

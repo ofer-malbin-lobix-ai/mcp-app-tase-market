@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscribe - TASE Data Hub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1.1rem;
+    }
+
+    .alert {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      display: none;
+    }
+
+    .alert-success {
+      background: rgba(0, 200, 83, 0.15);
+      border: 1px solid #00c853;
+      color: #69f0ae;
+    }
+
+    .alert-error {
+      background: rgba(255, 82, 82, 0.15);
+      border: 1px solid #ff5252;
+      color: #ff8a80;
+    }
+
+    .alert-info {
+      background: rgba(0, 176, 255, 0.15);
+      border: 1px solid #00b0ff;
+      color: #80d8ff;
+    }
+
+    .current-plan {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .current-plan h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .plan-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .plan-badge.active {
+      background: linear-gradient(135deg, #00c853, #00e676);
+      color: #000;
+    }
+
+    .plan-badge.cancelled {
+      background: linear-gradient(135deg, #ff5252, #ff1744);
+      color: #fff;
+    }
+
+    .plan-badge.suspended {
+      background: linear-gradient(135deg, #ffc107, #ffca28);
+      color: #000;
+    }
+
+    .plan-badge.none {
+      background: rgba(255, 255, 255, 0.1);
+      color: #888;
+    }
+
+    .expiry-date {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .plan-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .plan-card:hover {
+      border-color: #00d4ff;
+      transform: translateY(-4px);
+    }
+
+    .plan-card.selected {
+      border-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .plan-card.recommended::before {
+      content: 'Best Value';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ffd700, #ffab00);
+      color: #000;
+      padding: 0.25rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .plan-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .plan-price {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .plan-price span {
+      font-size: 1rem;
+      color: #888;
+      -webkit-text-fill-color: #888;
+    }
+
+    .plan-savings {
+      color: #00c853;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      min-height: 1.3rem;
+    }
+
+    .plan-features {
+      list-style: none;
+      text-align: left;
+      margin-top: 1.5rem;
+    }
+
+    .plan-features li {
+      padding: 0.5rem 0;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .subscribe-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      color: #000;
+    }
+
+    .subscribe-btn:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+    }
+
+    .subscribe-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .cancel-btn {
+      background: transparent;
+      border: 2px solid #ff5252;
+      color: #ff5252;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .cancel-btn:hover:not(:disabled) {
+      background: rgba(255, 82, 82, 0.1);
+    }
+
+    .cancel-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #00d4ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: #00d4ff;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>TASE Data Hub</h1>
+      <p class="subtitle">Access Tel Aviv Stock Exchange end-of-day data</p>
+    </header>
+
+    <div id="alert-success" class="alert alert-success">
+      Subscription activated successfully! You now have full access.
+    </div>
+
+    <div id="alert-error" class="alert alert-error">
+      <span id="error-message">An error occurred. Please try again.</span>
+    </div>
+
+    <div id="alert-cancelled" class="alert alert-info">
+      Subscription checkout was cancelled. You can try again anytime.
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading subscription status...</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <div id="current-plan" class="current-plan">
+        <h2>Your Subscription</h2>
+        <div id="plan-status">
+          <span class="plan-badge none">No Active Plan</span>
+        </div>
+        <p id="expiry-info" class="expiry-date"></p>
+        <button id="cancel-subscription-btn" class="cancel-btn hidden">Cancel Subscription</button>
+      </div>
+
+      <div id="plans-section">
+        <div class="plans-grid">
+          <div class="plan-card" data-plan="monthly">
+            <div class="plan-name">Monthly</div>
+            <div class="plan-price">₪<span id="monthly-price">35</span><span>/month</span></div>
+            <div class="plan-savings">&nbsp;</div>
+            <ul class="plan-features">
+              <li>Full API access</li>
+              <li>Daily market data</li>
+              <li>Technical indicators</li>
+              <li>Cancel anytime</li>
+            </ul>
+          </div>
+
+          <div class="plan-card recommended" data-plan="yearly">
+            <div class="plan-name">Yearly</div>
+            <div class="plan-price">₪<span id="yearly-price">350</span><span>/year</span></div>
+            <div class="plan-savings">Save ₪70 per year</div>
+            <ul class="plan-features">
+              <li>Full API access</li>
+              <li>Daily market data</li>
+              <li>Technical indicators</li>
+              <li>Priority support</li>
+            </ul>
+          </div>
+        </div>
+
+        <button id="subscribe-btn" class="subscribe-btn" disabled>
+          Select a plan to continue
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <p>Secure payments powered by PayPal</p>
+      <p><a href="/">Back to Home</a></p>
+    </footer>
+  </div>
+
+  <script>
+    let selectedPlan = null;
+    let currentStatus = null;
+
+    // Get token from injected variable or URL
+    const token = window.SUBSCRIBE_TOKEN || new URLSearchParams(window.location.search).get('token');
+
+    async function loadStatus() {
+      document.getElementById('loading').style.display = 'block';
+
+      try {
+        // If we have a token, skip status check and show subscribe form
+        if (token) {
+          currentStatus = { hasSubscription: false };
+          updateUI();
+          return;
+        }
+
+        const response = await fetch('/api/subscription/status');
+        if (!response.ok) {
+          if (response.status === 401) {
+            // No session and no token - show generic subscribe state
+            currentStatus = { hasSubscription: false };
+            updateUI();
+            return;
+          }
+          throw new Error('Failed to load status');
+        }
+
+        currentStatus = await response.json();
+        updateUI();
+      } catch (error) {
+        console.error('Error loading status:', error);
+        document.getElementById('alert-error').style.display = 'block';
+        document.getElementById('error-message').textContent = 'Failed to load subscription status';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').classList.remove('hidden');
+      }
+    }
+
+    function updateUI() {
+      const planStatus = document.getElementById('plan-status');
+      const expiryInfo = document.getElementById('expiry-info');
+      const cancelBtn = document.getElementById('cancel-subscription-btn');
+      const plansSection = document.getElementById('plans-section');
+
+      // Update prices
+      if (currentStatus.plans) {
+        document.getElementById('monthly-price').textContent = currentStatus.plans.monthly.price;
+        document.getElementById('yearly-price').textContent = currentStatus.plans.yearly.price;
+      }
+
+      if (currentStatus.hasSubscription) {
+        const status = currentStatus.status || 'active';
+        const plan = currentStatus.plan || 'monthly';
+
+        let badgeClass = 'none';
+        let badgeText = 'No Active Plan';
+
+        if (status === 'active') {
+          badgeClass = 'active';
+          badgeText = `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - Active`;
+        } else if (status === 'cancelled') {
+          badgeClass = 'cancelled';
+          badgeText = `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - Cancelled`;
+        } else if (status === 'suspended') {
+          badgeClass = 'suspended';
+          badgeText = `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - Suspended`;
+        }
+
+        planStatus.innerHTML = `<span class="plan-badge ${badgeClass}">${badgeText}</span>`;
+
+        if (currentStatus.expiresAt) {
+          expiryInfo.textContent = status === 'active'
+            ? `Next billing date: ${currentStatus.expiresAt}`
+            : `Access until: ${currentStatus.expiresAt}`;
+        }
+
+        if (status === 'active') {
+          cancelBtn.classList.remove('hidden');
+          plansSection.classList.add('hidden');
+        } else {
+          cancelBtn.classList.add('hidden');
+          plansSection.classList.remove('hidden');
+        }
+      } else {
+        planStatus.innerHTML = '<span class="plan-badge none">No Active Plan</span>';
+        expiryInfo.textContent = '';
+        cancelBtn.classList.add('hidden');
+        plansSection.classList.remove('hidden');
+      }
+    }
+
+    function selectPlan(plan) {
+      selectedPlan = plan;
+
+      document.querySelectorAll('.plan-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+
+      document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+
+      const btn = document.getElementById('subscribe-btn');
+      btn.disabled = false;
+      btn.textContent = `Subscribe to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`;
+    }
+
+    async function subscribe() {
+      if (!selectedPlan) return;
+
+      const btn = document.getElementById('subscribe-btn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const response = await fetch('/api/paypal/create-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ planType: selectedPlan, token: token }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create subscription');
+        }
+
+        window.location.href = data.approvalUrl;
+      } catch (error) {
+        console.error('Error creating subscription:', error);
+        document.getElementById('alert-error').style.display = 'block';
+        document.getElementById('error-message').textContent = error.message;
+        btn.disabled = false;
+        btn.textContent = `Subscribe to ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`;
+      }
+    }
+
+    async function cancelSubscription() {
+      if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
+        return;
+      }
+
+      const btn = document.getElementById('cancel-subscription-btn');
+      btn.disabled = true;
+      btn.textContent = 'Cancelling...';
+
+      try {
+        const response = await fetch('/api/paypal/cancel-subscription', {
+          method: 'POST',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to cancel subscription');
+        }
+
+        window.location.reload();
+      } catch (error) {
+        console.error('Error cancelling subscription:', error);
+        document.getElementById('alert-error').style.display = 'block';
+        document.getElementById('error-message').textContent = error.message;
+        btn.disabled = false;
+        btn.textContent = 'Cancel Subscription';
+      }
+    }
+
+    // Event listeners
+    document.querySelectorAll('.plan-card').forEach(card => {
+      card.addEventListener('click', () => {
+        selectPlan(card.dataset.plan);
+      });
+    });
+
+    document.getElementById('subscribe-btn').addEventListener('click', subscribe);
+    document.getElementById('cancel-subscription-btn').addEventListener('click', cancelSubscription);
+
+    // Check URL params for messages
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      document.getElementById('alert-success').style.display = 'block';
+    }
+    if (urlParams.get('cancelled') === 'true') {
+      document.getElementById('alert-cancelled').style.display = 'block';
+    }
+    if (urlParams.get('error')) {
+      document.getElementById('alert-error').style.display = 'block';
+      const errorMsg = urlParams.get('error').replace(/_/g, ' ');
+      document.getElementById('error-message').textContent = `Error: ${errorMsg}`;
+    }
+
+    // Load status on page load
+    loadStatus();
+  </script>
+</body>
+</html>
