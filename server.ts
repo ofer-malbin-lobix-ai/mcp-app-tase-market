@@ -403,7 +403,7 @@ export function createServer(): McpServer {
   const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v4.html";
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v4.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v4.html";
-  const candlestickResourceUri = "ui://tase-end-of-day/candlestick-widget-v4.html";
+  const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v4.html";
   const dashboardResourceUri = "ui://tase-end-of-day/dashboard-widget-v4.html";
 
   // Data-only tool: Get TASE end of day data (no UI, callable by both model and app)
