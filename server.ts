@@ -392,7 +392,7 @@ async function fetchUptrendSymbols(marketType?: string, tradeDate?: string): Pro
 /**
  * Creates a new MCP server instance with tools and resources registered.
  */
-export function createServer(): McpServer {
+export function createServer(options?: { subscribeUrl?: string }): McpServer {
   const server = new McpServer({
     name: "TASE End of Day Server",
     version: "1.0.0",
@@ -405,6 +405,7 @@ export function createServer(): McpServer {
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v5.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v5.html";
   const dashboardResourceUri = "ui://tase-end-of-day/dashboard-widget-v5.html";
+  const subscriptionResourceUri = "ui://tase-end-of-day/subscription-widget-v5.html";
 
   // Data-only tool: Get TASE end of day data (no UI, callable by both model and app)
   registerAppTool(server,
@@ -618,6 +619,28 @@ export function createServer(): McpServer {
     },
   );
 
+  // UI tool: Show Subscription landing page
+  registerAppTool(server,
+    "show-subscription-widget",
+    {
+      title: "Show Subscription",
+      description: "Displays the TASE Data Hub subscription landing page with available tools and a subscribe button.",
+      inputSchema: {},
+      _meta: { ui: { resourceUri: subscriptionResourceUri } },
+    },
+    async (): Promise<CallToolResult> => {
+      const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ subscribeUrl }),
+          },
+        ],
+      };
+    },
+  );
+
   // Register the TASE data resource
   registerAppResource(server,
     endOfDayResourceUri,
@@ -692,6 +715,19 @@ export function createServer(): McpServer {
       const html = await fs.readFile(path.join(DIST_DIR, "dashboard-widget.html"), "utf-8");
       return {
         contents: [{ uri: dashboardResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
+      };
+    },
+  );
+
+  // Register the Subscription resource
+  registerAppResource(server,
+    subscriptionResourceUri,
+    subscriptionResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE, _meta: { ui: { permissions: { clipboardWrite: {} } } } },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "subscription-widget.html"), "utf-8");
+      return {
+        contents: [{ uri: subscriptionResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
       };
     },
   );

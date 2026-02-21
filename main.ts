@@ -26,7 +26,7 @@ import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
  */
 export async function startStreamableHTTPServer(
-  createServer: () => McpServer,
+  createServer: (options?: { subscribeUrl?: string }) => McpServer,
 ): Promise<void> {
   const port = parseInt(process.env.PORT ?? "3001", 10);
 
@@ -107,11 +107,17 @@ export async function startStreamableHTTPServer(
 
       res.status(200).json({
         jsonrpc: "2.0",
-        error: {
-          code: -32002,
-          message: `Subscription required. Please visit ${subscribeUrl} to subscribe.`,
-          data: {
-            subscribeUrl,
+        result: {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({ subscribeUrl, needsSubscription: true }),
+            },
+          ],
+          _meta: {
+            ui: {
+              resourceUri: "ui://tase-end-of-day/subscription-widget-v5.html",
+            },
           },
         },
         id: body?.id ?? null,
@@ -124,7 +130,14 @@ export async function startStreamableHTTPServer(
 
   // MCP endpoint handler
   const mcpHandler = async (req: Request, res: Response) => {
-    const server = createServer();
+    const userId = resolveUserId(req);
+    const baseUrl = process.env.APP_URL ?? `http://localhost:${port}`;
+    let subscribeUrl = `${baseUrl}/subscribe`;
+    if (userId) {
+      const token = generateSubscribeToken(userId);
+      subscribeUrl += `?token=${token}`;
+    }
+    const server = createServer({ subscribeUrl });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
