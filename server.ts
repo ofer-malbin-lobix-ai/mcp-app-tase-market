@@ -404,6 +404,7 @@ export function createServer(): McpServer {
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v4.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v4.html";
   const candlestickResourceUri = "ui://tase-end-of-day/candlestick-widget-v4.html";
+  const dashboardResourceUri = "ui://tase-end-of-day/dashboard-widget-v4.html";
 
   // Data-only tool: Get TASE end of day data (no UI, callable by both model and app)
   registerAppTool(server,
@@ -584,6 +585,39 @@ export function createServer(): McpServer {
     },
   );
 
+  // UI tool: Show Market Dashboard portal
+  registerAppTool(server,
+    "show-dashboard-widget",
+    {
+      title: "Show Market Dashboard",
+      description: "Displays a single-page market overview combining Market Spirit, end-of-day stats (gainers/losers), and uptrend symbols count.",
+      inputSchema: getTaseDataSchema,
+      _meta: { ui: { resourceUri: dashboardResourceUri } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const [spirit, eod, uptrend] = await Promise.allSettled([
+        fetchMarketSpirit(args.marketType, args.tradeDate),
+        fetchEndOfDay(args.marketType, args.tradeDate),
+        fetchUptrendSymbols(args.marketType, args.tradeDate),
+      ]);
+      const parts: string[] = [];
+      if (spirit.status === "fulfilled") parts.push(`Spirit: ${spirit.value.score ?? "Unknown"}`);
+      if (eod.status === "fulfilled") parts.push(`${eod.value.rows.length} stocks`);
+      if (uptrend.status === "fulfilled") parts.push(`${uptrend.value.count} in uptrend`);
+      const tradeDate = spirit.status === "fulfilled" ? spirit.value.tradeDate
+        : eod.status === "fulfilled" ? eod.value.tradeDate
+        : uptrend.status === "fulfilled" ? uptrend.value.tradeDate : "N/A";
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Dashboard for ${tradeDate}: ${parts.join(" | ")}`,
+          },
+        ],
+      };
+    },
+  );
+
   // Register the TASE data resource
   registerAppResource(server,
     endOfDayResourceUri,
@@ -645,6 +679,19 @@ export function createServer(): McpServer {
       const html = await fs.readFile(path.join(DIST_DIR, "symbol-candlestick-widget.html"), "utf-8");
       return {
         contents: [{ uri: candlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
+      };
+    },
+  );
+
+  // Register the Dashboard resource
+  registerAppResource(server,
+    dashboardResourceUri,
+    dashboardResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "dashboard-widget.html"), "utf-8");
+      return {
+        contents: [{ uri: dashboardResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
       };
     },
   );
