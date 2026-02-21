@@ -380,6 +380,16 @@
     // Get token from injected variable or URL
     const token = window.SUBSCRIBE_TOKEN || new URLSearchParams(window.location.search).get('token');
 
+    function waitForClerk(timeoutMs) {
+      return new Promise(function(resolve) {
+        if (window.Clerk) { resolve(window.Clerk); return; }
+        var interval = setInterval(function() {
+          if (window.Clerk) { clearInterval(interval); resolve(window.Clerk); }
+        }, 100);
+        setTimeout(function() { clearInterval(interval); resolve(null); }, timeoutMs);
+      });
+    }
+
     async function initClerkAndLoad() {
       // If we already have server-injected status or a token, skip Clerk
       if (window.INJECTED_STATUS || token) {
@@ -387,28 +397,32 @@
         return;
       }
 
-      // Load Clerk JS to authenticate the user in the browser
-      const pk = window.CLERK_PUBLISHABLE_KEY;
+      // Wait for Clerk JS to load (async script)
+      var pk = window.CLERK_PUBLISHABLE_KEY;
       if (pk) {
         try {
-          const Clerk = window.Clerk;
-          if (Clerk) {
-            await Clerk.load();
-            if (!Clerk.user) {
-              // Not signed in — open Clerk sign-in modal
-              Clerk.openSignIn({
-                afterSignInUrl: window.location.href,
-                afterSignUpUrl: window.location.href,
-              });
-              document.getElementById('loading').style.display = 'none';
+          var clerk = await waitForClerk(5000);
+          if (clerk) {
+            await clerk.load();
+            if (clerk.user) {
+              // Signed in — fetch status normally (Clerk session cookie is set)
+              loadStatus();
               return;
             }
+            // Not signed in — show sign-in modal, page reloads after
+            clerk.openSignIn({
+              afterSignInUrl: window.location.href,
+              afterSignUpUrl: window.location.href,
+            });
+            document.getElementById('loading').style.display = 'none';
+            return;
           }
         } catch (e) {
           console.error('Clerk init error:', e);
         }
       }
 
+      // Fallback: no Clerk available
       loadStatus();
     }
 
