@@ -32,6 +32,9 @@ export async function startStreamableHTTPServer(
 
   const app = createMcpExpressApp({ host: "0.0.0.0" });
 
+  // Trust proxy (Railway, Cloudflare tunnel) for correct protocol in OAuth metadata
+  app.set("trust proxy", 1);
+
   // CORS with WWW-Authenticate header exposed for OAuth
   app.use(cors({ exposedHeaders: ["WWW-Authenticate"] }));
 
