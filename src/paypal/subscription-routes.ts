@@ -94,10 +94,10 @@ export function createSubscriptionRouter(): Router {
     }
   });
 
-  // Get subscription status
-  router.get('/api/subscription/status', requireAuth(), async (req: Request, res: Response) => {
+  // Get subscription status (accepts token or Clerk session)
+  router.get('/api/subscription/status', async (req: Request, res: Response) => {
     try {
-      const { userId } = getAuth(req);
+      const userId = resolveUserId(req);
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
