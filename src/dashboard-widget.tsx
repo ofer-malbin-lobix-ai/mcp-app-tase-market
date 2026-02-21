@@ -415,9 +415,20 @@ function StatsCard({ eod, error }: { eod: EndOfDayData | null; error: string | n
 }
 
 function UptrendCard({ uptrend, error }: { uptrend: UptrendData | null; error: string | null }) {
+  const [showAll, setShowAll] = useState(false);
+  const sorted = uptrend?.items.slice().sort((a, b) => a.ez - b.ez) ?? [];
+  const displayed = showAll ? sorted : sorted.slice(0, 5);
+
   return (
     <div className={styles.card}>
-      <div className={styles.cardTitle}>Uptrend Symbols</div>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardTitle}>Uptrend Symbols</div>
+        {uptrend && sorted.length > 5 && (
+          <button className={styles.viewAllButton} onClick={() => setShowAll(!showAll)}>
+            {showAll ? "Top 5" : `View All (${sorted.length})`}
+          </button>
+        )}
+      </div>
       {error && <div className={styles.cardError}>{error}</div>}
       {!uptrend && !error && <div className={styles.skeleton} />}
       {uptrend && (
@@ -426,21 +437,18 @@ function UptrendCard({ uptrend, error }: { uptrend: UptrendData | null; error: s
             <div className={styles.uptrendValue}>{uptrend.count}</div>
             <div className={styles.uptrendLabel}>symbols in uptrend</div>
           </div>
-          {uptrend.items.length > 0 && (
+          {displayed.length > 0 && (
             <table className={styles.miniTable}>
               <thead>
                 <tr><th>Symbol</th><th>EZ %</th></tr>
               </thead>
               <tbody>
-                {uptrend.items
-                  .sort((a, b) => a.ez - b.ez)
-                  .slice(0, 5)
-                  .map((item) => (
-                    <tr key={item.symbol}>
-                      <td>{item.symbol}</td>
-                      <td className={styles.positive}>{item.ez.toFixed(2)}%</td>
-                    </tr>
-                  ))}
+                {displayed.map((item) => (
+                  <tr key={item.symbol}>
+                    <td>{item.symbol}</td>
+                    <td className={styles.positive}>{item.ez.toFixed(2)}%</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}
@@ -451,9 +459,20 @@ function UptrendCard({ uptrend, error }: { uptrend: UptrendData | null; error: s
 }
 
 function GainersCard({ eod, error }: { eod: EndOfDayData | null; error: string | null }) {
+  const [showAll, setShowAll] = useState(false);
+  const allGainers = eod ? eod.rows.filter((r) => r.change != null).sort((a, b) => numChange(b) - numChange(a)).filter((r) => numChange(r) > 0) : [];
+  const displayed = showAll ? allGainers : allGainers.slice(0, 5);
+
   return (
     <div className={styles.card}>
-      <div className={styles.cardTitle}>Top 5 Gainers</div>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardTitle}>Top Gainers</div>
+        {eod && allGainers.length > 5 && (
+          <button className={styles.viewAllButton} onClick={() => setShowAll(!showAll)}>
+            {showAll ? "Top 5" : `View All (${allGainers.length})`}
+          </button>
+        )}
+      </div>
       {error && <div className={styles.cardError}>{error}</div>}
       {!eod && !error && <div className={styles.skeleton} />}
       {eod && (
@@ -462,7 +481,7 @@ function GainersCard({ eod, error }: { eod: EndOfDayData | null; error: string |
             <tr><th>Symbol</th><th>Change %</th></tr>
           </thead>
           <tbody>
-            {getTopGainers(eod.rows).map((r) => (
+            {displayed.map((r) => (
               <tr key={r.symbol}>
                 <td>{r.symbol}</td>
                 <td className={styles.positive}>+{numChange(r).toFixed(2)}%</td>
@@ -476,9 +495,20 @@ function GainersCard({ eod, error }: { eod: EndOfDayData | null; error: string |
 }
 
 function LosersCard({ eod, error }: { eod: EndOfDayData | null; error: string | null }) {
+  const [showAll, setShowAll] = useState(false);
+  const allLosers = eod ? eod.rows.filter((r) => r.change != null).sort((a, b) => numChange(a) - numChange(b)).filter((r) => numChange(r) < 0) : [];
+  const displayed = showAll ? allLosers : allLosers.slice(0, 5);
+
   return (
     <div className={styles.card}>
-      <div className={styles.cardTitle}>Top 5 Losers</div>
+      <div className={styles.cardHeader}>
+        <div className={styles.cardTitle}>Top Losers</div>
+        {eod && allLosers.length > 5 && (
+          <button className={styles.viewAllButton} onClick={() => setShowAll(!showAll)}>
+            {showAll ? "Top 5" : `View All (${allLosers.length})`}
+          </button>
+        )}
+      </div>
       {error && <div className={styles.cardError}>{error}</div>}
       {!eod && !error && <div className={styles.skeleton} />}
       {eod && (
@@ -487,7 +517,7 @@ function LosersCard({ eod, error }: { eod: EndOfDayData | null; error: string | 
             <tr><th>Symbol</th><th>Change %</th></tr>
           </thead>
           <tbody>
-            {getTopLosers(eod.rows).map((r) => (
+            {displayed.map((r) => (
               <tr key={r.symbol}>
                 <td>{r.symbol}</td>
                 <td className={styles.negative}>{numChange(r).toFixed(2)}%</td>

@@ -69,6 +69,17 @@
   padding: 1rem 1.25rem;
 }
 
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.cardHeader .cardTitle {
+  margin-bottom: 0;
+}
+
 .cardTitle {
   font-size: var(--font-text-sm-size, 0.875rem);
   font-weight: var(--font-weight-medium, 500);
@@ -76,6 +87,24 @@
   margin-bottom: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.viewAllButton {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--color-border-primary, #334155);
+  border-radius: var(--border-radius-sm, 4px);
+  background: transparent;
+  color: #3b82f6;
+  font-family: inherit;
+  font-size: var(--font-text-xs-size, 0.75rem);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.viewAllButton:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
 }
 
 /* Market Spirit card */
