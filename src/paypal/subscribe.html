@@ -444,7 +444,20 @@
           return;
         }
 
-        const response = await fetch('/api/subscription/status');
+        // Build request headers — pass Clerk session token if available
+        var fetchHeaders = {};
+        if (window.Clerk && window.Clerk.session) {
+          try {
+            var clerkToken = await window.Clerk.session.getToken();
+            if (clerkToken) {
+              fetchHeaders['Authorization'] = 'Bearer ' + clerkToken;
+            }
+          } catch (e) {
+            console.error('Failed to get Clerk token:', e);
+          }
+        }
+
+        const response = await fetch('/api/subscription/status', { headers: fetchHeaders });
         if (!response.ok) {
           // No session — show generic subscribe form
           currentStatus = { hasSubscription: false };
