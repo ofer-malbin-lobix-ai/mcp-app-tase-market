@@ -46,17 +46,17 @@ export function createSubscriptionRouter(): Router {
     const userId = resolveUserId(req);
 
     if (!userId) {
-      res.status(401).send(`
-        <html>
-        <head><title>Unauthorized</title></head>
-        <body style="font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #1a1a2e; color: #e0e0e0;">
-          <div style="text-align: center;">
-            <h1>Session Expired</h1>
-            <p>Please return to Claude Desktop and try again.</p>
-          </div>
-        </body>
-        </html>
-      `);
+      // No valid token or Clerk session — serve the page anyway.
+      // The subscribe.html page will detect no session and show a sign-in prompt.
+      try {
+        const htmlPath = path.join(HTML_DIR, 'subscribe.html');
+        const html = await fs.readFile(htmlPath, 'utf-8');
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+      } catch (error) {
+        console.error('Error serving subscribe page:', error);
+        res.status(500).send('Error loading subscription page');
+      }
       return;
     }
 

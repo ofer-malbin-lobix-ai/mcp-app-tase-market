@@ -629,6 +629,8 @@ export function createServer(options?: { subscribeUrl?: string }): McpServer {
       _meta: { ui: { resourceUri: subscriptionResourceUri } },
     },
     async (): Promise<CallToolResult> => {
+      // options.subscribeUrl includes token when running on the HTTP server (same secret).
+      // Fallback (stdio) omits the token — the /subscribe page handles Clerk sign-in.
       const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
       return {
         content: [
