@@ -10,7 +10,8 @@ import { z } from "zod";
 const END_OF_DAY_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/rows/market/date";
 const MARKET_SPIRIT_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/market/spirit";
 const UPTREND_SYMBOLS_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/symbols/uptrend/date";
-const END_OF_DAY_SYMBOLS_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/rows/symbols/range";
+const END_OF_DAYS_SYMBOLS_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/rows/symbols/range";
+const END_OF_DAY_SYMBOLS_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/rows/symbols/date";
 const CANDLESTICK_API_URL = "https://www.professorai.app/api/mcp-endpoint/tase-data-hub/eod/charts/symbol/candlestick";
 
 // Define the input schema using Zod
@@ -228,9 +229,40 @@ async function fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateT
   if (dateFrom) params.set("dateFrom", dateFrom);
   if (dateTo) params.set("dateTo", dateTo);
 
-  const url = params.toString() ? `${END_OF_DAY_SYMBOLS_API_URL}?${params}` : END_OF_DAY_SYMBOLS_API_URL;
+  const url = params.toString() ? `${END_OF_DAYS_SYMBOLS_API_URL}?${params}` : END_OF_DAYS_SYMBOLS_API_URL;
 
   console.error(`Fetching End of Day Symbols from: ${url}`);
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  const responseData = await response.json() as { payload: string };
+  const data = JSON.parse(responseData.payload) as EndOfDaySymbolsResponse;
+
+  return data;
+}
+
+/**
+ * Fetch End of Day Symbols data by date (single date, for sidebar)
+ */
+async function fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string): Promise<EndOfDaySymbolsResponse> {
+  const params = new URLSearchParams();
+  for (const s of symbols) {
+    params.append("symbols[]", s);
+  }
+  if (tradeDate) params.set("tradeDate", tradeDate);
+
+  const url = `${END_OF_DAY_SYMBOLS_API_URL}?${params}`;
+
+  console.error(`Fetching End of Day Symbols by date from: ${url}`);
 
   const response = await fetch(url, {
     method: "GET",
@@ -404,6 +436,7 @@ export function createServer(options?: { subscribeUrl?: string }): McpServer {
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v6.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v6.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v6.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v6.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v6.html";
   const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v6.html";
 
@@ -586,6 +619,39 @@ export function createServer(options?: { subscribeUrl?: string }): McpServer {
     },
   );
 
+  // UI tool: Show Multi-Symbol Candlestick (sidebar table + chart)
+  registerAppTool(server,
+    "show-symbols-candlestick-widget",
+    {
+      title: "Show Multi-Symbol Candlestick",
+      description: "Displays a multi-symbol candlestick view: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
+      inputSchema: {
+        symbols: z.array(z.string()).describe("List of stock symbols to display (e.g. ['TEVA', 'LUMI'])"),
+        dateFrom: z.string().describe("Start date in YYYY-MM-DD format"),
+        dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
+      },
+      _meta: { ui: { resourceUri: symbolsCandlestickResourceUri } },
+    },
+    async (args): Promise<CallToolResult> => {
+      // Fetch sidebar data using /symbols/date endpoint (last trade date only)
+      const data = await fetchEndOfDaySymbolsByDate(args.symbols, args.dateTo);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              symbols: data.symbols,
+              count: data.count,
+              dateFrom: args.dateFrom,
+              dateTo: args.dateTo ?? null,
+              items: data.items,
+            }),
+          },
+        ],
+      };
+    },
+  );
+
   // UI tool: Show Market Dashboard portal
   registerAppTool(server,
     "show-market-dashboard-widget",
@@ -704,6 +770,19 @@ export function createServer(options?: { subscribeUrl?: string }): McpServer {
       const html = await fs.readFile(path.join(DIST_DIR, "symbol-candlestick-widget.html"), "utf-8");
       return {
         contents: [{ uri: candlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
+      };
+    },
+  );
+
+  // Register the Multi-Symbol Candlestick resource
+  registerAppResource(server,
+    symbolsCandlestickResourceUri,
+    symbolsCandlestickResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "symbols-candlestick-widget.html"), "utf-8");
+      return {
+        contents: [{ uri: symbolsCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }],
       };
     },
   );

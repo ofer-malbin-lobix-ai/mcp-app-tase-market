@@ -22,13 +22,14 @@
     }
   },
   "scripts": {
-    "build": "tsc --noEmit && cross-env INPUT=end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=uptrend-symbols-widget.html vite build && cross-env INPUT=end-of-day-symbols-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-end-of-day-landing-widget.html vite build && tsc -p tsconfig.server.json",
+    "build": "tsc --noEmit && cross-env INPUT=end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=uptrend-symbols-widget.html vite build && cross-env INPUT=end-of-day-symbols-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-end-of-day-landing-widget.html vite build && tsc -p tsconfig.server.json",
     "build:dashboard": "cross-env INPUT=market-dashboard-widget.html vite build",
     "build:eod": "cross-env INPUT=end-of-day-widget.html vite build",
     "build:spirit": "cross-env INPUT=market-spirit-widget.html vite build",
     "build:uptrend": "cross-env INPUT=uptrend-symbols-widget.html vite build",
     "build:end-of-day-symbols": "cross-env INPUT=end-of-day-symbols-widget.html vite build",
     "build:candlestick": "cross-env INPUT=symbol-candlestick-widget.html vite build",
+    "build:symbols-candlestick": "cross-env INPUT=symbols-candlestick-widget.html vite build",
     "build:landing": "cross-env INPUT=tase-end-of-day-landing-widget.html vite build",
     "watch": "cross-env INPUT=end-of-day-widget.html vite build --watch",
     "serve": "node dist/main.js",
