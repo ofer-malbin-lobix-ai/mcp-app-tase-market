@@ -21,6 +21,8 @@ import { createServer } from "./server.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
 import { checkSubscription } from "./src/paypal/subscription-check.js";
 import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
+// @ts-ignore — imported from source at runtime (not compiled by tsc)
+import { createFetchEodRouter } from "../src/fetch-eod.js";
 
 /**
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
@@ -60,6 +62,9 @@ export async function startStreamableHTTPServer(
 
   // Mount subscription routes (requires Clerk auth)
   app.use(createSubscriptionRouter());
+
+  // Mount fetch-eod route (backend API, no auth — callable by cron or direct URL)
+  app.use(createFetchEodRouter());
 
   // Helper to extract userId from request (works with mcpAuthClerk)
   const resolveUserId = (req: Request): string | null => {

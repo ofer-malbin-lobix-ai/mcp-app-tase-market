@@ -15,3 +15,5 @@ env.production.local
 .agents/
 .claude/
 .goose/
+
+/src/generated/prisma

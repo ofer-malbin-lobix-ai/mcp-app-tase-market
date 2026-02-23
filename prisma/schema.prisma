@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model TaseSecuritiesEndOfDayTradingData {
+  id                    String    @id @default(cuid())
+  tradeDate             DateTime  @db.Date
+  firstTradingDate      DateTime? @db.Date
+  isin                  String
+  change                Float?
+  securityId            Int
+  turnover              BigInt?
+  closingPrice          Float?
+  basePrice             Float?
+  openingPrice          Float?
+  high                  Float?
+  low                   Float?
+  changeValue           Float?
+  transactionsNumber    Int?
+  volume                BigInt?
+  marketCap             BigInt?
+  minContPhaseAmount    Int?
+  listedCapital         BigInt?
+  adjustedClosingPrice  Float?
+  exCode                String?
+  adjustmentCoefficient Float?
+  symbol                String
+  marketType            String?
+  // --- indicators ---
+  rsi14                 Float?
+  macd                  Float?
+  macdSignal            Float?
+  macdHist              Float?
+  cci20                 Float?
+  mfi14                 Float?
+  turnover10            Float?
+  sma20                 Float?
+  sma50                 Float?
+  sma200                Float?
+  ez                    Float?
+  stddev20              Float?
+  upperBollingerBand20  Float?
+  lowerBollingerBand20  Float?
+
+  @@unique([symbol, tradeDate], name: "unique_symbol_tradeDate")
+  @@index([symbol, tradeDate], name: "index_symbol_tradeDate")
+}
