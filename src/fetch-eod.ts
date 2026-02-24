@@ -165,19 +165,22 @@ export function createFetchEodRouter(): Router {
     }
   });
 
-  // Cron: run EOD pipeline Mon-Fri at 20:30 Israel time
-  cron.schedule("30 20 * * 1-5", async () => {
-    const date = getTodayDateIL();
-    console.error(`[cron] Running EOD pipeline for ${date}`);
-    try {
-      const result = await runEodPipeline(date);
-      console.error(`[cron] Done: fetched=${result.fetched}, created=${result.created}, updated=${result.updated}, symbolsUpserted=${result.symbolsUpserted}`);
-    } catch (error) {
-      console.error("[cron] Error:", error);
-    }
-  }, { timezone: "Asia/Jerusalem" });
-
-  console.error("[cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
+  // Cron: run EOD pipeline Mon-Fri at 20:30 Israel time (production only)
+  if (process.env.NODE_ENV === "production") {
+    cron.schedule("30 20 * * 1-5", async () => {
+      const date = getTodayDateIL();
+      console.error(`[cron] Running EOD pipeline for ${date}`);
+      try {
+        const result = await runEodPipeline(date);
+        console.error(`[cron] Done: fetched=${result.fetched}, created=${result.created}, updated=${result.updated}, symbolsUpserted=${result.symbolsUpserted}`);
+      } catch (error) {
+        console.error("[cron] Error:", error);
+      }
+    }, { timezone: "Asia/Jerusalem" });
+    console.error("[cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
+  } else {
+    console.error("[cron] Skipped (not production)");
+  }
 
   return router;
 }

@@ -9,6 +9,8 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+ENV NODE_ENV=production
+
 EXPOSE 3001
 
 CMD ["npx", "tsx", "dist/main.js"]
