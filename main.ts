@@ -23,11 +23,11 @@ import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
 import { checkSubscription } from "./src/paypal/subscription-check.js";
 import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { createFetchEodRouter } from "../src/fetch-eod.js";
+import { createFetchEodRouter } from "./src/fetch-eod.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { createFetchSymbolsRouter } from "../src/fetch-symbols.js";
+import { createFetchSymbolsRouter } from "./src/fetch-symbols.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { dbProviders } from "../src/db-api.js";
+import { dbProviders } from "./src/db-api.js";
 
 /**
  * Starts an MCP server with Streamable HTTP transport in stateless mode.

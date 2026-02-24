@@ -13,4 +13,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3001
 
-CMD ["npx", "tsx", "dist/main.js"]
+CMD ["npx", "tsx", "main.ts"]
