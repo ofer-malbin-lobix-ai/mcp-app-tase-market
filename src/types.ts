@@ -77,6 +77,22 @@ export interface EndOfDaySymbolsResponse {
   items: StockData[];
 }
 
+export interface SymbolHeatmapItem {
+  symbol: string;
+  companyName: string | null;
+  marketCap: number | null;
+  change: number | null;
+  sector: string;
+  subSector: string | null;
+}
+
+export interface SectorHeatmapResponse {
+  tradeDate: string;
+  marketType: string;
+  count: number;
+  items: SymbolHeatmapItem[];
+}
+
 export interface TaseDataProviders {
   fetchEndOfDay(marketType?: string, tradeDate?: string): Promise<EndOfDayResult>;
   fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
@@ -84,4 +100,5 @@ export interface TaseDataProviders {
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
   fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string): Promise<EndOfDaySymbolsResponse>;
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string): Promise<CandlestickResponse>;
+  fetchSectorHeatmap(marketType?: string, tradeDate?: string): Promise<SectorHeatmapResponse>;
 }

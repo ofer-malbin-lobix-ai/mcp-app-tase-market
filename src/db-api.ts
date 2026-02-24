@@ -6,6 +6,8 @@ import type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  SectorHeatmapResponse,
+  SymbolHeatmapItem,
   TaseDataProviders,
 } from "./types.js";
 
@@ -324,6 +326,45 @@ export async function fetchCandlestick(
   };
 }
 
+export async function fetchSectorHeatmap(marketType = "STOCK", tradeDate?: string): Promise<SectorHeatmapResponse> {
+  const date = tradeDate ? new Date(tradeDate) : await getLastTradeDate(marketType);
+
+  const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
+    where: { tradeDate: date, marketType },
+    select: {
+      symbol: true,
+      marketCap: true,
+      change: true,
+      taseSymbol: {
+        select: {
+          companyName: true,
+          companySector: true,
+          companySubSector: true,
+        },
+      },
+    },
+    orderBy: { symbol: "asc" },
+  });
+
+  const items: SymbolHeatmapItem[] = rows
+    .filter((r) => r.taseSymbol?.companySector != null)
+    .map((r) => ({
+      symbol: r.symbol,
+      companyName: r.taseSymbol?.companyName ?? null,
+      marketCap: r.marketCap != null ? Number(r.marketCap) : null,
+      change: r.change,
+      sector: r.taseSymbol!.companySector!,
+      subSector: r.taseSymbol?.companySubSector ?? null,
+    }));
+
+  return {
+    tradeDate: toDateStr(date),
+    marketType,
+    count: items.length,
+    items,
+  };
+}
+
 export const dbProviders: TaseDataProviders = {
   fetchEndOfDay,
   fetchMarketSpirit,
@@ -331,4 +372,5 @@ export const dbProviders: TaseDataProviders = {
   fetchEndOfDaySymbols,
   fetchEndOfDaySymbolsByDate,
   fetchCandlestick,
+  fetchSectorHeatmap,
 };

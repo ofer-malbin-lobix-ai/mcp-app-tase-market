@@ -12,6 +12,8 @@ import type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  SectorHeatmapResponse,
+  SymbolHeatmapItem,
   TaseDataProviders,
 } from "./src/types.js";
 
@@ -23,6 +25,8 @@ export type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  SectorHeatmapResponse,
+  SymbolHeatmapItem,
   TaseDataProviders,
 };
 
@@ -166,6 +170,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   });
 
   // Resource URIs
+  const sectorHeatmapResourceUri = "ui://tase-end-of-day/sector-heatmap-widget-v1.html";
   const endOfDayResourceUri = "ui://tase-end-of-day/end-of-day-widget-v8.html";
   const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v8.html";
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
@@ -411,6 +416,55 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // Data-only tool: Get Sector Heatmap data
+  registerAppTool(server,
+    "get-sector-heatmap-data",
+    {
+      title: "Get Sector Heatmap Data",
+      description: "Returns TASE stock data grouped by sector and sub-sector with marketCap and change % for heatmap visualization. Data only - use show-sector-heatmap-widget for visualization.",
+      inputSchema: getTaseDataSchema,
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchSectorHeatmap(args.marketType, args.tradeDate);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              tradeDate: data.tradeDate,
+              marketType: data.marketType,
+              count: data.count,
+              items: data.items,
+            }),
+          },
+        ],
+      };
+    },
+  );
+
+  // UI tool: Show Sector Heatmap treemap widget
+  registerAppTool(server,
+    "show-sector-heatmap-widget",
+    {
+      title: "Show Sector Heatmap",
+      description: "Displays TASE stocks as a nested treemap heatmap: sectors → sub-sectors → symbols. Rectangles sized by market cap, colored by change %. Click to drill down.",
+      inputSchema: getTaseDataSchema,
+      _meta: { ui: { resourceUri: sectorHeatmapResourceUri } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchSectorHeatmap(args.marketType, args.tradeDate);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Sector heatmap: ${data.count} stocks for ${data.tradeDate} (${data.marketType})`,
+          },
+        ],
+      };
+    },
+  );
+
   // UI tool: Show Subscription landing page
   registerAppTool(server,
     "show-tase-end-of-day-landing-widget",
@@ -434,6 +488,15 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   );
 
   // Register resources
+  registerAppResource(server,
+    sectorHeatmapResourceUri, sectorHeatmapResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "sector-heatmap-widget.html"), "utf-8");
+      return { contents: [{ uri: sectorHeatmapResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+    },
+  );
+
   registerAppResource(server,
     endOfDayResourceUri, endOfDayResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
