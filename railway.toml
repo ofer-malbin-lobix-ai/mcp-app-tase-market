@@ -1,8 +1,7 @@
 [build]
-builder = "nixpacks"
-buildCommand = "npm run build"
+builder = "dockerfile"
 
 [deploy]
-startCommand = "node dist/main.js"
+startCommand = "npx tsx main.ts"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
