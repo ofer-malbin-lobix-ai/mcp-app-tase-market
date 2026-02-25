@@ -291,7 +291,7 @@ function HeatmapApp() {
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: "get-sector-heatmap-data", arguments: toolInput })
+    app.callServerTool({ name: "get-market-sector-heatmap-data", arguments: toolInput })
       .then((result) => {
         const d = extractHeatmapData(result);
         if (d) setData(d);
@@ -402,7 +402,7 @@ function HeatmapInner({ app, data, setData }: HeatmapInnerProps) {
       const args: Record<string, string> = {};
       if (tradeDate) args.tradeDate = tradeDate;
       if (period) args.period = period;
-      const result = await app.callServerTool({ name: "get-sector-heatmap-data", arguments: args });
+      const result = await app.callServerTool({ name: "get-market-sector-heatmap-data", arguments: args });
       const d = extractHeatmapData(result);
       if (d) setData(d);
       else setRefreshError("No data found for this date");

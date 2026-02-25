@@ -181,7 +181,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Resource URIs
   const myPositionResourceUri = "ui://tase-end-of-day/my-position-table-widget-v1.html";
-  const sectorHeatmapResourceUri = "ui://tase-end-of-day/sector-heatmap-widget-v3.html";
+  const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v1.html";
   const endOfDayResourceUri = "ui://tase-end-of-day/end-of-day-widget-v8.html";
   const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v8.html";
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
@@ -454,10 +454,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data-only tool: Get Sector Heatmap data
   registerAppTool(server,
-    "get-sector-heatmap-data",
+    "get-market-sector-heatmap-data",
     {
-      title: "Get Sector Heatmap Data",
-      description: "Returns TASE stock data grouped by sector and sub-sector with marketCap and change % for heatmap visualization. Data only - use show-sector-heatmap-widget for visualization.",
+      title: "Get Market Sector Heatmap Data",
+      description: "Returns TASE stock data grouped by sector and sub-sector with marketCap and change % for heatmap visualization. Data only - use show-market-sector-heatmap-widget for visualization.",
       inputSchema: getSectorHeatmapSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -481,9 +481,9 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // UI tool: Show Sector Heatmap treemap widget
   registerAppTool(server,
-    "show-sector-heatmap-widget",
+    "show-market-sector-heatmap-widget",
     {
-      title: "Show Sector Heatmap",
+      title: "Show Market Sector Heatmap",
       description: "Displays TASE stocks as a nested treemap heatmap: sectors → sub-sectors → symbols. Rectangles sized by market cap, colored by change %. Click to drill down.",
       inputSchema: getSectorHeatmapSchema,
       _meta: { ui: { resourceUri: sectorHeatmapResourceUri } },
@@ -584,7 +584,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     sectorHeatmapResourceUri, sectorHeatmapResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "sector-heatmap-widget.html"), "utf-8");
+      const html = await fs.readFile(path.join(DIST_DIR, "market-sector-heatmap-widget.html"), "utf-8");
       return { contents: [{ uri: sectorHeatmapResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
