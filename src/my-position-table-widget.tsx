@@ -8,7 +8,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import styles from "./my-position-widget.module.css";
+import styles from "./my-position-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -197,7 +197,7 @@ function MyPositionApp() {
       try {
         const args: Record<string, unknown> = { symbols: baseData.symbols, period: p };
         if (baseData.dateTo) args.tradeDate = baseData.dateTo;
-        const result = await app.callServerTool({ name: "get-my-position-data", arguments: args });
+        const result = await app.callServerTool({ name: "get-my-position-table-data", arguments: args });
         const fetched = extractData(result);
         if (fetched) {
           const overlay = new Map<string, { closingPrice: number | null; change: number | null }>();
