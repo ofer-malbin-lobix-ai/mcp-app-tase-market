@@ -547,7 +547,7 @@ function EndOfDaySymbolsAppInner({
     >
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>End of Day Symbols</h1>
+          <h1 className={styles.title}>My Position End of Day</h1>
           {data && (
             <div className={styles.subtitle}>
               {data.symbols?.length > 0 ? data.symbols.join(", ") : "All symbols"}
