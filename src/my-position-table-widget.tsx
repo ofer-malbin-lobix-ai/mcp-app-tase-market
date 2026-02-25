@@ -249,7 +249,7 @@ function MyPositionApp() {
     <main className={styles.main}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>My Positions</h1>
+          <h1 className={styles.title}>My Position Table</h1>
           {baseData && (
             <div className={styles.subtitle}>
               {baseData.dateTo} · {displayRows.length} symbol{displayRows.length !== 1 ? "s" : ""}
