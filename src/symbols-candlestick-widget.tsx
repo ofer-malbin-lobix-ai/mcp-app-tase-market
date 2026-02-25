@@ -19,6 +19,18 @@ import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { createRoot } from "react-dom/client";
 import styles from "./symbols-candlestick-widget.module.css";
 
+// ─── Timeframe ──────────────────────────────────────────────────────
+
+type CandlestickTimeframe = "1D" | "3D" | "1W" | "1M" | "3M";
+
+const TIMEFRAMES: { value: CandlestickTimeframe; label: string }[] = [
+  { value: "1D", label: "Day" },
+  { value: "3D", label: "3D" },
+  { value: "1W", label: "Week" },
+  { value: "1M", label: "Month" },
+  { value: "3M", label: "Quarter" },
+];
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 interface StockData {
@@ -432,7 +444,12 @@ function SymbolsCandlestickApp() {
   const [eodData, setEodData] = useState<EndOfDaySymbolsData | null>(null);
   const [chartData, setChartData] = useState<CandlestickWidgetData | null>(null);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<CandlestickTimeframe>("1D");
+  const [selectedDateFrom, setSelectedDateFrom] = useState("");
+  const [selectedDateTo, setSelectedDateTo] = useState("");
   const [isChartLoading, setIsChartLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
@@ -482,6 +499,15 @@ function SymbolsCandlestickApp() {
       .catch((e) => console.error("Auto-fetch failed:", e));
   }, [needsAutoFetch, app]);
 
+  // Sync date inputs from eodData on first load
+  useEffect(() => {
+    if (eodData?.dateFrom && !selectedDateFrom) setSelectedDateFrom(eodData.dateFrom);
+  }, [eodData?.dateFrom, selectedDateFrom]);
+
+  useEffect(() => {
+    if (eodData?.dateTo && !selectedDateTo) setSelectedDateTo(eodData.dateTo);
+  }, [eodData?.dateTo, selectedDateTo]);
+
   useHostStyles(app ?? null);
 
   useEffect(() => {
@@ -519,16 +545,20 @@ function SymbolsCandlestickApp() {
     return Array.from(map.values());
   }, [eodData?.items]);
 
-  // Fetch candlestick data when a symbol is selected
-  const handleSelectSymbol = useCallback(async (symbol: string) => {
+  // Fetch candlestick data when a symbol is selected or timeframe changes
+  const handleSelectSymbol = useCallback(async (symbol: string, tf?: CandlestickTimeframe, dateFrom?: string, dateTo?: string) => {
     if (!app || typeof app.callServerTool !== "function") return;
     setSelectedSymbol(symbol);
     setIsChartLoading(true);
     setChartData(null);
+    setRefreshError(null);
     try {
-      const args: Record<string, unknown> = { symbol };
-      if (eodData?.dateFrom) args.dateFrom = eodData.dateFrom;
-      if (eodData?.dateTo) args.dateTo = eodData.dateTo;
+      const timeframe = tf ?? selectedTimeframe;
+      const from = dateFrom ?? (selectedDateFrom || eodData?.dateFrom);
+      const to = dateTo ?? (selectedDateTo || eodData?.dateTo);
+      const args: Record<string, unknown> = { symbol, timeframe };
+      if (from) args.dateFrom = from;
+      if (to) args.dateTo = to;
       const result = await app.callServerTool({
         name: "get-symbol-candlestick-data",
         arguments: args,
@@ -540,7 +570,37 @@ function SymbolsCandlestickApp() {
     } finally {
       setIsChartLoading(false);
     }
-  }, [app, eodData?.dateFrom, eodData?.dateTo]);
+  }, [app, eodData?.dateFrom, eodData?.dateTo, selectedTimeframe, selectedDateFrom, selectedDateTo]);
+
+  const handleTimeframeChange = useCallback((tf: CandlestickTimeframe) => {
+    setSelectedTimeframe(tf);
+    if (selectedSymbol) {
+      handleSelectSymbol(selectedSymbol, tf);
+    }
+  }, [selectedSymbol, handleSelectSymbol]);
+
+  const handleRefresh = useCallback(async () => {
+    if (!selectedSymbol) return;
+    setIsRefreshing(true);
+    setRefreshError(null);
+    try {
+      const args: Record<string, unknown> = { symbol: selectedSymbol, timeframe: selectedTimeframe };
+      if (selectedDateFrom) args.dateFrom = selectedDateFrom;
+      if (selectedDateTo) args.dateTo = selectedDateTo;
+      const result = await app!.callServerTool({
+        name: "get-symbol-candlestick-data",
+        arguments: args,
+      });
+      const fetched = extractCandlestickData(result);
+      if (fetched) setChartData(fetched);
+      else setRefreshError("No data found");
+    } catch (e) {
+      console.error("Failed to refresh:", e);
+      setRefreshError("Failed to fetch data");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [app, selectedSymbol, selectedTimeframe, selectedDateFrom, selectedDateTo]);
 
   // Auto-select first symbol when sidebar data loads
   useEffect(() => {
@@ -567,8 +627,7 @@ function SymbolsCandlestickApp() {
           <h1 className={styles.title}>Multi-Symbol Candlestick</h1>
           {eodData && (
             <div className={styles.subtitle}>
-              {eodData.dateFrom && eodData.dateFrom}
-              {eodData.dateTo && eodData.dateTo !== eodData.dateFrom && ` — ${eodData.dateTo}`}
+              {eodData.symbols.join(", ")}
             </div>
           )}
         </div>
@@ -583,11 +642,54 @@ function SymbolsCandlestickApp() {
         )}
       </div>
 
+      {eodData && (
+        <div className={styles.controls}>
+          <label className={styles.dateLabel}>
+            From:
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={selectedDateFrom}
+              onChange={(e) => setSelectedDateFrom(e.target.value)}
+            />
+          </label>
+          <label className={styles.dateLabel}>
+            To:
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={selectedDateTo}
+              onChange={(e) => setSelectedDateTo(e.target.value)}
+            />
+          </label>
+          <button
+            className={styles.refreshButton}
+            onClick={handleRefresh}
+            disabled={isRefreshing || isChartLoading || !selectedSymbol}
+          >
+            {isRefreshing ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+      )}
+      {refreshError && <div className={styles.refreshError}>{refreshError}</div>}
+
       {!eodData ? (
         <div className={styles.loading}>Loading symbols...</div>
       ) : (
         <div className={`${styles.splitLayout} ${chartData || isChartLoading ? styles.hasChart : ""}`}>
           <div className={styles.chartArea}>
+            <div className={styles.timeframeToolbar}>
+              {TIMEFRAMES.map((tf) => (
+                <button
+                  key={tf.value}
+                  className={`${styles.timeframeBtn} ${selectedTimeframe === tf.value ? styles.timeframeBtnActive : ""}`}
+                  onClick={() => handleTimeframeChange(tf.value)}
+                  disabled={isChartLoading}
+                >
+                  {tf.label}
+                </button>
+              ))}
+            </div>
             {isChartLoading ? (
               <div className={styles.chartLoading}>Loading chart for {selectedSymbol}...</div>
             ) : chartData ? (

@@ -35,11 +35,22 @@ interface StockData {
   [key: string]: unknown;
 }
 
+type CandlestickTimeframe = "1D" | "3D" | "1W" | "1M" | "3M";
+
+const TIMEFRAMES: { value: CandlestickTimeframe; label: string }[] = [
+  { value: "1D", label: "Day" },
+  { value: "3D", label: "3D" },
+  { value: "1W", label: "Week" },
+  { value: "1M", label: "Month" },
+  { value: "3M", label: "Quarter" },
+];
+
 interface CandlestickWidgetData {
   symbol: string;
   count: number;
   dateFrom: string | null;
   dateTo: string | null;
+  timeframe?: CandlestickTimeframe;
   items: StockData[];
 }
 
@@ -98,6 +109,7 @@ function formatVolume(volume: number): string {
 function CandlestickApp() {
   const [data, setData] = useState<CandlestickWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
+  const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -107,7 +119,7 @@ function CandlestickApp() {
       app.onteardown = async () => ({});
 
       app.ontoolinput = async (input) => {
-        console.info("Received tool call input:", input);
+        if (input?.arguments) setToolInput(input.arguments as Record<string, unknown>);
       };
 
       app.ontoolresult = async (result) => {
@@ -161,20 +173,22 @@ function CandlestickApp() {
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
 
-  return <CandlestickAppInner app={app} data={data} setData={setData} hostContext={hostContext} />;
+  return <CandlestickAppInner app={app} data={data} setData={setData} toolInput={toolInput} hostContext={hostContext} />;
 }
 
 interface CandlestickAppInnerProps {
   app: App;
   data: CandlestickWidgetData | null;
   setData: React.Dispatch<React.SetStateAction<CandlestickWidgetData | null>>;
+  toolInput: Record<string, unknown>;
   hostContext?: McpUiHostContext;
 }
 
-function CandlestickAppInner({ app, data, setData, hostContext }: CandlestickAppInnerProps) {
+function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: CandlestickAppInnerProps) {
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<CandlestickTimeframe>("1D");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
@@ -331,13 +345,14 @@ function CandlestickAppInner({ app, data, setData, hostContext }: CandlestickApp
   }, [legendMap, candleData]);
 
   // Refresh data from server
-  const handleRefresh = useCallback(async (symbol?: string, dateFrom?: string, dateTo?: string) => {
+  const handleRefresh = useCallback(async (symbol?: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe) => {
     setIsRefreshing(true);
     setRefreshError(null);
     const args: Record<string, unknown> = {};
     if (symbol) args.symbol = symbol;
     if (dateFrom) args.dateFrom = dateFrom;
     if (dateTo) args.dateTo = dateTo;
+    if (timeframe) args.timeframe = timeframe;
     try {
       const result = await app.callServerTool({
         name: "get-symbol-candlestick-data",
@@ -358,7 +373,7 @@ function CandlestickAppInner({ app, data, setData, hostContext }: CandlestickApp
     }
   }, [app, setData]);
 
-  // Sync controls with data
+  // Sync controls with data on first load
   useEffect(() => {
     if (data?.symbol && !symbolInput) setSymbolInput(data.symbol);
   }, [data?.symbol, symbolInput]);
@@ -371,9 +386,21 @@ function CandlestickAppInner({ app, data, setData, hostContext }: CandlestickApp
     if (data?.dateTo && !selectedDateTo) setSelectedDateTo(data.dateTo);
   }, [data?.dateTo, selectedDateTo]);
 
+  // Sync timeframe from tool input (model may call with a specific timeframe)
+  useEffect(() => {
+    if (toolInput.timeframe) setSelectedTimeframe(toolInput.timeframe as CandlestickTimeframe);
+  }, [toolInput.timeframe]);
+
   const handleRefreshClick = useCallback(() => {
     if (symbolInput.trim()) {
-      handleRefresh(symbolInput.trim(), selectedDateFrom || undefined, selectedDateTo || undefined);
+      handleRefresh(symbolInput.trim(), selectedDateFrom || undefined, selectedDateTo || undefined, selectedTimeframe);
+    }
+  }, [symbolInput, selectedDateFrom, selectedDateTo, selectedTimeframe, handleRefresh]);
+
+  const handleTimeframeClick = useCallback((tf: CandlestickTimeframe) => {
+    setSelectedTimeframe(tf);
+    if (symbolInput.trim()) {
+      handleRefresh(symbolInput.trim(), selectedDateFrom || undefined, selectedDateTo || undefined, tf);
     }
   }, [symbolInput, selectedDateFrom, selectedDateTo, handleRefresh]);
 
@@ -451,6 +478,19 @@ function CandlestickAppInner({ app, data, setData, hostContext }: CandlestickApp
       </div>
 
       <div className={styles.overlays}>
+        <div className={styles.timeframeGroup}>
+          {TIMEFRAMES.map((tf) => (
+            <button
+              key={tf.value}
+              className={`${styles.timeframeBtn} ${selectedTimeframe === tf.value ? styles.timeframeBtnActive : ""}`}
+              onClick={() => handleTimeframeClick(tf.value)}
+              disabled={isRefreshing}
+            >
+              {tf.label}
+            </button>
+          ))}
+        </div>
+        <span className={styles.overlaySep} />
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"

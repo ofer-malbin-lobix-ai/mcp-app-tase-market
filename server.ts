@@ -12,6 +12,7 @@ import type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  CandlestickTimeframe,
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
@@ -25,6 +26,7 @@ export type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  CandlestickTimeframe,
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
@@ -63,6 +65,7 @@ const getCandlestickSchema = {
   symbol: z.string().describe("Stock symbol (e.g. 'TEVA')"),
   dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format"),
   dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
+  timeframe: z.enum(["1D", "3D", "1W", "1M", "3M"]).optional().describe("Candle timeframe: 1D (daily), 3D (3-day), 1W (weekly), 1M (monthly), 3M (quarterly). Defaults to 1D."),
 };
 
 // Score descriptions for Market Spirit
@@ -176,7 +179,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v8.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v8.html";
-  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v8.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v9.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v8.html";
   const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v8.html";
 
@@ -331,7 +334,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchCandlestick(args.symbol, args.dateFrom, args.dateTo);
+      const data = await providers.fetchCandlestick(args.symbol, args.dateFrom, args.dateTo, args.timeframe as CandlestickTimeframe | undefined);
       return formatCandlestickResult(data);
     },
   );
@@ -346,7 +349,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: candlestickResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchCandlestick(args.symbol, args.dateFrom, args.dateTo);
+      const data = await providers.fetchCandlestick(args.symbol, args.dateFrom, args.dateTo, args.timeframe as CandlestickTimeframe | undefined);
       return formatCandlestickResult(data);
     },
   );
@@ -365,7 +368,8 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: symbolsCandlestickResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchEndOfDaySymbolsByDate(args.symbols, args.dateTo);
+      // Always fetch sidebar data using the last trade date (args.dateTo may be today or a non-trading day)
+      const data = await providers.fetchEndOfDaySymbolsByDate(args.symbols);
       return {
         content: [
           {

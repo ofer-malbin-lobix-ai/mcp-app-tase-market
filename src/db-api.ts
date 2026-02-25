@@ -6,6 +6,7 @@ import type {
   UptrendSymbolsResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
+  CandlestickTimeframe,
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
@@ -300,10 +301,124 @@ export async function fetchEndOfDaySymbolsByDate(
   };
 }
 
+// Raw row returned by aggregated SQL queries
+type AggRow = {
+  tradeDate: Date;
+  openingPrice: number | null;
+  high: number | null;
+  low: number | null;
+  closingPrice: number | null;
+  volume: bigint | null;
+  sma20: number | null;
+  sma50: number | null;
+  sma200: number | null;
+  ez: number | null;
+};
+
+function aggRowToStockData(row: AggRow, symbol: string): StockData {
+  const open = row.openingPrice;
+  const close = row.closingPrice;
+  const change = open != null && open !== 0 && close != null ? ((close - open) / open) * 100 : null;
+  return {
+    tradeDate: toDateStr(row.tradeDate),
+    symbol,
+    openingPrice: open,
+    closingPrice: close,
+    high: row.high,
+    low: row.low,
+    volume: row.volume != null ? Number(row.volume) : null,
+    change,
+    sma20: row.sma20,
+    sma50: row.sma50,
+    sma200: row.sma200,
+    ez: row.ez,
+    // All other fields are not meaningful for aggregated candles
+    turnover: null, basePrice: null, changeValue: null, marketCap: null,
+    minContPhaseAmount: null, listedCapital: null, marketType: null,
+    rsi14: null, macd: null, macdSignal: null, macdHist: null,
+    cci20: null, mfi14: null, turnover10: null, stddev20: null,
+    upperBollingerBand20: null, lowerBollingerBand20: null,
+    companyName: null, sector: null, subSector: null,
+  };
+}
+
+async function fetchCandlestickAggregated(
+  symbol: string,
+  from: Date,
+  to: Date,
+  timeframe: "3D" | "1W" | "1M" | "3M",
+): Promise<AggRow[]> {
+  if (timeframe === "3D") {
+    return prisma.$queryRaw<AggRow[]>`
+      WITH numbered AS (
+        SELECT
+          "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume",
+          "sma20", "sma50", "sma200", "ez",
+          (ROW_NUMBER() OVER (ORDER BY "tradeDate") - 1) AS row_idx
+        FROM "TaseSecuritiesEndOfDayTradingData"
+        WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${from} AND ${to}
+      ),
+      bucketed AS (
+        SELECT *, row_idx / 3 AS bucket FROM numbered
+      ),
+      ranked AS (
+        SELECT *,
+          ROW_NUMBER() OVER (PARTITION BY bucket ORDER BY "tradeDate" ASC)  AS rn_asc,
+          ROW_NUMBER() OVER (PARTITION BY bucket ORDER BY "tradeDate" DESC) AS rn_desc
+        FROM bucketed
+      )
+      SELECT
+        MAX("tradeDate")                                              AS "tradeDate",
+        MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
+        MAX("high")                                                   AS "high",
+        MIN("low")                                                    AS "low",
+        MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
+        SUM("volume")::bigint                                         AS "volume",
+        MAX(CASE WHEN rn_desc = 1 THEN "sma20"   END)                AS "sma20",
+        MAX(CASE WHEN rn_desc = 1 THEN "sma50"   END)                AS "sma50",
+        MAX(CASE WHEN rn_desc = 1 THEN "sma200"  END)                AS "sma200",
+        MAX(CASE WHEN rn_desc = 1 THEN "ez"      END)                AS "ez"
+      FROM ranked
+      GROUP BY bucket
+      ORDER BY bucket
+    `;
+  }
+
+  const truncUnit = timeframe === "1W" ? "week" : timeframe === "1M" ? "month" : "quarter";
+
+  return prisma.$queryRaw<AggRow[]>`
+    WITH d AS (
+      SELECT
+        "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume",
+        "sma20", "sma50", "sma200", "ez",
+        DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) AS period,
+        ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) ORDER BY "tradeDate" ASC)  AS rn_asc,
+        ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) ORDER BY "tradeDate" DESC) AS rn_desc
+      FROM "TaseSecuritiesEndOfDayTradingData"
+      WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${from} AND ${to}
+    )
+    SELECT
+      MAX("tradeDate")                                              AS "tradeDate",
+      MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
+      MAX("high")                                                   AS "high",
+      MIN("low")                                                    AS "low",
+      MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
+      SUM("volume")::bigint                                         AS "volume",
+      MAX(CASE WHEN rn_desc = 1 THEN "sma20"   END)                AS "sma20",
+      MAX(CASE WHEN rn_desc = 1 THEN "sma50"   END)                AS "sma50",
+      MAX(CASE WHEN rn_desc = 1 THEN "sma200"  END)                AS "sma200",
+      MAX(CASE WHEN rn_desc = 1 THEN "ez"      END)                AS "ez"
+    FROM d
+    GROUP BY period
+    ORDER BY period
+  `;
+}
+
 export async function fetchCandlestick(
   symbol: string,
   dateFrom?: string,
   dateTo?: string,
+  timeframe: CandlestickTimeframe = "1D",
 ): Promise<CandlestickResponse> {
   const lastDate = await getLastTradeDate("STOCK");
   const to = dateTo ? new Date(dateTo) : lastDate;
@@ -311,18 +426,27 @@ export async function fetchCandlestick(
     ? new Date(dateFrom)
     : new Date(new Date(to).setFullYear(to.getFullYear() - 1));
 
-  const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
-    where: { symbol, tradeDate: { gte: from, lte: to } },
-    select: EOD_SELECT,
-    orderBy: { tradeDate: "asc" },
-  });
+  let items: StockData[];
+
+  if (timeframe === "1D") {
+    const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
+      where: { symbol, tradeDate: { gte: from, lte: to } },
+      select: EOD_SELECT,
+      orderBy: { tradeDate: "asc" },
+    });
+    items = rows.map(rowToStockData);
+  } else {
+    const aggRows = await fetchCandlestickAggregated(symbol, from, to, timeframe);
+    items = aggRows.map((r) => aggRowToStockData(r, symbol));
+  }
 
   return {
     symbol,
-    count: rows.length,
-    dateFrom: rows.length > 0 ? toDateStr(rows[0]!.tradeDate) : null,
-    dateTo: rows.length > 0 ? toDateStr(rows[rows.length - 1]!.tradeDate) : null,
-    items: rows.map(rowToStockData),
+    timeframe,
+    count: items.length,
+    dateFrom: items.length > 0 ? items[0]!.tradeDate : null,
+    dateTo: items.length > 0 ? items[items.length - 1]!.tradeDate : null,
+    items,
   };
 }
 
