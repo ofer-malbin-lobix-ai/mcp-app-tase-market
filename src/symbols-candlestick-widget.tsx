@@ -421,6 +421,9 @@ function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, show
             crosshair: { mode: 0 },
             rightPriceScale: { borderColor: "rgba(197, 203, 206, 0.4)" },
             timeScale: { borderColor: "rgba(197, 203, 206, 0.4)" },
+            overlayPriceScales: {
+              scaleMargins: { top: 0.75, bottom: 0 },
+            },
           }}
           onCrosshairMove={handleCrosshairMove}
         >
