@@ -187,7 +187,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v1.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v8.html";
-  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v10.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v1.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v8.html";
   const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v8.html";
 
@@ -364,9 +364,9 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // UI tool: Show Multi-Symbol Candlestick (sidebar table + chart)
   registerAppTool(server,
-    "show-symbols-candlestick-widget",
+    "show-my-position-candlestick-widget",
     {
-      title: "Show Multi-Symbol Candlestick",
+      title: "Show My Position Candlestick",
       description: "Displays a multi-symbol candlestick view: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols to display (e.g. ['TEVA', 'LUMI'])"),
@@ -397,10 +397,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data-only tool: Get symbols sidebar data with period change
   registerAppTool(server,
-    "get-symbols-period-data",
+    "get-my-position-period-data",
     {
-      title: "Get Symbols Period Data",
-      description: "Returns last price and period change % for a list of symbols. Used by the multi-symbol candlestick widget sidebar.",
+      title: "Get My Position Period Data",
+      description: "Returns last price and period change % for a list of symbols. Used by the my-position candlestick widget sidebar.",
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
@@ -638,7 +638,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     symbolsCandlestickResourceUri, symbolsCandlestickResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbols-candlestick-widget.html"), "utf-8");
+      const html = await fs.readFile(path.join(DIST_DIR, "my-position-candlestick-widget.html"), "utf-8");
       return { contents: [{ uri: symbolsCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );

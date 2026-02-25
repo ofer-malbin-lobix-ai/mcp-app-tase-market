@@ -17,7 +17,7 @@ import {
 } from "lightweight-charts-react-components";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import styles from "./symbols-candlestick-widget.module.css";
+import styles from "./my-position-candlestick-widget.module.css";
 
 // ─── Timeframe ──────────────────────────────────────────────────────
 
@@ -531,7 +531,7 @@ function SymbolsCandlestickApp() {
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: "get-end-of-day-symbols-data", arguments: {} })
+    app.callServerTool({ name: "get-symbols-end-of-day-data", arguments: {} })
       .then((result) => {
         const fetched = extractEndOfDaySymbolsData(result);
         if (fetched) setEodData(fetched);
@@ -661,7 +661,7 @@ function SymbolsCandlestickApp() {
     try {
       const args: Record<string, unknown> = { symbols: eodData.symbols, period: p };
       if (eodData.dateTo) args.tradeDate = eodData.dateTo;
-      const result = await app.callServerTool({ name: "get-symbols-period-data", arguments: args });
+      const result = await app.callServerTool({ name: "get-my-position-period-data", arguments: args });
       const fetched = extractEndOfDaySymbolsData(result);
       if (fetched) setSidebarItems(fetched.items);
     } catch (e) {
