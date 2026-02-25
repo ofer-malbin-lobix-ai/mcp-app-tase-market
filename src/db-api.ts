@@ -1,4 +1,5 @@
 import { prisma } from "./db.js";
+import { Prisma } from "./generated/prisma/client.js";
 import type {
   StockData,
   EndOfDayResult,
@@ -282,24 +283,75 @@ export async function fetchEndOfDaySymbols(
 export async function fetchEndOfDaySymbolsByDate(
   symbols: string[],
   tradeDate?: string,
+  period: HeatmapPeriod = "1D",
 ): Promise<EndOfDaySymbolsResponse> {
   const lastDate = await getLastTradeDate("STOCK");
   const date = tradeDate ? new Date(tradeDate) : lastDate;
-
-  const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
-    where: { symbol: { in: symbols }, tradeDate: date },
-    select: EOD_SELECT,
-    orderBy: { symbol: "asc" },
-  });
-
   const dateStr = toDateStr(date);
-  return {
-    symbols,
-    count: rows.length,
-    dateFrom: dateStr,
-    dateTo: dateStr,
-    items: rows.map(rowToStockData),
-  };
+
+  if (period === "1D") {
+    const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
+      where: { symbol: { in: symbols }, tradeDate: date },
+      select: EOD_SELECT,
+      orderBy: { symbol: "asc" },
+    });
+    return { symbols, count: rows.length, dateFrom: dateStr, dateTo: dateStr, items: rows.map(rowToStockData) };
+  }
+
+  // 1W / 1M / 3M: compute period change via LAG window function
+  const N = HEATMAP_PERIOD_OFFSETS[period];
+  const limit = N + 1;
+  const symbolParam = Prisma.join(symbols);
+
+  type SidebarRow = { symbol: string; closingPrice: number | null; marketCap: bigint | null; change: number | null };
+
+  const rows = await prisma.$queryRaw<SidebarRow[]>`
+    WITH recent_dates AS (
+      SELECT DISTINCT "tradeDate"
+      FROM "TaseSecuritiesEndOfDayTradingData"
+      WHERE "tradeDate" <= ${date}::date
+      ORDER BY "tradeDate" DESC
+      LIMIT ${limit}
+    ),
+    windowed AS (
+      SELECT
+        t.symbol,
+        t."tradeDate",
+        t."closingPrice",
+        t."marketCap",
+        LAG(t."closingPrice", ${N}) OVER (PARTITION BY t.symbol ORDER BY t."tradeDate") AS past_close
+      FROM "TaseSecuritiesEndOfDayTradingData" t
+      WHERE t."tradeDate" IN (SELECT "tradeDate" FROM recent_dates)
+        AND t.symbol IN (${symbolParam})
+    )
+    SELECT
+      symbol,
+      "closingPrice",
+      "marketCap",
+      CASE
+        WHEN past_close IS NOT NULL AND CAST(past_close AS FLOAT8) > 0
+        THEN CAST(("closingPrice" - past_close) / past_close * 100 AS FLOAT8)
+        ELSE NULL
+      END AS change
+    FROM windowed
+    WHERE "tradeDate" = ${date}::date
+    ORDER BY symbol
+  `;
+
+  const items: StockData[] = rows.map((r) => ({
+    tradeDate: dateStr, symbol: r.symbol,
+    change: r.change != null ? Number(r.change) : null,
+    closingPrice: r.closingPrice != null ? Number(r.closingPrice) : null,
+    marketCap: r.marketCap != null ? Number(r.marketCap) : null,
+    turnover: null, basePrice: null, openingPrice: null, high: null, low: null,
+    changeValue: null, volume: null, minContPhaseAmount: null, listedCapital: null,
+    marketType: null, rsi14: null, macd: null, macdSignal: null, macdHist: null,
+    cci20: null, mfi14: null, turnover10: null, sma20: null, sma50: null, sma200: null,
+    stddev20: null, upperBollingerBand20: null, lowerBollingerBand20: null, ez: null,
+    companyName: null, sector: null, subSector: null,
+  }));
+
+  return { symbols, count: items.length, dateFrom: dateStr, dateTo: dateStr, items };
 }
 
 // Raw row returned by aggregated SQL queries

@@ -250,6 +250,46 @@
   color: var(--color-text-primary, inherit);
   background: var(--color-background-secondary, #f5f5f5);
   border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sidebarPeriodBar {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.sidebarPeriodBtn {
+  padding: 0.15rem 0.3rem;
+  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-background-primary, #fff);
+  color: var(--color-text-secondary, #666);
+  font-family: inherit;
+  font-size: 0.68rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sidebarPeriodBtn:hover:not(:disabled) {
+  background: var(--color-background-tertiary, #eee);
+}
+
+.sidebarPeriodBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sidebarPeriodBtnActive {
+  background: var(--color-accent-primary, #2563eb);
+  color: white;
+  border-color: var(--color-accent-primary, #2563eb);
+}
+
+.sidebarPeriodBtnActive:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .sidebarScroll {

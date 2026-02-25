@@ -31,6 +31,17 @@ const TIMEFRAMES: { value: CandlestickTimeframe; label: string }[] = [
   { value: "3M", label: "Quarter" },
 ];
 
+// ─── Sidebar period ──────────────────────────────────────────────────
+
+type HeatmapPeriod = "1D" | "1W" | "1M" | "3M";
+
+const SIDEBAR_PERIODS: { value: HeatmapPeriod; label: string }[] = [
+  { value: "1D", label: "1D" },
+  { value: "1W", label: "1W" },
+  { value: "1M", label: "1M" },
+  { value: "3M", label: "3M" },
+];
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 interface StockData {
@@ -138,12 +149,29 @@ interface SidebarProps {
   symbols: StockData[];
   selectedSymbol: string | null;
   onSelectSymbol: (symbol: string) => void;
+  period: HeatmapPeriod;
+  onPeriodChange: (period: HeatmapPeriod) => void;
+  isFetchingPeriod: boolean;
 }
 
-function Sidebar({ symbols, selectedSymbol, onSelectSymbol }: SidebarProps) {
+function Sidebar({ symbols, selectedSymbol, onSelectSymbol, period, onPeriodChange, isFetchingPeriod }: SidebarProps) {
   return (
     <div className={styles.sidebar}>
-      <div className={styles.sidebarHeader}>Symbols ({symbols.length})</div>
+      <div className={styles.sidebarHeader}>
+        <span>Symbols ({symbols.length})</span>
+        <div className={styles.sidebarPeriodBar}>
+          {SIDEBAR_PERIODS.map((p) => (
+            <button
+              key={p.value}
+              className={`${styles.sidebarPeriodBtn} ${period === p.value ? styles.sidebarPeriodBtnActive : ""}`}
+              onClick={() => onPeriodChange(p.value)}
+              disabled={isFetchingPeriod}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className={styles.sidebarScroll}>
         <table className={styles.symbolTable}>
           <thead>
@@ -187,9 +215,10 @@ function Sidebar({ symbols, selectedSymbol, onSelectSymbol }: SidebarProps) {
 interface ChartPanelProps {
   data: CandlestickWidgetData;
   isFullscreen: boolean;
+  timeframe: CandlestickTimeframe;
 }
 
-function ChartPanel({ data, isFullscreen }: ChartPanelProps) {
+function ChartPanel({ data, isFullscreen, timeframe }: ChartPanelProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState<{ width: number; height: number }>({ width: 600, height: 400 });
   const [legendValues, setLegendValues] = useState<LegendValues | null>(null);
@@ -321,25 +350,25 @@ function ChartPanel({ data, isFullscreen }: ChartPanelProps) {
           <input type="checkbox" checked={showVolume} onChange={(e) => setShowVolume(e.target.checked)} />
           Volume
         </label>
-        {sma20Data.length > 0 && (
+        {timeframe === "1D" && sma20Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma20} onChange={(e) => setShowSma20(e.target.checked)} />
             SMA20
           </label>
         )}
-        {sma50Data.length > 0 && (
+        {timeframe === "1D" && sma50Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma50} onChange={(e) => setShowSma50(e.target.checked)} />
             SMA50
           </label>
         )}
-        {sma200Data.length > 0 && (
+        {timeframe === "1D" && sma200Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma200} onChange={(e) => setShowSma200(e.target.checked)} />
             SMA200
           </label>
         )}
-        {ezData.length > 0 && (
+        {timeframe === "1D" && ezData.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showEz} onChange={(e) => setShowEz(e.target.checked)} />
             EZ
@@ -417,16 +446,16 @@ function ChartPanel({ data, isFullscreen }: ChartPanelProps) {
               reactive
             />
           )}
-          {showSma20 && sma20Data.length > 0 && (
+          {timeframe === "1D" && showSma20 && sma20Data.length > 0 && (
             <LineSeries data={sma20Data} options={{ color: "#3b82f6", lineWidth: 2 }} reactive />
           )}
-          {showSma50 && sma50Data.length > 0 && (
+          {timeframe === "1D" && showSma50 && sma50Data.length > 0 && (
             <LineSeries data={sma50Data} options={{ color: "#8b5cf6", lineWidth: 2 }} reactive />
           )}
-          {showSma200 && sma200Data.length > 0 && (
+          {timeframe === "1D" && showSma200 && sma200Data.length > 0 && (
             <LineSeries data={sma200Data} options={{ color: "#ec4899", lineWidth: 2 }} reactive />
           )}
-          {showEz && ezData.length > 0 && (
+          {timeframe === "1D" && showEz && ezData.length > 0 && (
             <LineSeries data={ezData} options={{ color: "#f59e0b", lineWidth: 2, priceScaleId: "ez" }} reactive />
           )}
           <TimeScale>
@@ -451,6 +480,9 @@ function SymbolsCandlestickApp() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
+  const [sidebarPeriod, setSidebarPeriod] = useState<HeatmapPeriod>("1D");
+  const [sidebarItems, setSidebarItems] = useState<StockData[] | null>(null);
+  const [isFetchingPeriod, setIsFetchingPeriod] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
 
@@ -532,18 +564,25 @@ function SymbolsCandlestickApp() {
     }
   }, [app, displayMode]);
 
+  // Reset sidebar period when new eodData arrives
+  useEffect(() => {
+    setSidebarItems(null);
+    setSidebarPeriod("1D");
+  }, [eodData]);
+
   // Deduplicate items to get one row per symbol (latest trade date)
   const sidebarSymbols = useMemo(() => {
-    if (!eodData?.items) return [];
+    const items = sidebarItems ?? eodData?.items;
+    if (!items) return [];
     const map = new Map<string, StockData>();
-    for (const item of eodData.items) {
+    for (const item of items) {
       const existing = map.get(item.symbol);
       if (!existing || item.tradeDate > existing.tradeDate) {
         map.set(item.symbol, item);
       }
     }
     return Array.from(map.values());
-  }, [eodData?.items]);
+  }, [sidebarItems, eodData?.items]);
 
   // Fetch candlestick data when a symbol is selected or timeframe changes
   const handleSelectSymbol = useCallback(async (symbol: string, tf?: CandlestickTimeframe, dateFrom?: string, dateTo?: string) => {
@@ -601,6 +640,28 @@ function SymbolsCandlestickApp() {
       setIsRefreshing(false);
     }
   }, [app, selectedSymbol, selectedTimeframe, selectedDateFrom, selectedDateTo]);
+
+  const handleSidebarPeriodChange = useCallback(async (p: HeatmapPeriod) => {
+    setSidebarPeriod(p);
+    if (!app || typeof app.callServerTool !== "function") return;
+    if (!eodData?.symbols?.length) return;
+    if (p === "1D") {
+      setSidebarItems(null);
+      return;
+    }
+    setIsFetchingPeriod(true);
+    try {
+      const args: Record<string, unknown> = { symbols: eodData.symbols, period: p };
+      if (eodData.dateTo) args.tradeDate = eodData.dateTo;
+      const result = await app.callServerTool({ name: "get-symbols-period-data", arguments: args });
+      const fetched = extractEndOfDaySymbolsData(result);
+      if (fetched) setSidebarItems(fetched.items);
+    } catch (e) {
+      console.error("Failed to fetch period data:", e);
+    } finally {
+      setIsFetchingPeriod(false);
+    }
+  }, [app, eodData]);
 
   // Auto-select first symbol when sidebar data loads
   useEffect(() => {
@@ -693,7 +754,7 @@ function SymbolsCandlestickApp() {
             {isChartLoading ? (
               <div className={styles.chartLoading}>Loading chart for {selectedSymbol}...</div>
             ) : chartData ? (
-              <ChartPanel data={chartData} isFullscreen={displayMode === "fullscreen"} />
+              <ChartPanel data={chartData} isFullscreen={displayMode === "fullscreen"} timeframe={selectedTimeframe} />
             ) : (
               <div className={styles.noChart}>Select a symbol to view its candlestick chart</div>
             )}
@@ -702,6 +763,9 @@ function SymbolsCandlestickApp() {
             symbols={sidebarSymbols}
             selectedSymbol={selectedSymbol}
             onSelectSymbol={handleSelectSymbol}
+            period={sidebarPeriod}
+            onPeriodChange={handleSidebarPeriodChange}
+            isFetchingPeriod={isFetchingPeriod}
           />
         </div>
       )}

@@ -104,7 +104,7 @@ export interface TaseDataProviders {
   fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
   fetchUptrendSymbols(marketType?: string, tradeDate?: string): Promise<UptrendSymbolsResponse>;
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
-  fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string): Promise<EndOfDaySymbolsResponse>;
+  fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string, period?: HeatmapPeriod): Promise<EndOfDaySymbolsResponse>;
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe): Promise<CandlestickResponse>;
   fetchSectorHeatmap(marketType?: string, tradeDate?: string, period?: HeatmapPeriod): Promise<SectorHeatmapResponse>;
 }

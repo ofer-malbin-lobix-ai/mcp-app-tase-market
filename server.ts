@@ -186,7 +186,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v8.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v8.html";
-  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v9.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v10.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v8.html";
   const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v8.html";
 
@@ -390,6 +390,30 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
             }),
           },
         ],
+      };
+    },
+  );
+
+  // Data-only tool: Get symbols sidebar data with period change
+  registerAppTool(server,
+    "get-symbols-period-data",
+    {
+      title: "Get Symbols Period Data",
+      description: "Returns last price and period change % for a list of symbols. Used by the multi-symbol candlestick widget sidebar.",
+      inputSchema: {
+        symbols: z.array(z.string()).describe("List of stock symbols"),
+        tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
+        period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
+      },
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchEndOfDaySymbolsByDate(args.symbols, args.tradeDate, args.period as HeatmapPeriod | undefined);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+        }],
       };
     },
   );
