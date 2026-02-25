@@ -507,7 +507,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
           />
           Volume
         </label>
-        {selectedTimeframe === "1D" && sma20Data.length > 0 && (
+        {sma20Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"
@@ -517,7 +517,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
             SMA20
           </label>
         )}
-        {selectedTimeframe === "1D" && sma50Data.length > 0 && (
+        {sma50Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"
@@ -527,7 +527,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
             SMA50
           </label>
         )}
-        {selectedTimeframe === "1D" && sma200Data.length > 0 && (
+        {sma200Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"
@@ -537,7 +537,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
             SMA200
           </label>
         )}
-        {selectedTimeframe === "1D" && ezData.length > 0 && (
+        {ezData.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"

@@ -427,10 +427,10 @@ async function fetchCandlestickAggregated(
         MIN("low")                                                    AS "low",
         MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
         SUM("volume")::bigint                                         AS "volume",
-        MAX(CASE WHEN rn_desc = 1 THEN "sma20"   END)                AS "sma20",
-        MAX(CASE WHEN rn_desc = 1 THEN "sma50"   END)                AS "sma50",
-        MAX(CASE WHEN rn_desc = 1 THEN "sma200"  END)                AS "sma200",
-        MAX(CASE WHEN rn_desc = 1 THEN "ez"      END)                AS "ez"
+        AVG("sma20")                                                  AS "sma20",
+        AVG("sma50")                                                  AS "sma50",
+        AVG("sma200")                                                 AS "sma200",
+        AVG("ez")                                                     AS "ez"
       FROM ranked
       GROUP BY bucket
       ORDER BY bucket
@@ -457,10 +457,10 @@ async function fetchCandlestickAggregated(
       MIN("low")                                                    AS "low",
       MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
       SUM("volume")::bigint                                         AS "volume",
-      MAX(CASE WHEN rn_desc = 1 THEN "sma20"   END)                AS "sma20",
-      MAX(CASE WHEN rn_desc = 1 THEN "sma50"   END)                AS "sma50",
-      MAX(CASE WHEN rn_desc = 1 THEN "sma200"  END)                AS "sma200",
-      MAX(CASE WHEN rn_desc = 1 THEN "ez"      END)                AS "ez"
+      AVG("sma20")                                                  AS "sma20",
+      AVG("sma50")                                                  AS "sma50",
+      AVG("sma200")                                                 AS "sma200",
+      AVG("ez")                                                     AS "ez"
     FROM d
     GROUP BY period
     ORDER BY period

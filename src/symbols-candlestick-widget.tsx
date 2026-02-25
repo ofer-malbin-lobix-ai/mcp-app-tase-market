@@ -350,25 +350,25 @@ function ChartPanel({ data, isFullscreen, timeframe }: ChartPanelProps) {
           <input type="checkbox" checked={showVolume} onChange={(e) => setShowVolume(e.target.checked)} />
           Volume
         </label>
-        {timeframe === "1D" && sma20Data.length > 0 && (
+        {sma20Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma20} onChange={(e) => setShowSma20(e.target.checked)} />
             SMA20
           </label>
         )}
-        {timeframe === "1D" && sma50Data.length > 0 && (
+        {sma50Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma50} onChange={(e) => setShowSma50(e.target.checked)} />
             SMA50
           </label>
         )}
-        {timeframe === "1D" && sma200Data.length > 0 && (
+        {sma200Data.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showSma200} onChange={(e) => setShowSma200(e.target.checked)} />
             SMA200
           </label>
         )}
-        {timeframe === "1D" && ezData.length > 0 && (
+        {ezData.length > 0 && (
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showEz} onChange={(e) => setShowEz(e.target.checked)} />
             EZ
@@ -446,16 +446,16 @@ function ChartPanel({ data, isFullscreen, timeframe }: ChartPanelProps) {
               reactive
             />
           )}
-          {timeframe === "1D" && showSma20 && sma20Data.length > 0 && (
+          {showSma20 && sma20Data.length > 0 && (
             <LineSeries data={sma20Data} options={{ color: "#3b82f6", lineWidth: 2 }} reactive />
           )}
-          {timeframe === "1D" && showSma50 && sma50Data.length > 0 && (
+          {showSma50 && sma50Data.length > 0 && (
             <LineSeries data={sma50Data} options={{ color: "#8b5cf6", lineWidth: 2 }} reactive />
           )}
-          {timeframe === "1D" && showSma200 && sma200Data.length > 0 && (
+          {showSma200 && sma200Data.length > 0 && (
             <LineSeries data={sma200Data} options={{ color: "#ec4899", lineWidth: 2 }} reactive />
           )}
-          {timeframe === "1D" && showEz && ezData.length > 0 && (
+          {showEz && ezData.length > 0 && (
             <LineSeries data={ezData} options={{ color: "#f59e0b", lineWidth: 2, priceScaleId: "ez" }} reactive />
           )}
           <TimeScale>
