@@ -303,7 +303,7 @@ export async function fetchEndOfDaySymbolsByDate(
   const limit = N + 1;
   const symbolParam = Prisma.join(symbols);
 
-  type SidebarRow = { symbol: string; closingPrice: number | null; marketCap: bigint | null; change: number | null };
+  type SidebarRow = { symbol: string; closingprice: number | null; marketcap: bigint | null; change: number | null };
 
   const rows = await prisma.$queryRaw<SidebarRow[]>`
     WITH recent_dates AS (
@@ -326,8 +326,8 @@ export async function fetchEndOfDaySymbolsByDate(
     )
     SELECT
       symbol,
-      "closingPrice",
-      "marketCap",
+      CAST("closingPrice" AS FLOAT8) AS closingprice,
+      CAST("marketCap" AS BIGINT) AS marketcap,
       CASE
         WHEN past_close IS NOT NULL AND CAST(past_close AS FLOAT8) > 0
         THEN CAST(("closingPrice" - past_close) / past_close * 100 AS FLOAT8)
@@ -341,8 +341,8 @@ export async function fetchEndOfDaySymbolsByDate(
   const items: StockData[] = rows.map((r) => ({
     tradeDate: dateStr, symbol: r.symbol,
     change: r.change != null ? Number(r.change) : null,
-    closingPrice: r.closingPrice != null ? Number(r.closingPrice) : null,
-    marketCap: r.marketCap != null ? Number(r.marketCap) : null,
+    closingPrice: r.closingprice != null ? Number(r.closingprice) : null,
+    marketCap: r.marketcap != null ? Number(r.marketcap) : null,
     turnover: null, basePrice: null, openingPrice: null, high: null, low: null,
     changeValue: null, volume: null, minContPhaseAmount: null, listedCapital: null,
     marketType: null, rsi14: null, macd: null, macdSignal: null, macdHist: null,
@@ -512,10 +512,10 @@ const HEATMAP_PERIOD_OFFSETS: Record<HeatmapPeriod, number> = {
 
 type PeriodRow = {
   symbol: string;
-  marketCap: bigint | null;
-  companyName: string | null;
-  companySector: string;
-  companySubSector: string | null;
+  marketcap: bigint | null;
+  companyname: string | null;
+  companysector: string;
+  companysubsector: string | null;
   change: number | null;
 };
 
@@ -585,10 +585,10 @@ export async function fetchSectorHeatmap(
     )
     SELECT
       symbol,
-      "marketCap",
-      "companyName",
-      "companySector",
-      "companySubSector",
+      CAST("marketCap" AS BIGINT) AS marketcap,
+      "companyName" AS companyname,
+      "companySector" AS companysector,
+      "companySubSector" AS companysubsector,
       CASE
         WHEN past_close IS NOT NULL AND CAST(past_close AS FLOAT8) > 0
         THEN CAST(("closingPrice" - past_close) / past_close * 100 AS FLOAT8)
@@ -602,11 +602,11 @@ export async function fetchSectorHeatmap(
 
   const items: SymbolHeatmapItem[] = rows.map((r) => ({
     symbol: r.symbol,
-    companyName: r.companyName,
-    marketCap: r.marketCap != null ? Number(r.marketCap) : null,
+    companyName: r.companyname,
+    marketCap: r.marketcap != null ? Number(r.marketcap) : null,
     change: r.change != null ? Number(r.change) : null,
-    sector: r.companySector,
-    subSector: r.companySubSector,
+    sector: r.companysector,
+    subSector: r.companysubsector,
   }));
 
   return { tradeDate: dateStr, marketType, period, count: items.length, items };
