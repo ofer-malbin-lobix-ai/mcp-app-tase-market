@@ -184,7 +184,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v1.html";
   const endOfDayResourceUri = "ui://tase-end-of-day/market-end-of-day-widget-v1.html";
   const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v8.html";
-  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
+  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v1.html";
   const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v8.html";
   const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v10.html";
@@ -267,10 +267,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data-only tool: Get Uptrend Symbols
   registerAppTool(server,
-    "get-uptrend-symbols-data",
+    "get-market-uptrend-symbols-data",
     {
-      title: "Get Uptrend Symbols Data",
-      description: "Returns TASE symbols currently in uptrend with EZ values (% distance from SMA20). Data only - use show-uptrend-symbols-widget for visualization.",
+      title: "Get Market Uptrend Symbols Data",
+      description: "Returns TASE symbols currently in uptrend with EZ values (% distance from SMA20). Data only - use show-market-uptrend-symbols-widget for visualization.",
       inputSchema: getUptrendSymbolsSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -282,9 +282,9 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // UI tool: Show Uptrend Symbols list
   registerAppTool(server,
-    "show-uptrend-symbols-widget",
+    "show-market-uptrend-symbols-widget",
     {
-      title: "Show Uptrend Symbols",
+      title: "Show Market Uptrend Symbols",
       description: "Displays TASE symbols currently in uptrend with EZ values (% distance from SMA20) as an interactive list.",
       inputSchema: getUptrendSymbolsSchema,
       _meta: { ui: { resourceUri: uptrendSymbolsResourceUri } },
@@ -611,7 +611,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     uptrendSymbolsResourceUri, uptrendSymbolsResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "uptrend-symbols-widget.html"), "utf-8");
+      const html = await fs.readFile(path.join(DIST_DIR, "market-uptrend-symbols-widget.html"), "utf-8");
       return { contents: [{ uri: uptrendSymbolsResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );

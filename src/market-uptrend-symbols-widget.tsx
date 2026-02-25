@@ -7,7 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import styles from "./uptrend-symbols-widget.module.css";
+import styles from "./market-uptrend-symbols-widget.module.css";
 
 interface UptrendSymbolItem {
   symbol: string;
@@ -85,7 +85,7 @@ function UptrendSymbolsWidget() {
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
     try {
-      app.callServerTool({ name: "get-uptrend-symbols-data", arguments: toolInput })
+      app.callServerTool({ name: "get-market-uptrend-symbols-data", arguments: toolInput })
         .then((result) => {
           const fetchedData = extractUptrendSymbolsData(result);
           if (fetchedData) {
@@ -169,7 +169,7 @@ function UptrendSymbolsWidgetInner({ app, data, setData, hostContext }: UptrendS
       const args: Record<string, string> = {};
       if (tradeDate) args.tradeDate = tradeDate;
       const result = await app.callServerTool({
-        name: "get-uptrend-symbols-data",
+        name: "get-market-uptrend-symbols-data",
         arguments: args,
       });
       const uptrendSymbolsData = extractUptrendSymbolsData(result);

@@ -22,11 +22,11 @@
     }
   },
   "scripts": {
-    "build": "tsc --noEmit && cross-env INPUT=market-end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=uptrend-symbols-widget.html vite build && cross-env INPUT=symbols-end-of-day-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-end-of-day-landing-widget.html vite build && cross-env INPUT=market-sector-heatmap-widget.html vite build && cross-env INPUT=my-position-table-widget.html vite build",
+    "build": "tsc --noEmit && cross-env INPUT=market-end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=market-uptrend-symbols-widget.html vite build && cross-env INPUT=symbols-end-of-day-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-end-of-day-landing-widget.html vite build && cross-env INPUT=market-sector-heatmap-widget.html vite build && cross-env INPUT=my-position-table-widget.html vite build",
     "build:dashboard": "cross-env INPUT=market-dashboard-widget.html vite build",
     "build:market-end-of-day": "cross-env INPUT=market-end-of-day-widget.html vite build",
     "build:spirit": "cross-env INPUT=market-spirit-widget.html vite build",
-    "build:uptrend": "cross-env INPUT=uptrend-symbols-widget.html vite build",
+    "build:market-uptrend-symbols": "cross-env INPUT=market-uptrend-symbols-widget.html vite build",
     "build:symbols-end-of-day": "cross-env INPUT=symbols-end-of-day-widget.html vite build",
     "build:candlestick": "cross-env INPUT=symbol-candlestick-widget.html vite build",
     "build:symbols-candlestick": "cross-env INPUT=symbols-candlestick-widget.html vite build",
