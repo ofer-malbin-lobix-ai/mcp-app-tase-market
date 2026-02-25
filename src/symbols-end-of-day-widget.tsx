@@ -9,7 +9,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "./components/DataTable";
-import styles from "./end-of-day-symbols-widget.module.css";
+import styles from "./symbols-end-of-day-widget.module.css";
 
 interface StockData {
   tradeDate: string;
@@ -67,7 +67,7 @@ function extractEndOfDaySymbolsData(callToolResult: CallToolResult | null | unde
       console.info("structuredContent has no items array, falling back");
     }
 
-    // Fallback to text content (from get-end-of-day-symbols-data or app.callServerTool)
+    // Fallback to text content (from get-symbols-end-of-day-data or app.callServerTool)
     const textContent = callToolResult.content?.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
       console.error("No text content found in result");
@@ -167,7 +167,7 @@ function EndOfDaySymbolsApp() {
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
     try {
-      app.callServerTool({ name: "get-end-of-day-symbols-data", arguments: {} })
+      app.callServerTool({ name: "get-symbols-end-of-day-data", arguments: {} })
         .then((result) => {
           const fetchedData = extractEndOfDaySymbolsData(result);
           if (fetchedData) {
@@ -254,13 +254,13 @@ function EndOfDaySymbolsAppInner({
     setIsRefreshing(true);
     setRefreshError(null);
     try {
-      console.info("Calling get-end-of-day-symbols-data tool...", { symbols, dateFrom, dateTo });
+      console.info("Calling get-symbols-end-of-day-data tool...", { symbols, dateFrom, dateTo });
       const args: Record<string, unknown> = {};
       if (symbols && symbols.length > 0) args.symbols = symbols;
       if (dateFrom) args.dateFrom = dateFrom;
       if (dateTo) args.dateTo = dateTo;
       const result = await app.callServerTool({
-        name: "get-end-of-day-symbols-data",
+        name: "get-symbols-end-of-day-data",
         arguments: args,
       });
       const data = extractEndOfDaySymbolsData(result);

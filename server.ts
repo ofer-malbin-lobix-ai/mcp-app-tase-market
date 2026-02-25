@@ -185,7 +185,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const endOfDayResourceUri = "ui://tase-end-of-day/end-of-day-widget-v8.html";
   const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v8.html";
   const uptrendSymbolsResourceUri = "ui://tase-end-of-day/uptrend-symbols-widget-v8.html";
-  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/end-of-day-symbols-widget-v8.html";
+  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v8.html";
   const symbolsCandlestickResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v10.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v8.html";
@@ -304,10 +304,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data-only tool: Get End of Day Symbols data
   registerAppTool(server,
-    "get-end-of-day-symbols-data",
+    "get-symbols-end-of-day-data",
     {
-      title: "Get End of Day Symbols Data",
-      description: "Returns TASE end of day data for specific symbols across a date range. Data only - use show-end-of-day-symbols-widget for visualization.",
+      title: "Get Symbols End of Day Data",
+      description: "Returns TASE end of day data for specific symbols across a date range. Data only - use show-symbols-end-of-day-widget for visualization.",
       inputSchema: getEndOfDaySymbolsSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -319,9 +319,9 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // UI tool: Show End of Day Symbols data with interactive table
   registerAppTool(server,
-    "show-end-of-day-symbols-widget",
+    "show-symbols-end-of-day-widget",
     {
-      title: "Show End of Day Symbols",
+      title: "Show Symbols End of Day",
       description: "Displays TASE end of day data for specific symbols across a date range with interactive table visualization.",
       inputSchema: getEndOfDaySymbolsSchema,
       _meta: { ui: { resourceUri: endOfDaySymbolsResourceUri } },
@@ -620,7 +620,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "end-of-day-symbols-widget.html"), "utf-8");
+      const html = await fs.readFile(path.join(DIST_DIR, "symbols-end-of-day-widget.html"), "utf-8");
       return { contents: [{ uri: endOfDaySymbolsResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
