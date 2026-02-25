@@ -218,7 +218,6 @@ function EndOfDaySymbolsAppInner({
   setData,
   hostContext,
 }: EndOfDaySymbolsAppInnerProps) {
-  const [symbolsInput, setSymbolsInput] = useState<string>("");
   const [selectedDateFrom, setSelectedDateFrom] = useState<string>("");
   const [selectedDateTo, setSelectedDateTo] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -245,10 +244,6 @@ function EndOfDaySymbolsAppInner({
       setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
     }
   }, [hostContext?.displayMode]);
-
-  const parseSymbols = useCallback((input: string): string[] => {
-    return input.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
-  }, []);
 
   const handleRefresh = useCallback(async (symbols?: string[], dateFrom?: string, dateTo?: string) => {
     setIsRefreshing(true);
@@ -290,16 +285,9 @@ function EndOfDaySymbolsAppInner({
     }
   }, [data?.dateTo, selectedDateTo]);
 
-  useEffect(() => {
-    if (data?.symbols && data.symbols.length > 0 && !symbolsInput) {
-      setSymbolsInput(data.symbols.join(", "));
-    }
-  }, [data?.symbols, symbolsInput]);
-
   const handleRefreshClick = useCallback(() => {
-    const symbols = parseSymbols(symbolsInput);
-    handleRefresh(symbols.length > 0 ? symbols : undefined, selectedDateFrom || undefined, selectedDateTo || undefined);
-  }, [symbolsInput, selectedDateFrom, selectedDateTo, handleRefresh, parseSymbols]);
+    handleRefresh(data?.symbols?.length ? data.symbols : undefined, selectedDateFrom || undefined, selectedDateTo || undefined);
+  }, [data?.symbols, selectedDateFrom, selectedDateTo, handleRefresh]);
 
   // CRITICAL: Memoize columns to prevent infinite re-renders
   const columns = useMemo(
@@ -597,18 +585,6 @@ function EndOfDaySymbolsAppInner({
       )}
 
       <div className={styles.controls}>
-        <label className={styles.dateLabel}>
-          Symbols:
-          <input
-            type="text"
-            className={styles.dateInput}
-            value={symbolsInput}
-            onChange={(e) => setSymbolsInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleRefreshClick(); }}
-            placeholder="e.g. TEVA, LUMI, BEZQ"
-            style={{ minWidth: "200px" }}
-          />
-        </label>
         <label className={styles.dateLabel}>
           From:
           <input
