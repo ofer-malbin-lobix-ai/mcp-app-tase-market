@@ -502,6 +502,31 @@ function EndOfDaySymbolsAppInner({
   // CRITICAL: Memoize rows to prevent infinite re-renders
   const rows = useMemo(() => data?.items ?? [], [data?.items]);
 
+  const initialColumnVisibility = useMemo<Record<string, boolean>>(() => ({
+    marketType: false,
+    openingPrice: false,
+    high: false,
+    low: false,
+    basePrice: false,
+    turnover10: false,
+    marketCap: false,
+    listedCapital: false,
+    minContPhaseAmount: false,
+    rsi14: false,
+    mfi14: false,
+    cci20: false,
+    macd: false,
+    macdSignal: false,
+    macdHist: false,
+    sma20: false,
+    sma50: false,
+    sma200: false,
+    upperBollingerBand20: false,
+    lowerBollingerBand20: false,
+    stddev20: false,
+    ez: false,
+  }), []);
+
   // Track filtered rows from DataTable for summary
   const [filteredRows, setFilteredRows] = useState<StockData[]>([]);
 
@@ -626,6 +651,7 @@ function EndOfDaySymbolsAppInner({
           columns={columns}
           initialPageSize={50}
           storageKey="tase-symbols-column-visibility"
+          initialColumnVisibility={initialColumnVisibility}
           onFilteredRowsChange={handleFilteredRowsChange}
         />
       ) : null}
