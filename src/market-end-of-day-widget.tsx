@@ -522,6 +522,34 @@ function EndOfDayAppInner({
   // CRITICAL: Memoize rows to prevent infinite re-renders
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
+  // Default column visibility: show only the most important columns.
+  // Users can reveal any hidden column via the Columns picker.
+  const initialColumnVisibility = useMemo<Record<string, boolean>>(() => ({
+    tradeDate: false,
+    subSector: false,
+    marketType: false,
+    openingPrice: false,
+    high: false,
+    low: false,
+    basePrice: false,
+    turnover10: false,
+    listedCapital: false,
+    minContPhaseAmount: false,
+    rsi14: false,
+    mfi14: false,
+    cci20: false,
+    macd: false,
+    macdSignal: false,
+    macdHist: false,
+    sma20: false,
+    sma50: false,
+    sma200: false,
+    upperBollingerBand20: false,
+    lowerBollingerBand20: false,
+    stddev20: false,
+    ez: false,
+  }), []);
+
   // Track filtered rows from DataTable for summary
   const [filteredRows, setFilteredRows] = useState<StockData[]>([]);
 
@@ -650,6 +678,7 @@ function EndOfDayAppInner({
           columns={columns}
           initialPageSize={50}
           storageKey="tase-column-visibility"
+          initialColumnVisibility={initialColumnVisibility}
           onFilteredRowsChange={handleFilteredRowsChange}
         />
       ) : null}

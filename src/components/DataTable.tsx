@@ -66,6 +66,7 @@ interface DataTableProps<T> {
   columns: ColumnDef<T, any>[];
   initialPageSize?: number;
   storageKey?: string;
+  initialColumnVisibility?: VisibilityState;
   onFilteredRowsChange?: (rows: T[]) => void;
 }
 
@@ -74,6 +75,7 @@ export function DataTable<T>({
   columns,
   initialPageSize = 25,
   storageKey = "table-column-visibility",
+  initialColumnVisibility,
   onFilteredRowsChange,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -84,10 +86,15 @@ export function DataTable<T>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
-      return stored ? JSON.parse(stored) : {};
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // If user has made explicit column customizations, honour them
+        if (Object.keys(parsed).length > 0) return parsed;
+      }
     } catch {
-      return {};
+      // ignore
     }
+    return initialColumnVisibility ?? {};
   });
 
   // Save column visibility to localStorage when it changes
