@@ -1,17 +1,25 @@
 /**
- * TASE MCP Widget Tests via ChatGPT Web (Puppeteer)
+ * TASE MCP Widget Tests
  *
- * Prerequisites:
+ * Supports two platforms:
+ *   chatgpt        — automates ChatGPT via Puppeteer (requires Chrome with remote debugging)
+ *   claude-desktop — automates Claude Desktop via AppleScript + screencapture
+ *
+ * Prerequisites (chatgpt):
  *   - Chrome running with: /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
  *       --remote-debugging-port=9226 --user-data-dir=/Users/ofermalbin/.claude/puppeteer-profile
  *   - OR run: npm run test:start-chrome
  *
+ * Prerequisites (claude-desktop):
+ *   - Claude Desktop running with eod-dev MCP server connected
+ *   - Terminal must have Accessibility permission (System Settings → Privacy & Security → Accessibility)
+ *
  * Usage:
- *   node tests/widget-tests.mjs [test-name] [--mcp <name>]
+ *   node tests/widget-tests.mjs [test-name] [--mcp <name>] [--platform <platform>]
  *
  * Options:
- *   --mcp <name>   MCP app name to use in messages (default: "eod prod")
- *                  e.g. --mcp eod-dev
+ *   --mcp <name>          MCP app name for ChatGPT messages (default: "eod prod")
+ *   --platform <name>     "chatgpt" (default) or "claude-desktop"
  *
  * Available tests:
  *   market-end-of-day       — show-market-end-of-day-widget
@@ -19,12 +27,14 @@
  *   market-sector-heatmap   — show-market-sector-heatmap-widget + drill-down + back
  *   my-position-candlestick — show-my-position-candlestick-widget + symbol switch + period
  *   my-position-end-of-day  — show-my-position-end-of-day-widget + sort + filters
+ *   my-positions-manager    — show-my-positions-manager-widget + add/edit/delete
  *   all                     — run all tests sequentially
  */
 
 import puppeteer from 'puppeteer-core';
 import { setTimeout as sleep } from 'timers/promises';
-import { mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
+import { execSync } from 'child_process';
 
 const CHROME_URL = 'http://localhost:9226';
 const SCREENSHOT_DIR = '/tmp/tase-widget-tests';
@@ -33,12 +43,22 @@ mkdirSync(SCREENSHOT_DIR, { recursive: true });
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
+
 const mcpFlagIdx = args.indexOf('--mcp');
 const MCP_NAME = mcpFlagIdx !== -1 ? args[mcpFlagIdx + 1] : 'eod prod';
-const testArg = args.filter((_, i) => i !== mcpFlagIdx && i !== mcpFlagIdx + 1)[0] || 'all';
-console.log(`Using MCP: @${MCP_NAME}`);
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+const platformFlagIdx = args.indexOf('--platform');
+const PLATFORM = platformFlagIdx !== -1 ? args[platformFlagIdx + 1] : 'chatgpt';
+
+const testArg = args.filter((_, i) =>
+  (mcpFlagIdx === -1 || (i !== mcpFlagIdx && i !== mcpFlagIdx + 1)) &&
+  (platformFlagIdx === -1 || (i !== platformFlagIdx && i !== platformFlagIdx + 1))
+)[0] || 'all';
+
+console.log(`Platform: ${PLATFORM}`);
+if (PLATFORM === 'chatgpt') console.log(`Using MCP: @${MCP_NAME}`);
+
+// ─── ChatGPT helpers (Puppeteer) ─────────────────────────────────────────────
 
 async function connectBrowser() {
   const browser = await puppeteer.connect({ browserURL: CHROME_URL });
@@ -94,7 +114,46 @@ async function clickButton(frame, label) {
   }, label);
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────────────
+// ─── Claude Desktop helpers (AppleScript) ────────────────────────────────────
+
+function runAppleScript(script) {
+  const tmpFile = '/tmp/claude-test.applescript';
+  writeFileSync(tmpFile, script);
+  return execSync(`osascript ${tmpFile}`, { stdio: 'pipe' }).toString().trim();
+}
+
+async function newChatDesktop() {
+  runAppleScript('tell application "Claude" to activate');
+  await sleep(1500);
+  runAppleScript(`tell application "System Events"
+  tell process "Claude"
+    keystroke "n" using command down
+  end tell
+end tell`);
+  await sleep(2000);
+}
+
+async function sendMessageDesktop(message) {
+  const escaped = message.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  runAppleScript(`tell application "System Events"
+  tell process "Claude"
+    keystroke "${escaped}"
+    delay 0.5
+    key code 36
+  end tell
+end tell`);
+}
+
+async function screenshotDesktop(name) {
+  runAppleScript('tell application "Claude" to activate');
+  await sleep(500);
+  const path = `${SCREENSHOT_DIR}/${name}.png`;
+  execSync(`screencapture -x ${path}`);
+  console.log(`  📸 ${path}`);
+  return path;
+}
+
+// ─── ChatGPT Tests ────────────────────────────────────────────────────────────
 
 async function testMarketEndOfDay(page) {
   console.log('\n🧪 Test: market-end-of-day');
@@ -137,7 +196,6 @@ async function testMarketSectorHeatmap(page) {
   const frame = await waitForWidgetFrame(page, { selector: 'svg rect[fill]' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
 
-  // Click largest rect (Technology sector)
   const rects = await frame.$$('svg rect[fill]');
   let largestRect = null, maxArea = 0;
   for (const r of rects) {
@@ -150,7 +208,6 @@ async function testMarketSectorHeatmap(page) {
     await sleep(5000);
     await screenshot(page, 'market-sector-heatmap-subsectors');
 
-    // Click back
     const backText = await frame.evaluate(() => {
       const btn = Array.from(document.querySelectorAll('button')).find(b => /back|←/i.test(b.textContent));
       if (btn) { btn.click(); return btn.textContent.trim(); }
@@ -174,7 +231,6 @@ async function testMyPositionCandlestick(page) {
   const frame = await waitForWidgetFrame(page, { selector: 'table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
 
-  // Click NICE row
   const nicePeriod = await frame.evaluate(() => {
     const row = Array.from(document.querySelectorAll('tr')).find(r => r.textContent.includes('NICE'));
     if (row) { row.click(); return true; }
@@ -184,7 +240,6 @@ async function testMyPositionCandlestick(page) {
   await sleep(8000);
   await screenshot(page, 'my-position-candlestick-nice');
 
-  // Switch to 1M period
   const clicked1M = await clickButton(frame, '1M');
   console.log(`  ${clicked1M ? '✅' : '⚠️ '} 1M period ${clicked1M ? 'clicked' : 'not found'}`);
   await sleep(6000);
@@ -204,7 +259,6 @@ async function testMyPositionEndOfDay(page) {
   const frame = await waitForWidgetFrame(page, { selector: 'table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
 
-  // Sort by Chg
   const sorted = await frame.evaluate(() => {
     const header = Array.from(document.querySelectorAll('th')).find(h => h.textContent.includes('Chg'));
     if (header) { header.click(); return true; }
@@ -214,7 +268,6 @@ async function testMyPositionEndOfDay(page) {
   await sleep(2000);
   await screenshot(page, 'my-position-end-of-day-sorted');
 
-  // Open Filters
   const filtersOpened = await clickButton(frame, 'Filters');
   console.log(`  ${filtersOpened ? '✅' : '⚠️ '} Filters ${filtersOpened ? 'opened' : 'not found'}`);
   await sleep(1500);
@@ -234,16 +287,13 @@ async function testMyPositionsManager(page) {
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
   await screenshot(page, 'my-positions-manager-empty');
 
-  // ── Add position ──────────────────────────────────────────────────
   const addClicked = await clickButton(frame, '+ Add Position');
   console.log(`  ${addClicked ? '✅' : '⚠️ '} Add Position button ${addClicked ? 'clicked' : 'not found'}`);
   await sleep(1000);
   await screenshot(page, 'my-positions-manager-form');
 
-  // Fill form
   await frame.evaluate(() => {
     const inputs = document.querySelectorAll('input');
-    // Symbol, StartDate, Amount
     if (inputs[0]) { inputs[0].focus(); inputs[0].value = ''; }
   });
   await frame.type('input[placeholder="e.g. TEVA"]', 'TEVA');
@@ -257,17 +307,14 @@ async function testMyPositionsManager(page) {
   await sleep(8000);
   await screenshot(page, 'my-positions-manager-added');
 
-  // Verify TEVA appears in table
   const hasTeva = await frame.evaluate(() => !!document.querySelector('td,tr') &&
     document.body.textContent.includes('TEVA'));
   console.log(`  ${hasTeva ? '✅' : '⚠️ '} TEVA ${hasTeva ? 'appears in table' : 'not found in table'}`);
 
-  // ── Edit position ─────────────────────────────────────────────────
   const editClicked = await clickButton(frame, 'Edit');
   console.log(`  ${editClicked ? '✅' : '⚠️ '} Edit button ${editClicked ? 'clicked' : 'not found'}`);
   await sleep(1000);
 
-  // Update amount to 200
   await frame.evaluate(() => {
     const input = document.querySelector('input[type="number"]');
     if (input) { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
@@ -283,7 +330,6 @@ async function testMyPositionsManager(page) {
   const has200 = await frame.evaluate(() => document.body.textContent.includes('200'));
   console.log(`  ${has200 ? '✅' : '⚠️ '} Amount updated to 200: ${has200 ? 'yes' : 'not confirmed'}`);
 
-  // ── Delete position ───────────────────────────────────────────────
   const deleteClicked = await clickButton(frame, 'Delete');
   console.log(`  ${deleteClicked ? '✅' : '⚠️ '} Delete button ${deleteClicked ? 'clicked' : 'not found'}`);
   await sleep(8000);
@@ -295,9 +341,71 @@ async function testMyPositionsManager(page) {
   console.log('  ✅ my-positions-manager passed');
 }
 
+// ─── Claude Desktop Tests (AppleScript + screencapture) ──────────────────────
+
+async function testMarketEndOfDayDesktop() {
+  console.log('\n🧪 Test: market-end-of-day (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show me the market end of day widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-end-of-day');
+  console.log('  ✅ market-end-of-day (Claude Desktop) passed');
+}
+
+async function testMyPositionTableDesktop() {
+  console.log('\n🧪 Test: my-position-table (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show my position table widget for symbols TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-my-position-table');
+  console.log('  ✅ my-position-table (Claude Desktop) passed');
+}
+
+async function testMarketSectorHeatmapDesktop() {
+  console.log('\n🧪 Test: market-sector-heatmap (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show me the market sector heatmap widget');
+  console.log('  Waiting for widget...');
+  await sleep(40000);
+  await screenshotDesktop('cd-market-sector-heatmap');
+  console.log('  ✅ market-sector-heatmap (Claude Desktop) passed');
+}
+
+async function testMyPositionCandlestickDesktop() {
+  console.log('\n🧪 Test: my-position-candlestick (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show my position candlestick widget for symbols TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(45000);
+  await screenshotDesktop('cd-my-position-candlestick');
+  console.log('  ✅ my-position-candlestick (Claude Desktop) passed');
+}
+
+async function testMyPositionEndOfDayDesktop() {
+  console.log('\n🧪 Test: my-position-end-of-day (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show my position end of day widget for symbols TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-my-position-end-of-day');
+  console.log('  ✅ my-position-end-of-day (Claude Desktop) passed');
+}
+
+async function testMyPositionsManagerDesktop() {
+  console.log('\n🧪 Test: my-positions-manager (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show my positions manager widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-my-positions-manager');
+  console.log('  ✅ my-positions-manager (Claude Desktop) passed');
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-const TEST_MAP = {
+const CHATGPT_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDay,
   'my-position-table':        testMyPositionTable,
   'market-sector-heatmap':    testMarketSectorHeatmap,
@@ -306,21 +414,53 @@ const TEST_MAP = {
   'my-positions-manager':     testMyPositionsManager,
 };
 
-const { browser, page } = await connectBrowser();
+const CLAUDE_DESKTOP_TEST_MAP = {
+  'market-end-of-day':        testMarketEndOfDayDesktop,
+  'my-position-table':        testMyPositionTableDesktop,
+  'market-sector-heatmap':    testMarketSectorHeatmapDesktop,
+  'my-position-candlestick':  testMyPositionCandlestickDesktop,
+  'my-position-end-of-day':   testMyPositionEndOfDayDesktop,
+  'my-positions-manager':     testMyPositionsManagerDesktop,
+};
 
-try {
-  if (testArg === 'all') {
-    for (const [name, fn] of Object.entries(TEST_MAP)) {
-      await fn(page);
+const TEST_MAP = PLATFORM === 'claude-desktop' ? CLAUDE_DESKTOP_TEST_MAP : CHATGPT_TEST_MAP;
+
+if (PLATFORM === 'claude-desktop') {
+  // Claude Desktop: no browser needed
+  try {
+    if (testArg === 'all') {
+      for (const [name, fn] of Object.entries(TEST_MAP)) {
+        await fn();
+      }
+      console.log('\n🎉 All tests completed!');
+    } else if (TEST_MAP[testArg]) {
+      await TEST_MAP[testArg]();
+      console.log('\n🎉 Test completed!');
+    } else {
+      console.error(`Unknown test: "${testArg}". Available: ${Object.keys(TEST_MAP).join(', ')}, all`);
+      process.exit(1);
     }
-    console.log('\n🎉 All tests completed!');
-  } else if (TEST_MAP[testArg]) {
-    await TEST_MAP[testArg](page);
-    console.log('\n🎉 Test completed!');
-  } else {
-    console.error(`Unknown test: "${testArg}". Available: ${Object.keys(TEST_MAP).join(', ')}, all`);
+  } catch (e) {
+    console.error('Test error:', e.message);
     process.exit(1);
   }
-} finally {
-  await browser.disconnect();
+} else {
+  // ChatGPT: Puppeteer browser needed
+  const { browser, page } = await connectBrowser();
+  try {
+    if (testArg === 'all') {
+      for (const [name, fn] of Object.entries(TEST_MAP)) {
+        await fn(page);
+      }
+      console.log('\n🎉 All tests completed!');
+    } else if (TEST_MAP[testArg]) {
+      await TEST_MAP[testArg](page);
+      console.log('\n🎉 Test completed!');
+    } else {
+      console.error(`Unknown test: "${testArg}". Available: ${Object.keys(TEST_MAP).join(', ')}, all`);
+      process.exit(1);
+    }
+  } finally {
+    await browser.disconnect();
+  }
 }

@@ -43,7 +43,9 @@
     "test:widget": "node tests/widget-tests.mjs",
     "test:all": "node tests/widget-tests.mjs all",
     "test:widget:dev": "node tests/widget-tests.mjs --mcp eod-dev",
-    "test:all:dev": "node tests/widget-tests.mjs all --mcp eod-dev"
+    "test:all:dev": "node tests/widget-tests.mjs all --mcp eod-dev",
+    "test:widget:claude": "node tests/widget-tests.mjs --platform claude-desktop",
+    "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop"
   },
   "dependencies": {
     "@clerk/express": "^1.7.69",
