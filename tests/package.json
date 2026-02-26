@@ -1,0 +1,23 @@
+{
+  "name": "tase-widget-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Widget tests for TASE End of Day MCP app",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node widget-tests.mjs",
+    "test:all": "node widget-tests.mjs all",
+    "test:market-end-of-day": "node widget-tests.mjs market-end-of-day",
+    "test:my-position-table": "node widget-tests.mjs my-position-table",
+    "test:market-sector-heatmap": "node widget-tests.mjs market-sector-heatmap",
+    "test:my-position-candlestick": "node widget-tests.mjs my-position-candlestick",
+    "test:my-position-end-of-day": "node widget-tests.mjs my-position-end-of-day",
+    "test:my-positions-manager": "node widget-tests.mjs my-positions-manager",
+    "start-chrome": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9226 --user-data-dir=$HOME/.tase-test-profile --no-first-run --no-default-browser-check --disable-extensions about:blank &"
+  },
+  "dependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}
