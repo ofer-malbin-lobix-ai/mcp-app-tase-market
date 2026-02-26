@@ -1,6 +1,7 @@
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
+import { clerkClient } from "@clerk/express";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,7 @@ import type {
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
+  UserPosition,
 } from "./src/types.js";
 
 // Re-export types for consumers
@@ -174,22 +176,27 @@ function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
 export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders }): McpServer {
   const { providers } = options;
 
+  function getUserIdFromExtra(extra: { authInfo?: { extra?: Record<string, unknown> } }): string | null {
+    return (extra?.authInfo?.extra?.userId as string) ?? null;
+  }
+
   const server = new McpServer({
     name: "TASE End of Day Server",
     version: "1.0.0",
   });
 
   // Resource URIs
-  const myPositionResourceUri = "ui://tase-end-of-day/my-position-table-widget-v2.html";
-  const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v2.html";
-  const endOfDayResourceUri = "ui://tase-end-of-day/market-end-of-day-widget-v2.html";
-  const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v2.html";
-  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v2.html";
-  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/my-position-end-of-day-widget-v2.html";
-  const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v2.html";
-  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v2.html";
-  const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v2.html";
-  const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v2.html";
+  const myPositionResourceUri = "ui://tase-end-of-day/my-position-table-widget-v3.html";
+  const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v3.html";
+  const endOfDayResourceUri = "ui://tase-end-of-day/market-end-of-day-widget-v3.html";
+  const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v3.html";
+  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v3.html";
+  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/my-position-end-of-day-widget-v3.html";
+  const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v3.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v3.html";
+  const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v3.html";
+  const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v3.html";
+  const myPositionsManagerResourceUri = "ui://tase-end-of-day/my-positions-manager-widget-v1.html";
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -548,6 +555,101 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // Data tool: Get user positions from Clerk privateMetadata
+  registerAppTool(server,
+    "get-user-positions",
+    {
+      title: "Get User Positions",
+      description: "Returns the user's saved portfolio positions (symbol, start date, amount) stored in their profile.",
+      inputSchema: {},
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (_args, extra): Promise<CallToolResult> => {
+      const userId = getUserIdFromExtra(extra);
+      if (!userId) {
+        return { content: [{ type: "text", text: JSON.stringify({ positions: [], count: 0, error: "Not authenticated" }) }] };
+      }
+      const user = await clerkClient.users.getUser(userId);
+      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      return { content: [{ type: "text", text: JSON.stringify({ positions, count: positions.length }) }] };
+    },
+  );
+
+  // App-only tool: Upsert a user position
+  registerAppTool(server,
+    "set-user-position",
+    {
+      title: "Set User Position",
+      description: "Adds or updates a portfolio position (upserts by symbol).",
+      inputSchema: {
+        symbol: z.string().min(1).describe("Stock symbol (e.g. 'TEVA')"),
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Start date in YYYY-MM-DD format"),
+        amount: z.number().positive().describe("Number of shares/units held"),
+      },
+      _meta: { ui: { visibility: ["app"] } },
+    },
+    async (args, extra): Promise<CallToolResult> => {
+      const userId = getUserIdFromExtra(extra);
+      if (!userId) {
+        return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
+      }
+      const user = await clerkClient.users.getUser(userId);
+      const existing = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const updated = existing.filter((p) => p.symbol !== args.symbol);
+      updated.push({ symbol: args.symbol, startDate: args.startDate, amount: args.amount });
+      await clerkClient.users.updateUser(userId, {
+        privateMetadata: { ...user.privateMetadata, positions: updated },
+      });
+      return { content: [{ type: "text", text: JSON.stringify({ success: true, positions: updated, count: updated.length }) }] };
+    },
+  );
+
+  // App-only tool: Delete a user position
+  registerAppTool(server,
+    "delete-user-position",
+    {
+      title: "Delete User Position",
+      description: "Removes a portfolio position by symbol.",
+      inputSchema: {
+        symbol: z.string().min(1).describe("Stock symbol to remove (e.g. 'TEVA')"),
+      },
+      _meta: { ui: { visibility: ["app"] } },
+    },
+    async (args, extra): Promise<CallToolResult> => {
+      const userId = getUserIdFromExtra(extra);
+      if (!userId) {
+        return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
+      }
+      const user = await clerkClient.users.getUser(userId);
+      const existing = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const updated = existing.filter((p) => p.symbol !== args.symbol);
+      await clerkClient.users.updateUser(userId, {
+        privateMetadata: { ...user.privateMetadata, positions: updated },
+      });
+      return { content: [{ type: "text", text: JSON.stringify({ success: true, positions: updated, count: updated.length }) }] };
+    },
+  );
+
+  // UI tool: Show My Positions Manager widget
+  registerAppTool(server,
+    "show-my-positions-manager-widget",
+    {
+      title: "Show My Positions Manager",
+      description: "Displays an interactive manager to add, edit, and delete portfolio positions stored in your profile.",
+      inputSchema: {},
+      _meta: { ui: { resourceUri: myPositionsManagerResourceUri } },
+    },
+    async (_args, extra): Promise<CallToolResult> => {
+      const userId = getUserIdFromExtra(extra);
+      if (!userId) {
+        return { content: [{ type: "text", text: JSON.stringify({ positions: [], count: 0, error: "Not authenticated" }) }] };
+      }
+      const user = await clerkClient.users.getUser(userId);
+      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      return { content: [{ type: "text", text: JSON.stringify({ positions, count: positions.length }) }] };
+    },
+  );
+
   // UI tool: Show Subscription landing page
   registerAppTool(server,
     "show-tase-end-of-day-landing-widget",
@@ -658,6 +760,15 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (): Promise<ReadResourceResult> => {
       const html = await fs.readFile(path.join(DIST_DIR, "tase-end-of-day-landing-widget.html"), "utf-8");
       return { contents: [{ uri: subscriptionResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+    },
+  );
+
+  registerAppResource(server,
+    myPositionsManagerResourceUri, myPositionsManagerResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "my-positions-manager-widget.html"), "utf-8");
+      return { contents: [{ uri: myPositionsManagerResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 

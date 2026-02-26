@@ -108,3 +108,15 @@ export interface TaseDataProviders {
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe): Promise<CandlestickResponse>;
   fetchSectorHeatmap(marketType?: string, tradeDate?: string, period?: HeatmapPeriod): Promise<SectorHeatmapResponse>;
 }
+
+export interface UserPosition {
+  symbol: string;
+  startDate: string; // YYYY-MM-DD
+  amount: number;
+}
+
+export interface UserPositionsResponse {
+  positions: UserPosition[];
+  count: number;
+  error?: string;
+}
