@@ -7,7 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import styles from "./tase-end-of-day-landing-widget.module.css";
+import styles from "./tase-market-landing-widget.module.css";
 
 interface SubscriptionData {
   subscribeUrl: string;

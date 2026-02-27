@@ -35,7 +35,7 @@
  *   symbols-candlestick     — show-symbols-candlestick-widget (TEVA, NICE, ESLT) + symbol switch
  *   symbols-table           — show-symbols-table-widget (TEVA, NICE, ESLT) + period buttons
  *   symbol-candlestick      — show-symbol-candlestick-widget (single symbol: TEVA)
- *   landing                 — show-tase-end-of-day-landing-widget
+ *   landing                 — show-tase-market-landing-widget
  *   all                     — run all tests sequentially
  */
 
@@ -458,7 +458,7 @@ async function testSymbolCandlestick(page) {
 async function testLanding(page) {
   console.log('\n🧪 Test: landing');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} use the show-tase-end-of-day-landing-widget tool`);
+  await sendMessage(page, `@${MCP_NAME} use the show-tase-market-landing-widget tool`);
   console.log('  Waiting for widget...');
   await sleep(30000);
   await screenshot(page, 'landing');
@@ -600,7 +600,7 @@ async function testSymbolCandlestickDesktop() {
 async function testLandingDesktop() {
   console.log('\n🧪 Test: landing (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('use the show-tase-end-of-day-landing-widget tool');
+  await sendMessageDesktop('use the show-tase-market-landing-widget tool');
   console.log('  Waiting for widget...');
   await sleep(30000);
   await screenshotDesktop('cd-landing');

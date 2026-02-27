@@ -203,7 +203,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v3.html";
   const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v3.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v3.html";
-  const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v5.html";
+  const subscriptionResourceUri = "ui://tase-end-of-day/tase-market-landing-widget-v5.html";
   const myPositionsManagerResourceUri = "ui://tase-end-of-day/my-positions-manager-widget-v1.html";
   const symbolsEndOfDayResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
   const symbolsCandlestickWidgetResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v1.html";
@@ -816,7 +816,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // UI tool: Show Subscription landing page
   registerAppTool(server,
-    "show-tase-end-of-day-landing-widget",
+    "show-tase-market-landing-widget",
     {
       title: "Show Subscription",
       description: "Displays the TASE Data Hub subscription landing page with available tools and a subscribe button.",
@@ -922,7 +922,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     subscriptionResourceUri, subscriptionResourceUri,
     { mimeType: RESOURCE_MIME_TYPE, _meta: { ui: { permissions: { clipboardWrite: {} } } } },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "tase-end-of-day-landing-widget.html"), "utf-8");
+      const html = await fs.readFile(path.join(DIST_DIR, "tase-market-landing-widget.html"), "utf-8");
       return { contents: [{ uri: subscriptionResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
