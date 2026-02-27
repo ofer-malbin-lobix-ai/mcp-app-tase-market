@@ -31,36 +31,34 @@ function extractSubscriptionData(callToolResult: CallToolResult | null | undefin
   }
 }
 
-const FEATURES = [
+const TOOL_GROUPS = [
   {
-    icon: "\u{1F4CA}",
-    name: "Market Dashboard",
-    description: "Single-page overview combining market spirit, top movers, and uptrend count.",
+    title: "Market",
+    tools: [
+      { icon: "\u{1F4CA}", name: "Market Dashboard", description: "Single-page overview combining market spirit, top movers, and uptrend count" },
+      { icon: "\u{1F6A6}", name: "Market Spirit", description: "Traffic light indicator for market conditions" },
+      { icon: "\u{1F4C8}", name: "Market End of Day", description: "Full market data with prices, volume, and technical indicators" },
+      { icon: "\u{2B06}\u{FE0F}", name: "Market Uptrend Symbols", description: "Symbols in uptrend with EZ values" },
+      { icon: "\u{1F5FA}\u{FE0F}", name: "Market Sector Heatmap", description: "Treemap heatmap by sector, sub-sector, and symbol" },
+    ],
   },
   {
-    icon: "\u{1F6A6}",
-    name: "Market Spirit",
-    description: "Traffic light indicator showing bearish, neutral, or bullish market conditions.",
+    title: "My Position",
+    tools: [
+      { icon: "\u{1F4CB}", name: "My Positions Manager", description: "Add, edit, and delete portfolio positions" },
+      { icon: "\u{1F4CA}", name: "My Position Table", description: "Portfolio EOD table with period selector" },
+      { icon: "\u{1F4C8}", name: "My Position End of Day", description: "Portfolio data across date ranges" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "My Position Candlestick", description: "Multi-symbol candlestick with sidebar" },
+    ],
   },
   {
-    icon: "\u{1F4C8}",
-    name: "End of Day Data",
-    description: "Full market data with prices, volume, and technical indicators for all symbols.",
-  },
-  {
-    icon: "\u{2B06}\u{FE0F}",
-    name: "Uptrend Symbols",
-    description: "Symbols currently in uptrend with EZ values showing distance from SMA20.",
-  },
-  {
-    icon: "\u{1F56F}\u{FE0F}",
-    name: "Symbol Candlestick",
-    description: "Candlestick charts with OHLCV data for individual symbols over a date range.",
-  },
-  {
-    icon: "\u{1F50D}",
-    name: "End of Day Symbols",
-    description: "Detailed data for specific symbols across custom date ranges.",
+    title: "Symbols",
+    tools: [
+      { icon: "\u{1F4CA}", name: "Symbols Table", description: "EOD table for any symbols with period selector" },
+      { icon: "\u{1F50D}", name: "Symbols End of Day", description: "Data for specific symbols across date ranges" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "Symbols Candlestick", description: "Multi-symbol candlestick for any symbols" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "Symbol Candlestick", description: "Single-symbol candlestick chart" },
+    ],
   },
 ];
 
@@ -176,58 +174,80 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
         <p className={styles.subtitle}>End-of-Day Data Analysis, Using AI</p>
       </div>
 
-      <div className={styles.featuresGrid}>
-        {FEATURES.map((feature) => (
-          <div key={feature.name} className={styles.featureCard}>
-            <span className={styles.featureIcon}>{feature.icon}</span>
-            <span className={styles.featureName}>{feature.name}</span>
-            <span className={styles.featureDescription}>{feature.description}</span>
+      {TOOL_GROUPS.map((group) => (
+        <div key={group.title} className={styles.section}>
+          <h3 className={styles.sectionTitle}>{group.title}</h3>
+          <div className={styles.featuresGrid}>
+            {group.tools.map((tool) => (
+              <div key={tool.name} className={styles.featureCard}>
+                <span className={styles.featureIcon}>{tool.icon}</span>
+                <span className={styles.featureName}>{tool.name}</span>
+                <span className={styles.featureDescription}>{tool.description}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
 
-      {connectedUrl ? (
-        <div className={styles.cta}>
-          <button
-            className={styles.subscribeButton}
-            onClick={async () => {
+      <div className={styles.companyArea}>
+        <button
+          className={styles.companyLink}
+          onClick={async () => {
+            try {
+              const result = await app.openLink({ url: "https://www.lobix.ai" });
+              if (result?.isError) {
+                await navigator.clipboard.writeText("https://www.lobix.ai");
+              }
+            } catch {
               try {
-                const result = await app.openLink({ url: connectedUrl });
-                if (result?.isError) {
-                  // Host denied — fall back to clipboard copy
-                  await navigator.clipboard.writeText(connectedUrl);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }
-              } catch {
-                // openLink not supported — fall back to clipboard copy
+                await navigator.clipboard.writeText("https://www.lobix.ai");
+              } catch { /* ignore */ }
+            }
+          }}
+        >
+          www.lobix.ai
+        </button>
+
+        {connectedUrl ? (
+          <div className={styles.cta}>
+            <button
+              className={styles.subscribeButton}
+              onClick={async () => {
                 try {
-                  await navigator.clipboard.writeText(connectedUrl);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
+                  const result = await app.openLink({ url: connectedUrl });
+                  if (result?.isError) {
+                    await navigator.clipboard.writeText(connectedUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }
                 } catch {
-                  // Last resort: select the URL text
-                  const el = document.getElementById("subscribe-url");
-                  if (el) {
-                    const range = document.createRange();
-                    range.selectNodeContents(el);
-                    const sel = window.getSelection();
-                    sel?.removeAllRanges();
-                    sel?.addRange(range);
+                  try {
+                    await navigator.clipboard.writeText(connectedUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch {
+                    const el = document.getElementById("subscribe-url");
+                    if (el) {
+                      const range = document.createRange();
+                      range.selectNodeContents(el);
+                      const sel = window.getSelection();
+                      sel?.removeAllRanges();
+                      sel?.addRange(range);
+                    }
                   }
                 }
-              }
-            }}
-          >
-            {copied ? "Copied!" : data?.needsSubscription ? "Subscribe Now" : "Subscription"}
-          </button>
-          <span className={styles.pricing}>Plans start at \u20AA35/month</span>
-        </div>
-      ) : (
-        <div className={styles.notConnected}>
-          <p>Connect to the TASE Data Hub server to subscribe and access all tools.</p>
-        </div>
-      )}
+              }}
+            >
+              {copied ? "Copied!" : data?.needsSubscription ? "Subscribe Now" : "Subscription"}
+            </button>
+            <span className={styles.pricing}>Plans start at \u20AA35/month</span>
+          </div>
+        ) : (
+          <div className={styles.notConnected}>
+            <p>Connect to the TASE Data Hub server to subscribe and access all tools.</p>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
