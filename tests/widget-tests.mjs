@@ -458,7 +458,7 @@ async function testSymbolCandlestick(page) {
 async function testLanding(page) {
   console.log('\n🧪 Test: landing');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} show the subscription landing page`);
+  await sendMessage(page, `@${MCP_NAME} use the show-tase-end-of-day-landing-widget tool`);
   console.log('  Waiting for widget...');
   await sleep(30000);
   await screenshot(page, 'landing');
@@ -600,7 +600,7 @@ async function testSymbolCandlestickDesktop() {
 async function testLandingDesktop() {
   console.log('\n🧪 Test: landing (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('show the subscription landing page');
+  await sendMessageDesktop('use the show-tase-end-of-day-landing-widget tool');
   console.log('  Waiting for widget...');
   await sleep(30000);
   await screenshotDesktop('cd-landing');
