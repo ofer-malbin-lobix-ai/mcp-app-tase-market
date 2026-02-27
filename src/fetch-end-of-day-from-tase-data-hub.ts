@@ -173,17 +173,17 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
   if (process.env.NODE_ENV === "production") {
     cron.schedule("30 20 * * 1-5", async () => {
       const date = getTodayDateIL();
-      console.error(`[cron] Running EOD pipeline for ${date}`);
+      console.error(`[end-of-day-pipeline-cron] Running EOD pipeline for ${date}`);
       try {
         const result = await runEndOfDayPipeline(date);
-        console.error(`[cron] Done: fetched=${result.fetched}, created=${result.created}, updated=${result.updated}, symbolsUpserted=${result.symbolsUpserted}`);
+        console.error(`[end-of-day-pipeline-cron] Done: fetched=${result.fetched}, created=${result.created}, updated=${result.updated}, symbolsUpserted=${result.symbolsUpserted}`);
       } catch (error) {
-        console.error("[cron] Error:", error);
+        console.error("[end-of-day-pipeline-cron] Error:", error);
       }
     }, { timezone: "Asia/Jerusalem" });
-    console.error("[cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
+    console.error("[end-of-day-pipeline-cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
   } else {
-    console.error("[cron] Skipped (not production)");
+    console.error("[end-of-day-pipeline-cron] Skipped (not production)");
   }
 
   return router;
