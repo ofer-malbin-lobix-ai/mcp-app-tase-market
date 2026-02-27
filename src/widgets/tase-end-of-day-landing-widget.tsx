@@ -124,6 +124,7 @@ function hasToken(url: string | undefined): boolean {
 function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
   const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
 
   const connectedUrl = hasToken(data?.subscribeUrl) ? data!.subscribeUrl : null;
   const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
@@ -169,25 +170,33 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
       </div>
 
       <div className={styles.header}>
-        <h1 className={styles.title}>Tel Aviv Stock Exchange</h1>
-        <h2 className={styles.title2}>End-of-Day Data</h2>
-        <p className={styles.subtitle}>End-of-Day Data Analysis, Using AI</p>
+        <h1 className={styles.title}>Tel Aviv Stock Exchange (TASE)</h1>
+        <h2 className={styles.title2}>TASE Market Tools</h2>
+        <p className={styles.subtitle}>Data Analysis, Using AI</p>
       </div>
 
-      {TOOL_GROUPS.map((group) => (
-        <div key={group.title} className={styles.section}>
-          <h3 className={styles.sectionTitle}>{group.title}</h3>
-          <div className={styles.featuresGrid}>
-            {group.tools.map((tool) => (
-              <div key={tool.name} className={styles.featureCard}>
-                <span className={styles.featureIcon}>{tool.icon}</span>
-                <span className={styles.featureName}>{tool.name}</span>
-                <span className={styles.featureDescription}>{tool.description}</span>
-              </div>
-            ))}
-          </div>
+      <div className={styles.tabsContainer}>
+        <div className={styles.tabBar}>
+          {TOOL_GROUPS.map((group, i) => (
+            <button
+              key={group.title}
+              className={`${styles.tab} ${i === activeTab ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab(i)}
+            >
+              {group.title}
+            </button>
+          ))}
         </div>
-      ))}
+        <div className={styles.tabPanel}>
+          {TOOL_GROUPS[activeTab].tools.map((tool) => (
+            <div key={tool.name} className={styles.featureCard}>
+              <span className={styles.featureIcon}>{tool.icon}</span>
+              <span className={styles.featureName}>{tool.name}</span>
+              <span className={styles.featureDescription}>{tool.description}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className={styles.companyArea}>
         <button

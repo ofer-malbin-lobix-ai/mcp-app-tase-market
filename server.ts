@@ -203,7 +203,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v3.html";
   const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v3.html";
   const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v3.html";
-  const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v4.html";
+  const subscriptionResourceUri = "ui://tase-end-of-day/tase-end-of-day-landing-widget-v5.html";
   const myPositionsManagerResourceUri = "ui://tase-end-of-day/my-positions-manager-widget-v1.html";
   const symbolsEndOfDayResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
   const symbolsCandlestickWidgetResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v1.html";

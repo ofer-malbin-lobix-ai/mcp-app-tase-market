@@ -73,28 +73,47 @@
   color: var(--color-text-secondary, #94a3b8);
 }
 
-.section {
+.tabsContainer {
   width: 100%;
   max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
-.sectionTitle {
-  font-size: var(--font-heading-md-size, 1.25rem);
-  font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-primary, #e2e8f0);
-  margin: 0;
-  padding-bottom: 0.25rem;
+.tabBar {
+  display: flex;
   border-bottom: 1px solid var(--color-border-primary, #334155);
 }
 
-.featuresGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-  width: 100%;
+.tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary, #94a3b8);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  font-weight: var(--font-weight-semibold, 600);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--color-text-primary, #e2e8f0);
+}
+
+.tabActive {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.tabPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
 }
 
 .companyArea {
