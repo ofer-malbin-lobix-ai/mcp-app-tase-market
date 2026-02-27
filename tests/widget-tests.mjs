@@ -23,11 +23,19 @@
  *
  * Available tests:
  *   market-end-of-day       — show-market-end-of-day-widget
- *   my-position-table       — show-my-position-table-widget (TEVA, NICE, ESLT) + period buttons
+ *   market-spirit           — show-market-spirit-widget
+ *   market-uptrend-symbols  — show-market-uptrend-symbols-widget
  *   market-sector-heatmap   — show-market-sector-heatmap-widget + drill-down + back
- *   my-position-candlestick — show-my-position-candlestick-widget + symbol switch + period
- *   my-position-end-of-day  — show-my-position-end-of-day-widget + sort + filters
+ *   market-dashboard        — show-market-dashboard-widget
+ *   my-position-table       — show-my-position-table-widget (auto-fetch symbols) + period buttons
+ *   my-position-candlestick — show-my-position-candlestick-widget (auto-fetch symbols) + symbol switch + period
+ *   my-position-end-of-day  — show-my-position-end-of-day-widget (auto-fetch symbols) + sort + filters
  *   my-positions-manager    — show-my-positions-manager-widget + add/edit/delete
+ *   symbols-end-of-day      — show-symbols-end-of-day-widget (TEVA, NICE, ESLT)
+ *   symbols-candlestick     — show-symbols-candlestick-widget (TEVA, NICE, ESLT) + symbol switch
+ *   symbols-table           — show-symbols-table-widget (TEVA, NICE, ESLT) + period buttons
+ *   symbol-candlestick      — show-symbol-candlestick-widget (single symbol: TEVA)
+ *   landing                 — show-tase-end-of-day-landing-widget
  *   all                     — run all tests sequentially
  */
 
@@ -168,7 +176,7 @@ async function testMarketEndOfDay(page) {
 async function testMyPositionTable(page) {
   console.log('\n🧪 Test: my-position-table');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} show my position table widget for symbols TEVA, NICE, ESLT`);
+  await sendMessage(page, `@${MCP_NAME} show my position table widget`);
   console.log('  Waiting for widget...');
   await sleep(30000);
   await screenshot(page, 'my-position-table-1d');
@@ -223,7 +231,7 @@ async function testMarketSectorHeatmap(page) {
 async function testMyPositionCandlestick(page) {
   console.log('\n🧪 Test: my-position-candlestick');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} show my position candlestick widget for symbols TEVA, NICE, ESLT`);
+  await sendMessage(page, `@${MCP_NAME} show my position candlestick widget`);
   console.log('  Waiting for widget...');
   await sleep(40000);
   await screenshot(page, 'my-position-candlestick-eslt');
@@ -251,7 +259,7 @@ async function testMyPositionCandlestick(page) {
 async function testMyPositionEndOfDay(page) {
   console.log('\n🧪 Test: my-position-end-of-day');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} show my position end of day widget for symbols TEVA, NICE, ESLT`);
+  await sendMessage(page, `@${MCP_NAME} show my position end of day widget`);
   console.log('  Waiting for widget...');
   await sleep(35000);
   await screenshot(page, 'my-position-end-of-day');
@@ -341,6 +349,122 @@ async function testMyPositionsManager(page) {
   console.log('  ✅ my-positions-manager passed');
 }
 
+async function testMarketSpirit(page) {
+  console.log('\n🧪 Test: market-spirit');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show me the market spirit widget`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'market-spirit');
+  console.log('  ✅ market-spirit passed');
+}
+
+async function testMarketUptrendSymbols(page) {
+  console.log('\n🧪 Test: market-uptrend-symbols');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show me the market uptrend symbols widget`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'market-uptrend-symbols');
+  console.log('  ✅ market-uptrend-symbols passed');
+}
+
+async function testMarketDashboard(page) {
+  console.log('\n🧪 Test: market-dashboard');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show me the market dashboard widget`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'market-dashboard');
+  console.log('  ✅ market-dashboard passed');
+}
+
+async function testSymbolsEndOfDay(page) {
+  console.log('\n🧪 Test: symbols-end-of-day');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show symbols end of day widget for TEVA, NICE, ESLT`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'symbols-end-of-day');
+
+  const frame = await waitForWidgetFrame(page, { selector: 'table' });
+  if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
+
+  const sorted = await frame.evaluate(() => {
+    const header = Array.from(document.querySelectorAll('th')).find(h => h.textContent.includes('Chg'));
+    if (header) { header.click(); return true; }
+    return false;
+  });
+  console.log(`  ${sorted ? '✅' : '⚠️ '} Sort by Chg ${sorted ? 'clicked' : 'not found'}`);
+  await sleep(2000);
+  await screenshot(page, 'symbols-end-of-day-sorted');
+
+  console.log('  ✅ symbols-end-of-day passed');
+}
+
+async function testSymbolsCandlestick(page) {
+  console.log('\n🧪 Test: symbols-candlestick');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show symbols candlestick widget for TEVA, NICE, ESLT`);
+  console.log('  Waiting for widget...');
+  await sleep(40000);
+  await screenshot(page, 'symbols-candlestick-first');
+
+  const frame = await waitForWidgetFrame(page, { selector: 'table' });
+  if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
+
+  const symbolClicked = await frame.evaluate(() => {
+    const row = Array.from(document.querySelectorAll('tr')).find(r => r.textContent.includes('NICE'));
+    if (row) { row.click(); return true; }
+    return false;
+  });
+  console.log(`  ${symbolClicked ? '✅' : '⚠️ '} NICE symbol ${symbolClicked ? 'clicked' : 'not found'}`);
+  await sleep(8000);
+  await screenshot(page, 'symbols-candlestick-nice');
+
+  console.log('  ✅ symbols-candlestick passed');
+}
+
+async function testSymbolsTable(page) {
+  console.log('\n🧪 Test: symbols-table');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show symbols table widget for TEVA, NICE, ESLT`);
+  console.log('  Waiting for widget...');
+  await sleep(30000);
+  await screenshot(page, 'symbols-table-1d');
+
+  const frame = await waitForWidgetFrame(page, { selector: 'table' });
+  if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
+
+  for (const period of ['1W', '1M', '3M']) {
+    const clicked = await clickButton(frame, period);
+    console.log(`  ${clicked ? '✅' : '⚠️ '} ${period} button ${clicked ? 'clicked' : 'not found'}`);
+    await sleep(6000);
+    await screenshot(page, `symbols-table-${period.toLowerCase()}`);
+  }
+  console.log('  ✅ symbols-table passed');
+}
+
+async function testSymbolCandlestick(page) {
+  console.log('\n🧪 Test: symbol-candlestick');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show candlestick chart for TEVA`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'symbol-candlestick');
+  console.log('  ✅ symbol-candlestick passed');
+}
+
+async function testLanding(page) {
+  console.log('\n🧪 Test: landing');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} show the subscription landing page`);
+  console.log('  Waiting for widget...');
+  await sleep(30000);
+  await screenshot(page, 'landing');
+  console.log('  ✅ landing passed');
+}
+
 // ─── Claude Desktop Tests (AppleScript + screencapture) ──────────────────────
 
 async function testMarketEndOfDayDesktop() {
@@ -356,7 +480,7 @@ async function testMarketEndOfDayDesktop() {
 async function testMyPositionTableDesktop() {
   console.log('\n🧪 Test: my-position-table (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('show my position table widget for symbols TEVA, NICE, ESLT');
+  await sendMessageDesktop('show my position table widget');
   console.log('  Waiting for widget...');
   await sleep(35000);
   await screenshotDesktop('cd-my-position-table');
@@ -376,7 +500,7 @@ async function testMarketSectorHeatmapDesktop() {
 async function testMyPositionCandlestickDesktop() {
   console.log('\n🧪 Test: my-position-candlestick (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('show my position candlestick widget for symbols TEVA, NICE, ESLT');
+  await sendMessageDesktop('show my position candlestick widget');
   console.log('  Waiting for widget...');
   await sleep(45000);
   await screenshotDesktop('cd-my-position-candlestick');
@@ -386,7 +510,7 @@ async function testMyPositionCandlestickDesktop() {
 async function testMyPositionEndOfDayDesktop() {
   console.log('\n🧪 Test: my-position-end-of-day (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('show my position end of day widget for symbols TEVA, NICE, ESLT');
+  await sendMessageDesktop('show my position end of day widget');
   console.log('  Waiting for widget...');
   await sleep(35000);
   await screenshotDesktop('cd-my-position-end-of-day');
@@ -403,24 +527,120 @@ async function testMyPositionsManagerDesktop() {
   console.log('  ✅ my-positions-manager (Claude Desktop) passed');
 }
 
+async function testMarketSpiritDesktop() {
+  console.log('\n🧪 Test: market-spirit (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show me the market spirit widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-spirit');
+  console.log('  ✅ market-spirit (Claude Desktop) passed');
+}
+
+async function testMarketUptrendSymbolsDesktop() {
+  console.log('\n🧪 Test: market-uptrend-symbols (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show me the market uptrend symbols widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-uptrend-symbols');
+  console.log('  ✅ market-uptrend-symbols (Claude Desktop) passed');
+}
+
+async function testMarketDashboardDesktop() {
+  console.log('\n🧪 Test: market-dashboard (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show me the market dashboard widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-dashboard');
+  console.log('  ✅ market-dashboard (Claude Desktop) passed');
+}
+
+async function testSymbolsEndOfDayDesktop() {
+  console.log('\n🧪 Test: symbols-end-of-day (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show symbols end of day widget for TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-symbols-end-of-day');
+  console.log('  ✅ symbols-end-of-day (Claude Desktop) passed');
+}
+
+async function testSymbolsCandlestickDesktop() {
+  console.log('\n🧪 Test: symbols-candlestick (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show symbols candlestick widget for TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(45000);
+  await screenshotDesktop('cd-symbols-candlestick');
+  console.log('  ✅ symbols-candlestick (Claude Desktop) passed');
+}
+
+async function testSymbolsTableDesktop() {
+  console.log('\n🧪 Test: symbols-table (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show symbols table widget for TEVA, NICE, ESLT');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-symbols-table');
+  console.log('  ✅ symbols-table (Claude Desktop) passed');
+}
+
+async function testSymbolCandlestickDesktop() {
+  console.log('\n🧪 Test: symbol-candlestick (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show candlestick chart for TEVA');
+  console.log('  Waiting for widget...');
+  await sleep(40000);
+  await screenshotDesktop('cd-symbol-candlestick');
+  console.log('  ✅ symbol-candlestick (Claude Desktop) passed');
+}
+
+async function testLandingDesktop() {
+  console.log('\n🧪 Test: landing (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('show the subscription landing page');
+  console.log('  Waiting for widget...');
+  await sleep(30000);
+  await screenshotDesktop('cd-landing');
+  console.log('  ✅ landing (Claude Desktop) passed');
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
 const CHATGPT_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDay,
-  'my-position-table':        testMyPositionTable,
+  'market-spirit':            testMarketSpirit,
+  'market-uptrend-symbols':   testMarketUptrendSymbols,
   'market-sector-heatmap':    testMarketSectorHeatmap,
+  'market-dashboard':         testMarketDashboard,
+  'my-position-table':        testMyPositionTable,
   'my-position-candlestick':  testMyPositionCandlestick,
   'my-position-end-of-day':   testMyPositionEndOfDay,
   'my-positions-manager':     testMyPositionsManager,
+  'symbols-end-of-day':       testSymbolsEndOfDay,
+  'symbols-candlestick':      testSymbolsCandlestick,
+  'symbols-table':            testSymbolsTable,
+  'symbol-candlestick':       testSymbolCandlestick,
+  'landing':                  testLanding,
 };
 
 const CLAUDE_DESKTOP_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDayDesktop,
-  'my-position-table':        testMyPositionTableDesktop,
+  'market-spirit':            testMarketSpiritDesktop,
+  'market-uptrend-symbols':   testMarketUptrendSymbolsDesktop,
   'market-sector-heatmap':    testMarketSectorHeatmapDesktop,
+  'market-dashboard':         testMarketDashboardDesktop,
+  'my-position-table':        testMyPositionTableDesktop,
   'my-position-candlestick':  testMyPositionCandlestickDesktop,
   'my-position-end-of-day':   testMyPositionEndOfDayDesktop,
   'my-positions-manager':     testMyPositionsManagerDesktop,
+  'symbols-end-of-day':       testSymbolsEndOfDayDesktop,
+  'symbols-candlestick':      testSymbolsCandlestickDesktop,
+  'symbols-table':            testSymbolsTableDesktop,
+  'symbol-candlestick':       testSymbolCandlestickDesktop,
+  'landing':                  testLandingDesktop,
 };
 
 const TEST_MAP = PLATFORM === 'claude-desktop' ? CLAUDE_DESKTOP_TEST_MAP : CHATGPT_TEST_MAP;
