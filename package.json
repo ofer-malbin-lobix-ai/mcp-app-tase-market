@@ -83,7 +83,7 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "prisma": "^7.4.2",
-    "puppeteer-core": "^23.11.1",
+    "puppeteer-core": "^24.37.5",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
