@@ -233,7 +233,7 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
         </div>
       ) : (
         <div className={styles.notConnected}>
-          <p>Connect to the TASE Data Hub server to subscribe and access all tools.</p>
+          <p>Go to the server to subscribe and access all tools.</p>
         </div>
       )}
 
