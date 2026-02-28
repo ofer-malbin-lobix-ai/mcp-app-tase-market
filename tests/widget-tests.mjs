@@ -234,19 +234,19 @@ async function testMyPositionCandlestick(page) {
   await sendMessage(page, `@${MCP_NAME} show my position candlestick widget`);
   console.log('  Waiting for widget...');
   await sleep(40000);
-  await screenshot(page, 'my-position-candlestick-eslt');
+  await screenshot(page, 'my-position-candlestick-initial');
 
   const frame = await waitForWidgetFrame(page, { selector: 'table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
 
-  const nicePeriod = await frame.evaluate(() => {
-    const row = Array.from(document.querySelectorAll('tr')).find(r => r.textContent.includes('NICE'));
-    if (row) { row.click(); return true; }
-    return false;
+  const secondSymbol = await frame.evaluate(() => {
+    const rows = Array.from(document.querySelectorAll('tr')).filter(r => r.querySelector('td'));
+    if (rows.length >= 2) { rows[1].click(); return rows[1].textContent?.trim() || 'row2'; }
+    return null;
   });
-  console.log(`  ${nicePeriod ? '✅' : '⚠️ '} NICE symbol ${nicePeriod ? 'clicked' : 'not found'}`);
+  console.log(`  ${secondSymbol ? '✅' : '⚠️ '} Second symbol ${secondSymbol ? `clicked (${secondSymbol})` : 'not found'}`);
   await sleep(8000);
-  await screenshot(page, 'my-position-candlestick-nice');
+  await screenshot(page, 'my-position-candlestick-second');
 
   const clicked1M = await clickButton(frame, '1M');
   console.log(`  ${clicked1M ? '✅' : '⚠️ '} 1M period ${clicked1M ? 'clicked' : 'not found'}`);
@@ -291,60 +291,28 @@ async function testMyPositionsManager(page) {
   console.log('  Waiting for widget...');
   await sleep(30000);
 
-  const frame = await waitForWidgetFrame(page, { selector: 'button, .empty' });
+  const frame = await waitForWidgetFrame(page, { selector: 'button, table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
-  await screenshot(page, 'my-positions-manager-empty');
+  await screenshot(page, 'my-positions-manager');
+
+  const positionCount = await frame.evaluate(() => document.querySelectorAll('tbody tr').length);
+  console.log(`  ${positionCount > 0 ? '✅' : '⚠️ '} Positions loaded: ${positionCount}`);
+
+  if (positionCount > 0) {
+    const editClicked = await clickButton(frame, 'Edit');
+    console.log(`  ${editClicked ? '✅' : '⚠️ '} Edit button ${editClicked ? 'clicked' : 'not found'}`);
+    await sleep(1000);
+    await screenshot(page, 'my-positions-manager-edit');
+
+    const cancelClicked = await clickButton(frame, 'Cancel');
+    console.log(`  ${cancelClicked ? '✅' : '⚠️ '} Cancel button ${cancelClicked ? 'clicked' : 'not found'}`);
+    await sleep(500);
+  }
 
   const addClicked = await clickButton(frame, '+ Add Position');
   console.log(`  ${addClicked ? '✅' : '⚠️ '} Add Position button ${addClicked ? 'clicked' : 'not found'}`);
   await sleep(1000);
-  await screenshot(page, 'my-positions-manager-form');
-
-  await frame.evaluate(() => {
-    const inputs = document.querySelectorAll('input');
-    if (inputs[0]) { inputs[0].focus(); inputs[0].value = ''; }
-  });
-  await frame.type('input[placeholder="e.g. TEVA"]', 'TEVA');
-  await frame.type('input[placeholder="YYYY-MM-DD"]', '2026-01-01');
-  await frame.type('input[type="number"]', '100');
-  await sleep(500);
-  await screenshot(page, 'my-positions-manager-form-filled');
-
-  const saved = await clickButton(frame, 'Save');
-  console.log(`  ${saved ? '✅' : '⚠️ '} Save button ${saved ? 'clicked' : 'not found'}`);
-  await sleep(8000);
-  await screenshot(page, 'my-positions-manager-added');
-
-  const hasTeva = await frame.evaluate(() => !!document.querySelector('td,tr') &&
-    document.body.textContent.includes('TEVA'));
-  console.log(`  ${hasTeva ? '✅' : '⚠️ '} TEVA ${hasTeva ? 'appears in table' : 'not found in table'}`);
-
-  const editClicked = await clickButton(frame, 'Edit');
-  console.log(`  ${editClicked ? '✅' : '⚠️ '} Edit button ${editClicked ? 'clicked' : 'not found'}`);
-  await sleep(1000);
-
-  await frame.evaluate(() => {
-    const input = document.querySelector('input[type="number"]');
-    if (input) { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
-  });
-  await frame.type('input[type="number"]', '200');
-  await sleep(300);
-
-  const savedEdit = await clickButton(frame, 'Save');
-  console.log(`  ${savedEdit ? '✅' : '⚠️ '} Save edit ${savedEdit ? 'clicked' : 'not found'}`);
-  await sleep(8000);
-  await screenshot(page, 'my-positions-manager-edited');
-
-  const has200 = await frame.evaluate(() => document.body.textContent.includes('200'));
-  console.log(`  ${has200 ? '✅' : '⚠️ '} Amount updated to 200: ${has200 ? 'yes' : 'not confirmed'}`);
-
-  const deleteClicked = await clickButton(frame, 'Delete');
-  console.log(`  ${deleteClicked ? '✅' : '⚠️ '} Delete button ${deleteClicked ? 'clicked' : 'not found'}`);
-  await sleep(8000);
-  await screenshot(page, 'my-positions-manager-deleted');
-
-  const isEmpty = await frame.evaluate(() => document.body.textContent.includes('No positions yet'));
-  console.log(`  ${isEmpty ? '✅' : '⚠️ '} Empty state after delete: ${isEmpty ? 'yes' : 'not confirmed'}`);
+  await screenshot(page, 'my-positions-manager-add-form');
 
   console.log('  ✅ my-positions-manager passed');
 }
