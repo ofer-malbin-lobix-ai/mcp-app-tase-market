@@ -1,45 +1,3 @@
-.main {
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-  background: var(--color-background-primary, #0f172a);
-  color: var(--color-text-primary, #e2e8f0);
-  min-height: 100vh;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.main.fullscreen {
-  border-radius: 0;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header > div {
-  text-align: center;
-  flex: 1;
-}
-
-.fullscreenButton {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border-primary, #334155);
-  border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-secondary, #1e293b);
-  color: var(--color-text-primary, #e2e8f0);
-  font-family: inherit;
-  font-size: var(--font-text-sm-size, 0.875rem);
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.fullscreenButton:hover {
-  background: var(--color-background-tertiary, #334155);
-}
-
 .title {
   font-size: var(--font-heading-lg-size, 1.5rem);
   font-weight: var(--font-weight-semibold, 600);
@@ -48,11 +6,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.subtitle {
-  font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #94a3b8);
 }
 
 .stats {
@@ -79,7 +32,7 @@
 
 .statLabel {
   font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--t-text-secondary);
 }
 
 .symbolsContainer {
@@ -99,8 +52,8 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--color-background-secondary, #1e293b);
-  border: 1px solid var(--color-border-primary, #334155);
+  background: var(--t-bg-secondary);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-md, 0.375rem);
   transition: all 0.2s ease;
 }
@@ -118,7 +71,7 @@
 .symbolName {
   font-size: var(--font-text-sm-size, 0.875rem);
   font-weight: var(--font-weight-medium, 500);
-  color: var(--color-text-primary, #e2e8f0);
+  color: var(--t-text-primary);
 }
 
 .ezValue {
@@ -130,14 +83,14 @@
 .empty {
   text-align: center;
   padding: 2rem;
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--t-text-secondary);
   font-size: var(--font-text-sm-size, 0.875rem);
 }
 
 .waiting {
   text-align: center;
   padding: 2rem;
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--t-text-secondary);
   font-size: var(--font-text-sm-size, 0.875rem);
 }
 
@@ -148,7 +101,7 @@
   flex-wrap: wrap;
   justify-content: center;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border-primary, #334155);
+  border-top: 1px solid var(--t-border);
 }
 
 .label {
@@ -156,15 +109,15 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--t-text-secondary);
 }
 
 .select {
   padding: 0.5rem 0.75rem;
   border-radius: var(--border-radius-md, 0.375rem);
-  border: 1px solid var(--color-border-primary, #334155);
-  background: var(--color-background-secondary, #1e293b);
-  color: var(--color-text-primary, #e2e8f0);
+  border: 1px solid var(--t-border);
+  background: var(--t-bg-secondary);
+  color: var(--t-text-primary);
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
   min-width: 150px;
@@ -208,5 +161,5 @@
 .loading {
   padding: 2rem;
   text-align: center;
-  color: var(--color-text-secondary, #94a3b8);
+  color: var(--t-text-secondary);
 }

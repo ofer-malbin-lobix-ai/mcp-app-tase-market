@@ -6,6 +6,7 @@
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { WidgetLayout } from "../components/WidgetLayout";
 import type { CandlestickData, HistogramData, LineData, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
@@ -214,7 +215,6 @@ function Sidebar({ symbols, selectedSymbol, onSelectSymbol, period, onPeriodChan
 
 interface ChartPanelProps {
   data: CandlestickWidgetData;
-  isFullscreen: boolean;
   showCandles: boolean; onShowCandlesChange: (v: boolean) => void;
   showVolume: boolean;  onShowVolumeChange:  (v: boolean) => void;
   showSma20: boolean;   onShowSma20Change:   (v: boolean) => void;
@@ -223,7 +223,7 @@ interface ChartPanelProps {
   showEz: boolean;      onShowEzChange:      (v: boolean) => void;
 }
 
-function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, showVolume, onShowVolumeChange, showSma20, onShowSma20Change, showSma50, onShowSma50Change, showSma200, onShowSma200Change, showEz, onShowEzChange }: ChartPanelProps) {
+function ChartPanel({ data, showCandles, onShowCandlesChange, showVolume, onShowVolumeChange, showSma20, onShowSma20Change, showSma50, onShowSma50Change, showSma200, onShowSma200Change, showEz, onShowEzChange }: ChartPanelProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartSize, setChartSize] = useState<{ width: number; height: number }>({ width: 600, height: 400 });
   const [legendValues, setLegendValues] = useState<LegendValues | null>(null);
@@ -241,7 +241,7 @@ function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, show
     const observer = new ResizeObserver(() => update());
     observer.observe(el);
     return () => observer.disconnect();
-  }, [data, isFullscreen]);
+  }, [data]);
 
   const { candleData, volumeData, ezData, sma20Data, sma50Data, sma200Data } = useMemo(() => {
     if (!data?.items) return { candleData: [], volumeData: [], ezData: [], sma20Data: [], sma50Data: [], sma200Data: [] };
@@ -492,7 +492,6 @@ function SymbolsCandlestickApp() {
   const [showSma200, setShowSma200] = useState(false);
   const [showEz, setShowEz] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
 
   const { app, error } = useApp({
     appInfo: { name: "Multi-Symbol Candlestick", version: "1.0.0" },
@@ -553,24 +552,6 @@ function SymbolsCandlestickApp() {
   useEffect(() => {
     if (app) setHostContext(app.getHostContext());
   }, [app]);
-
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
-
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app!.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
 
   // Reset sidebar period when new eodData arrives
   useEffect(() => {
@@ -681,35 +662,10 @@ function SymbolsCandlestickApp() {
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
 
+  const subtitle = eodData ? eodData.symbols.join(", ") : undefined;
+
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Symbols Candlestick</h1>
-          {eodData && (
-            <div className={styles.subtitle}>
-              {eodData.symbols.join(", ")}
-            </div>
-          )}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
+    <WidgetLayout title="Symbols Candlestick" subtitle={subtitle} app={app!} hostContext={hostContext}>
 
       {eodData && (
         <div className={styles.controls}>
@@ -764,7 +720,6 @@ function SymbolsCandlestickApp() {
             ) : chartData ? (
               <ChartPanel
                 data={chartData}
-                isFullscreen={displayMode === "fullscreen"}
                 showCandles={showCandles} onShowCandlesChange={setShowCandles}
                 showVolume={showVolume}   onShowVolumeChange={setShowVolume}
                 showSma20={showSma20}     onShowSma20Change={setShowSma20}
@@ -786,7 +741,7 @@ function SymbolsCandlestickApp() {
           />
         </div>
       )}
-    </main>
+    </WidgetLayout>
   );
 }
 

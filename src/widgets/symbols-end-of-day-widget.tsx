@@ -9,6 +9,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../components/DataTable";
+import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./symbols-end-of-day-widget.module.css";
 
 interface StockData {
@@ -222,28 +223,6 @@ function EndOfDaySymbolsAppInner({
   const [selectedDateTo, setSelectedDateTo] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
-
-  // Check if fullscreen is available
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  // Toggle fullscreen mode
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
-
-  // Update display mode when host context changes
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
 
   const handleRefresh = useCallback(async (symbols?: string[], dateFrom?: string, dateTo?: string) => {
     setIsRefreshing(true);
@@ -548,37 +527,12 @@ function EndOfDaySymbolsAppInner({
     };
   }, [summaryRows]);
 
+  const subtitle = data
+    ? `${data.symbols?.length > 0 ? data.symbols.join(", ") : "All symbols"}${data.dateFrom ? ` · ${data.dateFrom}` : ""}${data.dateTo && data.dateTo !== data.dateFrom ? ` — ${data.dateTo}` : ""}`
+    : undefined;
+
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Symbols End of Day</h1>
-          {data && (
-            <div className={styles.subtitle}>
-              {data.symbols?.length > 0 ? data.symbols.join(", ") : "All symbols"}
-              {data.dateFrom && ` · ${data.dateFrom}`}
-              {data.dateTo && data.dateTo !== data.dateFrom && ` — ${data.dateTo}`}
-            </div>
-          )}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
+    <WidgetLayout title="Symbols End of Day" subtitle={subtitle} app={app} hostContext={hostContext}>
 
       {data && (
         <div className={styles.summary}>
@@ -655,7 +609,7 @@ function EndOfDaySymbolsAppInner({
           onFilteredRowsChange={handleFilteredRowsChange}
         />
       ) : null}
-    </main>
+    </WidgetLayout>
   );
 }
 

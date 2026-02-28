@@ -4,10 +4,12 @@
  * Columns: Symbol | Company | Close | {period}% | Turnover | RSI | EZ
  * Period selector switches the change % and close price.
  */
+import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./my-position-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -127,6 +129,7 @@ function MyPositionApp() {
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("symbol");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
     appInfo: { name: "My Positions", version: "1.0.0" },
@@ -153,6 +156,10 @@ function MyPositionApp() {
       };
 
       app.onerror = console.error;
+
+      app.onhostcontextchanged = (params) => {
+        setHostContext((prev) => ({ ...prev, ...params }));
+      };
     },
   });
 
@@ -165,6 +172,10 @@ function MyPositionApp() {
   }, [needsAutoFetch, app]);
 
   useHostStyles(app ?? null);
+
+  useEffect(() => {
+    if (app) setHostContext(app.getHostContext());
+  }, [app]);
 
   // Reset period when new baseData arrives
   useEffect(() => {
@@ -246,16 +257,13 @@ function MyPositionApp() {
   });
 
   return (
-    <main className={styles.main}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>My Position Table</h1>
-          {baseData && (
-            <div className={styles.subtitle}>
-              {baseData.dateTo} · {displayRows.length} symbol{displayRows.length !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
+    <WidgetLayout
+      title="My Position Table"
+      subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
+      app={app}
+      hostContext={hostContext}
+    >
+      <div className={styles.headerExtra}>
         <div className={styles.periodBar}>
           {PERIODS.map((p) => (
             <button
@@ -340,7 +348,7 @@ function MyPositionApp() {
           </table>
         </div>
       )}
-    </main>
+    </WidgetLayout>
   );
 }
 

@@ -19,10 +19,10 @@
 
 .searchInput {
   padding: 0.375rem 2rem 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   min-width: 200px;
@@ -30,7 +30,7 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--t-accent);
 }
 
 .clearButton {
@@ -39,42 +39,42 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--color-text-secondary, #666);
+  color: var(--t-text-secondary);
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .clearButton:hover {
-  color: var(--color-text-primary, #333);
+  color: var(--t-text-primary);
 }
 
 .filterToggle {
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
 }
 
 .filterToggle:hover {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .filterToggle.active {
-  background: var(--color-accent-primary, #2563eb);
+  background: var(--t-accent);
   color: white;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--t-accent);
 }
 
 .clearFiltersButton {
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
+  background: var(--t-bg-primary);
   color: #dc2626;
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
@@ -82,7 +82,7 @@
 }
 
 .clearFiltersButton:hover {
-  background: #fef2f2;
+  background: var(--t-error-bg);
 }
 
 .columnSelector {
@@ -91,17 +91,17 @@
 
 .columnSelectorButton {
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
 }
 
 .columnSelectorButton:hover {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .columnSelectorDropdown {
@@ -113,16 +113,16 @@
   max-height: 400px;
   margin-top: 0.25rem;
   padding: 0.5rem 0;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
+  background: var(--t-bg-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
 }
 
 .columnSelectorHeader {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  border-bottom: 1px solid var(--t-border);
   font-weight: var(--font-weight-semibold, 600);
 }
 
@@ -141,7 +141,7 @@
 }
 
 .columnCheckbox:hover {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .columnCheckbox input {
@@ -164,7 +164,7 @@
 .td {
   padding: 0.5rem 0.75rem;
   text-align: left;
-  border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  border-bottom: 1px solid var(--t-border);
   white-space: nowrap;
 }
 
@@ -172,32 +172,32 @@
   position: sticky;
   top: 0;
   font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-secondary, #666);
-  background: var(--color-background-secondary, #f5f5f5);
+  color: var(--t-text-secondary);
+  background: var(--t-bg-secondary);
   cursor: pointer;
   user-select: none;
 }
 
 .th:hover {
-  background: var(--color-background-tertiary, #eee);
+  background: var(--t-bg-tertiary);
 }
 
 .filterRow {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .filterCell {
   padding: 0.375rem 0.5rem;
-  border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  border-bottom: 1px solid var(--t-border);
 }
 
 .filterInput {
   width: 100%;
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-xs-size, 0.75rem);
   min-width: 60px;
@@ -205,7 +205,7 @@
 
 .filterInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--t-accent);
 }
 
 .rangeFilter {
@@ -217,21 +217,21 @@
   width: 100%;
   min-width: 45px;
   padding: 0.25rem 0.375rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-xs-size, 0.75rem);
 }
 
 .rangeInput:focus {
   outline: none;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--t-accent);
 }
 
 .rangeInput::placeholder {
-  color: var(--color-text-secondary, #999);
+  color: var(--t-text-secondary);
   font-size: var(--font-text-xs-size, 0.7rem);
 }
 
@@ -260,7 +260,7 @@
 
 .pageInfo {
   font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #666);
+  color: var(--t-text-secondary);
 }
 
 .pageControls {
@@ -271,10 +271,10 @@
 
 .pageSizeSelect {
   padding: 0.375rem 0.75rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
@@ -288,10 +288,10 @@
 
 .pageButton {
   padding: 0.375rem 0.625rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-primary, #fff);
-  color: var(--color-text-primary, inherit);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
@@ -299,7 +299,7 @@
 }
 
 .pageButton:hover:not(:disabled) {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .pageButton:disabled {
@@ -310,76 +310,5 @@
 .pageNumber {
   padding: 0 0.5rem;
   font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #666);
-}
-
-@media (prefers-color-scheme: dark) {
-  .th {
-    background: var(--color-background-secondary, #2a2a2a);
-  }
-
-  .th:hover {
-    background: var(--color-background-tertiary, #333);
-  }
-
-  .searchInput,
-  .filterToggle,
-  .clearFiltersButton,
-  .columnSelectorButton,
-  .pageSizeSelect,
-  .pageButton {
-    background: var(--color-background-secondary, #2a2a2a);
-    border-color: var(--color-border-primary, #444);
-  }
-
-  .searchInput:focus,
-  .filterInput:focus {
-    border-color: var(--color-accent-primary, #3b82f6);
-  }
-
-  .filterToggle:hover,
-  .columnSelectorButton:hover,
-  .pageButton:hover:not(:disabled) {
-    background: var(--color-background-tertiary, #333);
-  }
-
-  .filterToggle.active {
-    background: var(--color-accent-primary, #2563eb);
-    border-color: var(--color-accent-primary, #2563eb);
-  }
-
-  .clearFiltersButton {
-    color: #f87171;
-  }
-
-  .clearFiltersButton:hover {
-    background: #450a0a;
-  }
-
-  .columnSelectorDropdown {
-    background: var(--color-background-secondary, #2a2a2a);
-    border-color: var(--color-border-primary, #444);
-  }
-
-  .columnSelectorHeader {
-    border-color: var(--color-border-primary, #444);
-  }
-
-  .columnCheckbox:hover {
-    background: var(--color-background-tertiary, #333);
-  }
-
-  .filterRow {
-    background: var(--color-background-secondary, #2a2a2a);
-  }
-
-  .filterCell {
-    border-color: var(--color-border-primary, #444);
-  }
-
-  .filterInput,
-  .rangeInput {
-    background: var(--color-background-tertiary, #333);
-    border-color: var(--color-border-primary, #444);
-  }
+  color: var(--t-text-secondary);
 }

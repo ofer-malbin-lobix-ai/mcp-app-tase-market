@@ -1,3 +1,5 @@
+@import "./components/theme.css";
+
 * {
   box-sizing: border-box;
 }
@@ -7,15 +9,8 @@ html, body {
   padding: 0;
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
   font-size: 14px;
-  background: var(--color-background-primary, #ffffff);
-  color: var(--color-text-primary, #1a1a1a);
-}
-
-@media (prefers-color-scheme: dark) {
-  html, body {
-    background: var(--color-background-primary, #1a1a1a);
-    color: var(--color-text-primary, #ffffff);
-  }
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
 }
 
 code {

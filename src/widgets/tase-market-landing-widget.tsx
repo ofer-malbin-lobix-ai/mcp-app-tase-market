@@ -5,7 +5,8 @@
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { StrictMode, useEffect, useState } from "react";
+import { WidgetLayout } from "../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import styles from "./tase-market-landing-widget.module.css";
 
@@ -122,55 +123,14 @@ function hasToken(url: string | undefined): boolean {
 }
 
 function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
   const connectedUrl = hasToken(data?.subscribeUrl) ? data!.subscribeUrl : null;
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
-
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
 
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.headerRow}>
-        <div />
-        <div />
-        {isFullscreenAvailable ? (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        ) : <div />}
-      </div>
-
+    <WidgetLayout title="Tel Aviv Stock Exchange (TASE)" app={app} hostContext={hostContext} titleClassName={styles.title}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Tel Aviv Stock Exchange (TASE)</h1>
         <h2 className={styles.title2}>TASE Market Tools</h2>
         <p className={styles.subtitle}>Data Analysis, Using AI</p>
       </div>
@@ -273,7 +233,7 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
           www.lobix.ai
         </button>
       </footer>
-    </main>
+    </WidgetLayout>
   );
 }
 

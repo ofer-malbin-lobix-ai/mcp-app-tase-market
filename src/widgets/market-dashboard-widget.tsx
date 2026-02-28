@@ -6,6 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
+import { WidgetLayout } from "../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import styles from "./market-dashboard-widget.module.css";
 
@@ -200,25 +201,6 @@ interface DashboardInnerProps {
 function DashboardInner({ app, data, setData, hostContext }: DashboardInnerProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
-
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
-
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
 
   // Sync date from first available data source
   useEffect(() => {
@@ -243,30 +225,7 @@ function DashboardInner({ app, data, setData, hostContext }: DashboardInnerProps
   const tradeDate = data.spirit?.tradeDate || data.eod?.tradeDate || data.uptrend?.tradeDate;
 
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <h1 className={styles.title}>Market Dashboard</h1>
-          {tradeDate && <div className={styles.subtitle}>{tradeDate}</div>}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
+    <WidgetLayout title="Market Dashboard" subtitle={tradeDate} app={app} hostContext={hostContext} titleClassName={styles.title}>
 
       {!hasAnyData && (
         <div className={styles.grid}>
@@ -305,7 +264,7 @@ function DashboardInner({ app, data, setData, hostContext }: DashboardInnerProps
           {isRefreshing ? "Loading..." : "Refresh"}
         </button>
       </div>
-    </main>
+    </WidgetLayout>
   );
 }
 

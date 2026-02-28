@@ -17,6 +17,7 @@ import {
 } from "lightweight-charts-react-components";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./my-position-candlestick-widget.module.css";
 
 // ─── Timeframe ──────────────────────────────────────────────────────
@@ -492,7 +493,6 @@ function SymbolsCandlestickApp() {
   const [showSma200, setShowSma200] = useState(false);
   const [showEz, setShowEz] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
 
   const { app, error } = useApp({
     appInfo: { name: "Multi-Symbol Candlestick", version: "1.0.0" },
@@ -553,24 +553,6 @@ function SymbolsCandlestickApp() {
   useEffect(() => {
     if (app) setHostContext(app.getHostContext());
   }, [app]);
-
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
-
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app!.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
 
   // Reset sidebar period when new eodData arrives
   useEffect(() => {
@@ -682,34 +664,12 @@ function SymbolsCandlestickApp() {
   if (!app) return <div className={styles.loading}>Connecting...</div>;
 
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
+    <WidgetLayout
+      title="My Position Candlestick"
+      subtitle={eodData ? eodData.symbols.join(", ") : undefined}
+      app={app}
+      hostContext={hostContext}
     >
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>My Position Candlestick</h1>
-          {eodData && (
-            <div className={styles.subtitle}>
-              {eodData.symbols.join(", ")}
-            </div>
-          )}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
 
       {eodData && (
         <div className={styles.controls}>
@@ -764,7 +724,7 @@ function SymbolsCandlestickApp() {
             ) : chartData ? (
               <ChartPanel
                 data={chartData}
-                isFullscreen={displayMode === "fullscreen"}
+                isFullscreen={hostContext?.displayMode === "fullscreen"}
                 showCandles={showCandles} onShowCandlesChange={setShowCandles}
                 showVolume={showVolume}   onShowVolumeChange={setShowVolume}
                 showSma20={showSma20}     onShowSma20Change={setShowSma20}
@@ -786,7 +746,7 @@ function SymbolsCandlestickApp() {
           />
         </div>
       )}
-    </main>
+    </WidgetLayout>
   );
 }
 

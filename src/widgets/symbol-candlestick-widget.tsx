@@ -6,6 +6,7 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { WidgetLayout } from "../components/WidgetLayout";
 import type { CandlestickData, HistogramData, LineData, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
@@ -191,7 +192,6 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
   const [selectedTimeframe, setSelectedTimeframe] = useState<CandlestickTimeframe>("1D");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
   const [legendValues, setLegendValues] = useState<LegendValues | null>(null);
   const [showEz, setShowEz] = useState(false);
   const [showSma20, setShowSma20] = useState(false);
@@ -216,28 +216,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     const observer = new ResizeObserver(() => update());
     observer.observe(el);
     return () => observer.disconnect();
-  }, [data, displayMode]);
-
-  // Check if fullscreen is available
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  // Toggle fullscreen mode
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
-
-  // Update display mode when host context changes
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
+  }, [data]);
 
   // Map API data to lightweight-charts format
   const { candleData, volumeData, ezData, sma20Data, sma50Data, sma200Data } = useMemo(() => {
@@ -404,38 +383,12 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     }
   }, [symbolInput, selectedDateFrom, selectedDateTo, handleRefresh]);
 
+  const subtitle = data
+    ? `${data.symbol}${data.dateFrom ? ` · ${data.dateFrom}` : ""}${data.dateTo && data.dateTo !== data.dateFrom ? ` — ${data.dateTo}` : ""} · ${data.count} bars`
+    : undefined;
+
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Candlestick Chart</h1>
-          {data && (
-            <div className={styles.subtitle}>
-              {data.symbol}
-              {data.dateFrom && ` · ${data.dateFrom}`}
-              {data.dateTo && data.dateTo !== data.dateFrom && ` — ${data.dateTo}`}
-              {` · ${data.count} bars`}
-            </div>
-          )}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
+    <WidgetLayout title="Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>
@@ -687,7 +640,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
           </Chart>
         </div>
       ) : null}
-    </main>
+    </WidgetLayout>
   );
 }
 

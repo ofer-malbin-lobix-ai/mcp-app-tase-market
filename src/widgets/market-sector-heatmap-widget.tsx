@@ -3,11 +3,12 @@
  * Treemap visualization of TASE stocks grouped by sector → sub-sector → symbol.
  * Rectangles sized by marketCap, colored by change %. Click to drill down.
  */
-import type { App } from "@modelcontextprotocol/ext-apps";
+import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { WidgetLayout } from "../components/WidgetLayout";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -264,6 +265,7 @@ function HeatmapApp() {
   const [data, setData] = useState<SectorHeatmapResponse | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
+  const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
     appInfo: { name: "Sector Heatmap", version: "1.0.0" },
@@ -283,7 +285,9 @@ function HeatmapApp() {
 
       app.ontoolcancelled = () => {};
       app.onerror = console.error;
-      app.onhostcontextchanged = () => {};
+      app.onhostcontextchanged = (params) => {
+        setHostContext((prev) => ({ ...prev, ...params }));
+      };
     },
   });
 
@@ -301,6 +305,10 @@ function HeatmapApp() {
 
   useHostStyles(app ?? null);
 
+  useEffect(() => {
+    if (app) setHostContext(app.getHostContext());
+  }, [app]);
+
   if (error) {
     return (
       <div style={{ color: "#ef4444", padding: 16, fontFamily: "monospace" }}>
@@ -309,9 +317,9 @@ function HeatmapApp() {
     );
   }
   if (!app) {
-    return <div style={{ color: "#94a3b8", padding: 16 }}>Connecting...</div>;
+    return <div style={{ color: "var(--t-text-secondary)", padding: 16 }}>Connecting...</div>;
   }
-  return <HeatmapInner app={app} data={data} setData={setData} />;
+  return <HeatmapInner app={app} data={data} setData={setData} hostContext={hostContext} />;
 }
 
 // ── Inner Component ────────────────────────────────────────────────────────────
@@ -320,9 +328,10 @@ interface HeatmapInnerProps {
   app: App;
   data: SectorHeatmapResponse | null;
   setData: React.Dispatch<React.SetStateAction<SectorHeatmapResponse | null>>;
+  hostContext?: McpUiHostContext;
 }
 
-function HeatmapInner({ app, data, setData }: HeatmapInnerProps) {
+function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const [drill, setDrill] = useState<DrillLevel>({ level: "sectors" });
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -421,305 +430,301 @@ function HeatmapInner({ app, data, setData }: HeatmapInnerProps) {
 
   const isClickable = drill.level !== "symbols";
 
+  const subtitle = data ? `${data.marketType} · ${data.count} stocks` : undefined;
+
   return (
-    <div
-      style={{
-        background: "#0f172a",
-        color: "#e2e8f0",
-        fontFamily: "'Inter', system-ui, sans-serif",
-        fontSize: 13,
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: HEADER_H + SVG_H,
-        userSelect: "none",
-      }}
-    >
-      {/* Header */}
+    <WidgetLayout title="Sector Heatmap" subtitle={subtitle} app={app} hostContext={hostContext}>
       <div
         style={{
-          height: HEADER_H,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 13,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 12px",
-          borderBottom: "1px solid #1e293b",
-          flexShrink: 0,
-          gap: 8,
+          flexDirection: "column",
+          minHeight: HEADER_H + SVG_H,
+          userSelect: "none",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-          {canGoBack && (
-            <button
-              onClick={handleBack}
+        {/* Breadcrumb + Controls bar */}
+        <div
+          style={{
+            height: HEADER_H,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 12px",
+            borderBottom: "1px solid var(--t-bg-secondary)",
+            flexShrink: 0,
+            gap: 8,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            {canGoBack && (
+              <button
+                onClick={handleBack}
+                style={{
+                  background: "var(--t-bg-secondary)",
+                  color: "var(--t-text-secondary)",
+                  border: "none",
+                  borderRadius: 4,
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}
+              >
+                ← Back
+              </button>
+            )}
+            <span style={{ color: "var(--t-text-secondary)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {breadcrumb}
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            {/* Period buttons */}
+            <div style={{ display: "flex", gap: 2 }}>
+              {PERIODS.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => handlePeriodClick(p.value)}
+                  disabled={isRefreshing}
+                  style={{
+                    background: selectedPeriod === p.value ? "#3b82f6" : "var(--t-bg-secondary)",
+                    color: selectedPeriod === p.value ? "white" : "var(--t-text-secondary)",
+                    border: "none",
+                    borderRadius: 4,
+                    padding: "3px 7px",
+                    cursor: isRefreshing ? "default" : "pointer",
+                    fontSize: 11,
+                    lineHeight: 1,
+                    opacity: isRefreshing ? 0.5 : 1,
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <span style={{ color: "var(--t-border)", fontSize: 10 }}>|</span>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
               style={{
-                background: "#1e293b",
-                color: "#94a3b8",
+                background: "var(--t-bg-secondary)",
+                color: "var(--t-text-secondary)",
+                border: "1px solid var(--t-border)",
+                borderRadius: 4,
+                padding: "3px 6px",
+                fontSize: 11,
+                outline: "none",
+                cursor: "pointer",
+              }}
+            />
+            <button
+              onClick={() => handleRefresh(selectedDate || undefined, selectedPeriod)}
+              disabled={isRefreshing}
+              style={{
+                background: "var(--t-bg-secondary)",
+                color: "var(--t-text-secondary)",
                 border: "none",
                 borderRadius: 4,
                 padding: "4px 10px",
-                cursor: "pointer",
+                cursor: isRefreshing ? "default" : "pointer",
                 fontSize: 12,
+                opacity: isRefreshing ? 0.5 : 1,
                 lineHeight: 1,
-                flexShrink: 0,
               }}
             >
-              ← Back
+              {isRefreshing ? "Loading…" : "Refresh"}
             </button>
+          </div>
+        </div>
+
+        {/* Treemap area */}
+        <div ref={containerRef} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+          {refreshError && (
+            <div
+              style={{
+                position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)",
+                background: "#7f1d1d", color: "#fca5a5", borderRadius: 4,
+                padding: "4px 12px", fontSize: 12, zIndex: 20, whiteSpace: "nowrap",
+              }}
+            >
+              {refreshError}
+            </div>
           )}
-          <span style={{ color: "#94a3b8", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {breadcrumb}
+          {!data ? (
+            <div
+              style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--t-text-secondary)", fontSize: 14,
+              }}
+            >
+              Waiting for data…
+            </div>
+          ) : nodes.length === 0 ? (
+            <div
+              style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--t-text-secondary)", fontSize: 14,
+              }}
+            >
+              No data for this view
+            </div>
+          ) : (
+            <svg
+              width={svgWidth}
+              height={SVG_H}
+              style={{ display: "block" }}
+              onMouseLeave={() => setTooltip(null)}
+            >
+              {rects.map((rect) => {
+                const node = nodeMap.get(rect.id);
+                if (!node) return null;
+
+                const innerW = rect.w - PAD * 2;
+                const innerH = rect.h - PAD * 2;
+                const cx = rect.x + rect.w / 2;
+                const cy = rect.y + rect.h / 2;
+
+                const showLabel = innerW > 30 && innerH > 14;
+                const showChange = innerW > 45 && innerH > 30;
+
+                const rawLabel = node.label;
+                const maxChars = Math.max(4, Math.floor(innerW / 7));
+                const labelText = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + "…" : rawLabel;
+                const fontSize = Math.min(12, Math.max(7, Math.floor(innerW / (labelText.length * 0.65 + 1))));
+
+                return (
+                  <g
+                    key={rect.id}
+                    onClick={() => isClickable && handleRectClick(rect.id)}
+                    onMouseEnter={() => setTooltip({ node, x: rect.x + rect.w / 2, y: rect.y + rect.h })}
+                    style={{ cursor: isClickable ? "pointer" : "default" }}
+                  >
+                    <rect
+                      x={rect.x + PAD}
+                      y={rect.y + PAD}
+                      width={Math.max(0, innerW)}
+                      height={Math.max(0, innerH)}
+                      fill={node.color}
+                      rx={2}
+                    />
+                    {showLabel && (
+                      <text
+                        x={cx}
+                        y={cy - (showChange ? 7 : 0)}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="rgba(255,255,255,0.92)"
+                        fontSize={fontSize}
+                        fontWeight={600}
+                        fontFamily="'Inter', system-ui, sans-serif"
+                        style={{ pointerEvents: "none" }}
+                      >
+                        {labelText}
+                      </text>
+                    )}
+                    {showChange && node.change !== null && (
+                      <text
+                        x={cx}
+                        y={cy + 9}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="rgba(255,255,255,0.72)"
+                        fontSize={9}
+                        fontFamily="'Inter', system-ui, sans-serif"
+                        style={{ pointerEvents: "none" }}
+                      >
+                        {fmtChange(node.change)}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+          )}
+
+          {/* Floating tooltip */}
+          {tooltip && (
+            <div
+              style={{
+                position: "absolute",
+                left: Math.min(tooltip.x + 8, svgWidth - 190),
+                top: Math.min(tooltip.y + 4, SVG_H - 110),
+                background: "var(--t-bg-secondary)",
+                border: "1px solid var(--t-border)",
+                borderRadius: 6,
+                padding: "8px 12px",
+                pointerEvents: "none",
+                zIndex: 10,
+                minWidth: 160,
+                maxWidth: 200,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              }}
+            >
+              <div style={{ fontWeight: 700, color: "var(--t-text-primary)", marginBottom: 4, fontSize: 13, wordBreak: "break-word" }}>
+                {tooltip.node.companyName ?? tooltip.node.label}
+              </div>
+              {tooltip.node.companyName && tooltip.node.companyName !== tooltip.node.label && (
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 11, marginBottom: 2 }}>{tooltip.node.label}</div>
+              )}
+              <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>
+                Change:{" "}
+                <span style={{ color: (tooltip.node.change ?? 0) >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
+                  {fmtChange(tooltip.node.change)}
+                </span>
+              </div>
+              {tooltip.node.marketCap != null && (
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>
+                  Mkt Cap: {fmtMarketCap(tooltip.node.marketCap)}
+                </div>
+              )}
+              {tooltip.node.count > 1 && (
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>Stocks: {tooltip.node.count}</div>
+              )}
+              {isClickable && (
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 10, marginTop: 4 }}>Click to drill down</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Color legend */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            padding: "6px 12px",
+            borderTop: "1px solid var(--t-bg-secondary)",
+            fontSize: 10,
+            color: "var(--t-text-secondary)",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#cc2222", display: "inline-block" }} />
+            −5%+
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#444", display: "inline-block" }} />
+            0%
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#00aa44", display: "inline-block" }} />
+            +5%+
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4a4a4a", display: "inline-block" }} />
+            N/A
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          {/* Period buttons */}
-          <div style={{ display: "flex", gap: 2 }}>
-            {PERIODS.map((p) => (
-              <button
-                key={p.value}
-                onClick={() => handlePeriodClick(p.value)}
-                disabled={isRefreshing}
-                style={{
-                  background: selectedPeriod === p.value ? "#3b82f6" : "#1e293b",
-                  color: selectedPeriod === p.value ? "white" : "#94a3b8",
-                  border: "none",
-                  borderRadius: 4,
-                  padding: "3px 7px",
-                  cursor: isRefreshing ? "default" : "pointer",
-                  fontSize: 11,
-                  lineHeight: 1,
-                  opacity: isRefreshing ? 0.5 : 1,
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          <span style={{ color: "#334155", fontSize: 10 }}>|</span>
-          {data && (
-            <span style={{ color: "#475569", fontSize: 10 }}>
-              {data.marketType} · {data.count} stocks
-            </span>
-          )}
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={{
-              background: "#1e293b",
-              color: "#94a3b8",
-              border: "1px solid #334155",
-              borderRadius: 4,
-              padding: "3px 6px",
-              fontSize: 11,
-              outline: "none",
-              cursor: "pointer",
-            }}
-          />
-          <button
-            onClick={() => handleRefresh(selectedDate || undefined, selectedPeriod)}
-            disabled={isRefreshing}
-            style={{
-              background: "#1e293b",
-              color: "#94a3b8",
-              border: "none",
-              borderRadius: 4,
-              padding: "4px 10px",
-              cursor: isRefreshing ? "default" : "pointer",
-              fontSize: 12,
-              opacity: isRefreshing ? 0.5 : 1,
-              lineHeight: 1,
-            }}
-          >
-            {isRefreshing ? "Loading…" : "Refresh"}
-          </button>
-        </div>
       </div>
-
-      {/* Treemap area */}
-      <div ref={containerRef} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        {refreshError && (
-          <div
-            style={{
-              position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)",
-              background: "#7f1d1d", color: "#fca5a5", borderRadius: 4,
-              padding: "4px 12px", fontSize: 12, zIndex: 20, whiteSpace: "nowrap",
-            }}
-          >
-            {refreshError}
-          </div>
-        )}
-        {!data ? (
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#475569", fontSize: 14,
-            }}
-          >
-            Waiting for data…
-          </div>
-        ) : nodes.length === 0 ? (
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#475569", fontSize: 14,
-            }}
-          >
-            No data for this view
-          </div>
-        ) : (
-          <svg
-            width={svgWidth}
-            height={SVG_H}
-            style={{ display: "block" }}
-            onMouseLeave={() => setTooltip(null)}
-          >
-            {rects.map((rect) => {
-              const node = nodeMap.get(rect.id);
-              if (!node) return null;
-
-              const innerW = rect.w - PAD * 2;
-              const innerH = rect.h - PAD * 2;
-              const cx = rect.x + rect.w / 2;
-              const cy = rect.y + rect.h / 2;
-
-              const showLabel = innerW > 30 && innerH > 14;
-              const showChange = innerW > 45 && innerH > 30;
-
-              const rawLabel = node.label;
-              const maxChars = Math.max(4, Math.floor(innerW / 7));
-              const labelText = rawLabel.length > maxChars ? rawLabel.slice(0, maxChars - 1) + "…" : rawLabel;
-              const fontSize = Math.min(12, Math.max(7, Math.floor(innerW / (labelText.length * 0.65 + 1))));
-
-              return (
-                <g
-                  key={rect.id}
-                  onClick={() => isClickable && handleRectClick(rect.id)}
-                  onMouseEnter={() => setTooltip({ node, x: rect.x + rect.w / 2, y: rect.y + rect.h })}
-                  style={{ cursor: isClickable ? "pointer" : "default" }}
-                >
-                  <rect
-                    x={rect.x + PAD}
-                    y={rect.y + PAD}
-                    width={Math.max(0, innerW)}
-                    height={Math.max(0, innerH)}
-                    fill={node.color}
-                    rx={2}
-                  />
-                  {showLabel && (
-                    <text
-                      x={cx}
-                      y={cy - (showChange ? 7 : 0)}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="rgba(255,255,255,0.92)"
-                      fontSize={fontSize}
-                      fontWeight={600}
-                      fontFamily="'Inter', system-ui, sans-serif"
-                      style={{ pointerEvents: "none" }}
-                    >
-                      {labelText}
-                    </text>
-                  )}
-                  {showChange && node.change !== null && (
-                    <text
-                      x={cx}
-                      y={cy + 9}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="rgba(255,255,255,0.72)"
-                      fontSize={9}
-                      fontFamily="'Inter', system-ui, sans-serif"
-                      style={{ pointerEvents: "none" }}
-                    >
-                      {fmtChange(node.change)}
-                    </text>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-        )}
-
-        {/* Floating tooltip */}
-        {tooltip && (
-          <div
-            style={{
-              position: "absolute",
-              left: Math.min(tooltip.x + 8, svgWidth - 190),
-              top: Math.min(tooltip.y + 4, SVG_H - 110),
-              background: "#1e293b",
-              border: "1px solid #334155",
-              borderRadius: 6,
-              padding: "8px 12px",
-              pointerEvents: "none",
-              zIndex: 10,
-              minWidth: 160,
-              maxWidth: 200,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-            }}
-          >
-            <div style={{ fontWeight: 700, color: "#f1f5f9", marginBottom: 4, fontSize: 13, wordBreak: "break-word" }}>
-              {tooltip.node.companyName ?? tooltip.node.label}
-            </div>
-            {tooltip.node.companyName && tooltip.node.companyName !== tooltip.node.label && (
-              <div style={{ color: "#64748b", fontSize: 11, marginBottom: 2 }}>{tooltip.node.label}</div>
-            )}
-            <div style={{ color: "#94a3b8", fontSize: 11 }}>
-              Change:{" "}
-              <span style={{ color: (tooltip.node.change ?? 0) >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
-                {fmtChange(tooltip.node.change)}
-              </span>
-            </div>
-            {tooltip.node.marketCap != null && (
-              <div style={{ color: "#94a3b8", fontSize: 11 }}>
-                Mkt Cap: {fmtMarketCap(tooltip.node.marketCap)}
-              </div>
-            )}
-            {tooltip.node.count > 1 && (
-              <div style={{ color: "#94a3b8", fontSize: 11 }}>Stocks: {tooltip.node.count}</div>
-            )}
-            {isClickable && (
-              <div style={{ color: "#475569", fontSize: 10, marginTop: 4 }}>Click to drill down</div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Color legend */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 16,
-          padding: "6px 12px",
-          borderTop: "1px solid #1e293b",
-          fontSize: 10,
-          color: "#475569",
-          flexShrink: 0,
-        }}
-      >
-        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#cc2222", display: "inline-block" }} />
-          −5%+
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#444", display: "inline-block" }} />
-          0%
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#00aa44", display: "inline-block" }} />
-          +5%+
-        </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4a4a4a", display: "inline-block" }} />
-          N/A
-        </span>
-      </div>
-    </div>
+    </WidgetLayout>
   );
 }
 

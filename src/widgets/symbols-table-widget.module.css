@@ -1,29 +1,7 @@
-.main {
-  width: 100%;
-  max-width: 100%;
-  padding: 1rem;
-}
-
-.header {
+.headerRow {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-end;
   margin-bottom: 1rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.title {
-  font-size: var(--font-heading-lg-size, 1.5rem);
-  font-weight: var(--font-weight-semibold, 600);
-  margin: 0;
-  color: var(--color-text-primary, inherit);
-}
-
-.subtitle {
-  font-size: var(--font-text-sm-size, 0.875rem);
-  color: var(--color-text-secondary, #666);
-  margin-top: 0.25rem;
 }
 
 /* Period selector */
@@ -35,10 +13,10 @@
 
 .periodBtn {
   padding: 0.3rem 0.6rem;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-sm, 4px);
-  background: var(--color-background-secondary, #f5f5f5);
-  color: var(--color-text-secondary, #666);
+  background: var(--t-bg-secondary);
+  color: var(--t-text-secondary);
   font-family: inherit;
   font-size: var(--font-text-sm-size, 0.875rem);
   cursor: pointer;
@@ -46,7 +24,7 @@
 }
 
 .periodBtn:hover:not(:disabled) {
-  background: var(--color-background-tertiary, #eee);
+  background: var(--t-bg-tertiary);
 }
 
 .periodBtn:disabled {
@@ -55,9 +33,9 @@
 }
 
 .periodBtnActive {
-  background: var(--color-accent-primary, #2563eb);
+  background: var(--t-accent);
   color: white;
-  border-color: var(--color-accent-primary, #2563eb);
+  border-color: var(--t-accent);
 }
 
 .periodBtnActive:hover:not(:disabled) {
@@ -69,7 +47,7 @@
   overflow-x: auto;
   overflow-y: auto;
   max-height: 480px;
-  border: 1px solid var(--color-border-primary, #e5e5e5);
+  border: 1px solid var(--t-border);
   border-radius: var(--border-radius-md, 8px);
 }
 
@@ -82,12 +60,12 @@
 .th {
   position: sticky;
   top: 0;
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
   padding: 0.5rem 0.75rem;
   text-align: right;
   font-weight: var(--font-weight-semibold, 600);
-  color: var(--color-text-secondary, #666);
-  border-bottom: 1px solid var(--color-border-primary, #e5e5e5);
+  color: var(--t-text-secondary);
+  border-bottom: 1px solid var(--t-border);
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -100,7 +78,7 @@
 }
 
 .th:hover {
-  background: var(--color-background-tertiary, #eee);
+  background: var(--t-bg-tertiary);
 }
 
 .sortIcon {
@@ -116,13 +94,13 @@
 }
 
 .tr:hover {
-  background: var(--color-background-secondary, #f5f5f5);
+  background: var(--t-bg-secondary);
 }
 
 .td {
   padding: 0.4rem 0.75rem;
   text-align: right;
-  border-bottom: 1px solid var(--color-border-primary, rgba(229, 229, 229, 0.5));
+  border-bottom: 1px solid var(--t-border);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -130,7 +108,7 @@
 .tdLeft {
   padding: 0.4rem 0.75rem;
   text-align: left;
-  border-bottom: 1px solid var(--color-border-primary, rgba(229, 229, 229, 0.5));
+  border-bottom: 1px solid var(--t-border);
   white-space: nowrap;
 }
 
@@ -142,7 +120,7 @@
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--color-text-secondary, #666);
+  color: var(--t-text-secondary);
 }
 
 .positive {
@@ -158,20 +136,13 @@
   justify-content: center;
   align-items: center;
   min-height: 200px;
-  color: var(--color-text-secondary, #666);
+  color: var(--t-text-secondary);
 }
 
 .error {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--t-error-bg);
+  color: var(--t-error-text);
   padding: 1rem;
   border-radius: var(--border-radius-md, 8px);
   margin: 1rem 0;
-}
-
-@media (prefers-color-scheme: dark) {
-  .error {
-    background: #450a0a;
-    color: #fca5a5;
-  }
 }

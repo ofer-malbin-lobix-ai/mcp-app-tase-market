@@ -6,6 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
+import { WidgetLayout } from "../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import styles from "./market-uptrend-symbols-widget.module.css";
 
@@ -132,28 +133,6 @@ function UptrendSymbolsWidgetInner({ app, data, setData, hostContext }: UptrendS
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
-
-  // Check if fullscreen is available
-  const isFullscreenAvailable = hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
-
-  // Toggle fullscreen mode
-  const toggleFullscreen = useCallback(async () => {
-    const newMode = displayMode === "fullscreen" ? "inline" : "fullscreen";
-    try {
-      const result = await app.requestDisplayMode({ mode: newMode });
-      setDisplayMode(result.mode as "inline" | "fullscreen");
-    } catch (e) {
-      console.error("Failed to toggle fullscreen:", e);
-    }
-  }, [app, displayMode]);
-
-  // Update display mode when host context changes
-  useEffect(() => {
-    if (hostContext?.displayMode) {
-      setDisplayMode(hostContext.displayMode as "inline" | "fullscreen");
-    }
-  }, [hostContext?.displayMode]);
 
   // Sync date picker with the trade date from data
   useEffect(() => {
@@ -186,35 +165,10 @@ function UptrendSymbolsWidgetInner({ app, data, setData, hostContext }: UptrendS
     }
   }, [app, setData]);
 
+  const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
+
   return (
-    <main
-      className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
-      style={{
-        paddingTop: hostContext?.safeAreaInsets?.top,
-        paddingRight: hostContext?.safeAreaInsets?.right,
-        paddingBottom: hostContext?.safeAreaInsets?.bottom,
-        paddingLeft: hostContext?.safeAreaInsets?.left,
-      }}
-    >
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Uptrend Symbols</h1>
-          {data && (
-            <div className={styles.subtitle}>
-              {data.tradeDate} · {data.marketType}
-            </div>
-          )}
-        </div>
-        {isFullscreenAvailable && (
-          <button
-            className={styles.fullscreenButton}
-            onClick={toggleFullscreen}
-            title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
-        )}
-      </div>
+    <WidgetLayout title="Uptrend Symbols" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title}>
 
       {data && (
         <div className={styles.stats}>
@@ -268,7 +222,7 @@ function UptrendSymbolsWidgetInner({ app, data, setData, hostContext }: UptrendS
           {isRefreshing ? "Loading..." : "Refresh"}
         </button>
       </div>
-    </main>
+    </WidgetLayout>
   );
 }
 

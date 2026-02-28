@@ -3,10 +3,12 @@
  * Allows users to add, edit, and delete portfolio positions stored in Clerk privateMetadata.
  * Columns: Symbol | Start Date | Amount | Actions (Edit / Delete)
  */
+import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./my-positions-manager-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -95,6 +97,7 @@ function MyPositionsManagerApp() {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
     appInfo: { name: "My Positions Manager", version: "1.0.0" },
@@ -127,6 +130,10 @@ function MyPositionsManagerApp() {
       };
 
       app.onerror = console.error;
+
+      app.onhostcontextchanged = (params) => {
+        setHostContext((prev) => ({ ...prev, ...params }));
+      };
     },
   });
 
@@ -151,6 +158,10 @@ function MyPositionsManagerApp() {
   }, [needsAutoFetch, app]);
 
   useHostStyles(app ?? null);
+
+  useEffect(() => {
+    if (app) setHostContext(app.getHostContext());
+  }, [app]);
 
   // ─── Refresh positions from server ──────────────────────────────
 
@@ -246,22 +257,19 @@ function MyPositionsManagerApp() {
   const isBusy = isSaving || isDeleting !== null;
 
   return (
-    <main className={styles.main}>
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>My Positions Manager</h1>
-          {data && (
-            <div className={styles.subtitle}>
-              {positions.length} position{positions.length !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-        {!showForm && (
+    <WidgetLayout
+      title="Positions Manager"
+      subtitle={data ? `${positions.length} position${positions.length !== 1 ? "s" : ""}` : undefined}
+      app={app}
+      hostContext={hostContext}
+    >
+      {!showForm && (
+        <div className={styles.addBtnWrapper}>
           <button className={styles.addBtn} onClick={handleAddClick} disabled={isBusy}>
             + Add Position
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {authError && (
         <div className={styles.authError}>
@@ -364,7 +372,7 @@ function MyPositionsManagerApp() {
           </table>
         </div>
       ) : null}
-    </main>
+    </WidgetLayout>
   );
 }
 
