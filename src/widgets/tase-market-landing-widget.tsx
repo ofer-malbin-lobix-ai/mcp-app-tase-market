@@ -251,6 +251,10 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
       )}
 
       <footer className={styles.footer}>
+        {(() => {
+          const hv = app.getHostVersion();
+          return hv ? <div className={styles.debugHost}>Host: {hv.name} v{hv.version}</div> : null;
+        })()}
         <button
           className={styles.companyLink}
           onClick={async () => {

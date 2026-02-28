@@ -137,6 +137,12 @@
   transition: color 0.2s;
 }
 
+.debugHost {
+  font-size: var(--font-text-xs-size, 0.7rem);
+  color: var(--color-text-secondary, #64748b);
+  margin-bottom: 0.5rem;
+}
+
 .companyLink:hover {
   color: #60a5fa;
   text-decoration: underline;
