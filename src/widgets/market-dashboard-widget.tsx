@@ -174,8 +174,8 @@ async function fetchAllData(
 
   const [spiritResult, eodResult, uptrendResult] = await Promise.allSettled([
     app.callServerTool({ name: "get-market-spirit-data", arguments: callArgs }),
-    app.callServerTool({ name: "get-end-of-day-data", arguments: callArgs }),
-    app.callServerTool({ name: "get-uptrend-symbols-data", arguments: callArgs }),
+    app.callServerTool({ name: "get-market-end-of-day-data", arguments: callArgs }),
+    app.callServerTool({ name: "get-market-uptrend-symbols-data", arguments: callArgs }),
   ]);
 
   setData({
