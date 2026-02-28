@@ -35,29 +35,29 @@ const TOOL_GROUPS = [
   {
     title: "Market",
     tools: [
-      { icon: "\u{1F4CA}", name: "Market Dashboard", description: "Single-page overview combining market spirit, top movers, and uptrend count" },
-      { icon: "\u{1F6A6}", name: "Market Spirit", description: "Traffic light indicator for market conditions" },
-      { icon: "\u{1F4C8}", name: "Market End of Day", description: "Full market data with prices, volume, and technical indicators" },
-      { icon: "\u{2B06}\u{FE0F}", name: "Market Uptrend Symbols", description: "Symbols in uptrend with EZ values" },
-      { icon: "\u{1F5FA}\u{FE0F}", name: "Market Sector Heatmap", description: "Treemap heatmap by sector, sub-sector, and symbol" },
+      { icon: "\u{1F4CA}", name: "Market Dashboard", description: "Single-page overview combining market spirit, top movers, and uptrend count", prompt: "call show-market-dashboard-widget" },
+      { icon: "\u{1F6A6}", name: "Market Spirit", description: "Traffic light indicator for market conditions", prompt: "call show-market-spirit-widget" },
+      { icon: "\u{1F4C8}", name: "Market End of Day", description: "Full market data with prices, volume, and technical indicators", prompt: "call show-market-end-of-day-widget" },
+      { icon: "\u{2B06}\u{FE0F}", name: "Market Uptrend Symbols", description: "Symbols in uptrend with EZ values", prompt: "call show-market-uptrend-symbols-widget" },
+      { icon: "\u{1F5FA}\u{FE0F}", name: "Market Sector Heatmap", description: "Treemap heatmap by sector, sub-sector, and symbol", prompt: "call show-market-sector-heatmap-widget" },
     ],
   },
   {
     title: "My Position",
     tools: [
-      { icon: "\u{1F4CB}", name: "My Positions Manager", description: "Add, edit, and delete portfolio positions" },
-      { icon: "\u{1F4CA}", name: "My Position Table", description: "Portfolio EOD table with period selector" },
-      { icon: "\u{1F4C8}", name: "My Position End of Day", description: "Portfolio data across date ranges" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "My Position Candlestick", description: "Multi-symbol candlestick with sidebar" },
+      { icon: "\u{1F4CB}", name: "My Positions Manager", description: "Add, edit, and delete portfolio positions", prompt: "call show-my-positions-manager-widget" },
+      { icon: "\u{1F4CA}", name: "My Position Table", description: "Portfolio EOD table with period selector", prompt: "call show-my-position-table-widget" },
+      { icon: "\u{1F4C8}", name: "My Position End of Day", description: "Portfolio data across date ranges", prompt: "call show-my-position-end-of-day-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "My Position Candlestick", description: "Multi-symbol candlestick with sidebar", prompt: "call show-my-position-candlestick-widget" },
     ],
   },
   {
     title: "Symbols",
     tools: [
-      { icon: "\u{1F4CA}", name: "Symbols Table", description: "EOD table for any symbols with period selector" },
-      { icon: "\u{1F50D}", name: "Symbols End of Day", description: "Data for specific symbols across date ranges" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "Symbols Candlestick", description: "Multi-symbol candlestick for any symbols" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "Symbol Candlestick", description: "Single-symbol candlestick chart" },
+      { icon: "\u{1F4CA}", name: "Symbols Table", description: "EOD table for any symbols with period selector", prompt: "call show-symbols-table-widget" },
+      { icon: "\u{1F50D}", name: "Symbols End of Day", description: "Data for specific symbols across date ranges", prompt: "call show-symbols-end-of-day-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "Symbols Candlestick", description: "Multi-symbol candlestick for any symbols", prompt: "call show-symbols-candlestick-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", name: "Symbol Candlestick", description: "Single-symbol candlestick chart", prompt: "call show-symbol-candlestick-widget" },
     ],
   },
 ];
@@ -189,11 +189,24 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
         </div>
         <div className={styles.tabPanel}>
           {TOOL_GROUPS[activeTab].tools.map((tool) => (
-            <div key={tool.name} className={styles.featureCard}>
+            <button
+              key={tool.name}
+              className={styles.featureCard}
+              onClick={async () => {
+                try {
+                  await app.sendMessage({
+                    role: "user",
+                    content: [{ type: "text", text: tool.prompt }],
+                  });
+                } catch (e) {
+                  console.error("sendMessage failed:", e);
+                }
+              }}
+            >
               <span className={styles.featureIcon}>{tool.icon}</span>
               <span className={styles.featureName}>{tool.name}</span>
               <span className={styles.featureDescription}>{tool.description}</span>
-            </div>
+            </button>
           ))}
         </div>
       </div>
