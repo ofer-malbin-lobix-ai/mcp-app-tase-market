@@ -194,20 +194,20 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   });
 
   // Resource URIs
-  const myPositionResourceUri = "ui://tase-end-of-day/my-position-table-widget-v3.html";
-  const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v3.html";
-  const endOfDayResourceUri = "ui://tase-end-of-day/market-end-of-day-widget-v4.html";
-  const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v3.html";
-  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v3.html";
-  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/my-position-end-of-day-widget-v4.html";
-  const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v3.html";
-  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v3.html";
-  const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v3.html";
-  const subscriptionResourceUri = "ui://tase-end-of-day/tase-market-landing-widget-v5.html";
-  const myPositionsManagerResourceUri = "ui://tase-end-of-day/my-positions-manager-widget-v1.html";
-  const symbolsEndOfDayResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v1.html";
-  const symbolsCandlestickWidgetResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v1.html";
-  const symbolsTableResourceUri = "ui://tase-end-of-day/symbols-table-widget-v1.html";
+  const myPositionResourceUri = "ui://tase-end-of-day/my-position-table-widget-v4.html";
+  const sectorHeatmapResourceUri = "ui://tase-end-of-day/market-sector-heatmap-widget-v4.html";
+  const endOfDayResourceUri = "ui://tase-end-of-day/market-end-of-day-widget-v5.html";
+  const marketSpiritResourceUri = "ui://tase-end-of-day/market-spirit-widget-v4.html";
+  const uptrendSymbolsResourceUri = "ui://tase-end-of-day/market-uptrend-symbols-widget-v4.html";
+  const endOfDaySymbolsResourceUri = "ui://tase-end-of-day/my-position-end-of-day-widget-v5.html";
+  const candlestickResourceUri = "ui://tase-end-of-day/symbol-candlestick-widget-v4.html";
+  const symbolsCandlestickResourceUri = "ui://tase-end-of-day/my-position-candlestick-widget-v4.html";
+  const dashboardResourceUri = "ui://tase-end-of-day/market-dashboard-widget-v4.html";
+  const subscriptionResourceUri = "ui://tase-end-of-day/tase-market-landing-widget-v6.html";
+  const myPositionsManagerResourceUri = "ui://tase-end-of-day/my-positions-manager-widget-v2.html";
+  const symbolsEndOfDayResourceUri = "ui://tase-end-of-day/symbols-end-of-day-widget-v2.html";
+  const symbolsCandlestickWidgetResourceUri = "ui://tase-end-of-day/symbols-candlestick-widget-v2.html";
+  const symbolsTableResourceUri = "ui://tase-end-of-day/symbols-table-widget-v2.html";
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
