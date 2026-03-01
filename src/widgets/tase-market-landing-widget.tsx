@@ -130,7 +130,8 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
 
   return (
     <WidgetLayout title="Tel Aviv Stock Exchange (TASE)" app={app} hostContext={hostContext} titleClassName={styles.title}>
-      <div className={styles.header}>
+      <div className={styles.content}>
+      <div className={styles.innerHeader}>
         <h2 className={styles.title2}>TASE Market Tools</h2>
         <p className={styles.subtitle}>Data Analysis, Using AI</p>
       </div>
@@ -233,6 +234,7 @@ function SubscriptionInner({ data, hostContext, app }: SubscriptionInnerProps) {
           www.lobix.ai
         </button>
       </footer>
+      </div>
     </WidgetLayout>
   );
 }
