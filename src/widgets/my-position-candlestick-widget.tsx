@@ -7,6 +7,7 @@ import { renderSymbolsCandlestickApp } from "./shared/SymbolsCandlestickApp";
 
 const config: SymbolsCandlestickConfig = {
   toolName: "get-my-position-end-of-day-data",
+  symbolDatesToolName: "get-user-positions",
 };
 
 renderSymbolsCandlestickApp(config);

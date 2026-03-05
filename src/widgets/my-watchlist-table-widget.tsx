@@ -131,6 +131,8 @@ function MyWatchlistTableApp() {
   const [sortKey, setSortKey] = useState<SortKey>("symbol");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
+  const [symbolNotes, setSymbolNotes] = useState<Record<string, string>>({});
+  const [activeNote, setActiveNote] = useState<{ symbol: string; note: string } | null>(null);
 
   const { app, error } = useApp({
     appInfo: { name: "My Watchlist Table", version: "1.0.0" },
@@ -171,6 +173,39 @@ function MyWatchlistTableApp() {
     if (typeof app.callServerTool !== "function") return;
     // Can't auto-fetch without symbols; rely on ontoolresult succeeding
   }, [needsAutoFetch, app]);
+
+  // Fetch watchlist notes on mount
+  useEffect(() => {
+    if (!app || typeof app.callServerTool !== "function") return;
+    (async () => {
+      try {
+        const result = await app.callServerTool({ name: "get-user-watchlist", arguments: {} });
+        if (!result) return;
+        let parsed: unknown = null;
+        if (result.structuredContent) {
+          parsed = result.structuredContent;
+        } else {
+          const textContent = result.content?.find((c) => c.type === "text");
+          if (textContent && textContent.type === "text") {
+            parsed = JSON.parse(textContent.text);
+            // ChatGPT double-wrap
+            if (parsed && typeof (parsed as Record<string, unknown>).text === "string" && !Array.isArray((parsed as Record<string, unknown>).watchlist)) {
+              parsed = JSON.parse((parsed as Record<string, string>).text);
+            }
+          }
+        }
+        const watchlist = (parsed as { watchlist?: { symbol: string; note?: string }[] })?.watchlist;
+        if (!Array.isArray(watchlist)) return;
+        const notes: Record<string, string> = {};
+        for (const item of watchlist) {
+          if (item.note) notes[item.symbol] = item.note;
+        }
+        setSymbolNotes(notes);
+      } catch (e) {
+        console.error("Failed to fetch watchlist notes:", e);
+      }
+    })();
+  }, [app]);
 
   useHostStyles(app ?? null);
 
@@ -289,6 +324,7 @@ function MyWatchlistTableApp() {
                 <th {...thProps("symbol", styles.thLeft)}>
                   Symbol <SortIcon col="symbol" sortKey={sortKey} sortDir={sortDir} />
                 </th>
+                <th className={styles.thActions} />
                 <th {...thProps("securityId")}>
                   Sec ID <SortIcon col="securityId" sortKey={sortKey} sortDir={sortDir} />
                 </th>
@@ -316,6 +352,42 @@ function MyWatchlistTableApp() {
               {displayRows.map((row) => (
                 <tr key={row.symbol} className={styles.tr}>
                   <td className={`${styles.tdLeft} ${styles.tdSymbol}`}>{row.symbol}</td>
+                  <td className={styles.tdActions}>
+                    <span className={styles.rowActions}>
+                      <button
+                        className={styles.actionBtn}
+                        title="Candlestick"
+                        data-tooltip="Candlestick"
+                        onClick={() => app.sendMessage({
+                          role: "user",
+                          content: [{ type: "text", text: `call show-symbol-candlestick-widget with symbol: "${row.symbol}"` }],
+                        })}
+                      >&#x1F56F;&#xFE0F;</button>
+                      <button
+                        className={styles.actionBtn}
+                        title="Intraday"
+                        data-tooltip="Intraday"
+                        onClick={() => app.sendMessage({
+                          role: "user",
+                          content: [{ type: "text", text: `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "${row.symbol}"` }],
+                        })}
+                      >&#x23F1;&#xFE0F;</button>
+                      {symbolNotes[row.symbol] ? (
+                        <button
+                          className={styles.actionBtn}
+                          title="Note"
+                          data-tooltip="Note"
+                          onClick={() => setActiveNote({ symbol: row.symbol, note: symbolNotes[row.symbol] })}
+                        >&#x1F4DD;</button>
+                      ) : (
+                        <button
+                          className={`${styles.actionBtn} ${styles.actionBtnDisabled}`}
+                          title="No note"
+                          disabled
+                        >&#x1F4DD;</button>
+                      )}
+                    </span>
+                  </td>
                   <td className={styles.td}>{row.securityId}</td>
                   <td className={`${styles.tdLeft} ${styles.tdCompany}`} title={row.companyName ?? ""}>
                     {row.companyName ?? "—"}
@@ -351,6 +423,18 @@ function MyWatchlistTableApp() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {activeNote && (
+        <div className={styles.modalOverlay} onClick={() => setActiveNote(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>{activeNote.symbol}</span>
+              <button className={styles.modalClose} onClick={() => setActiveNote(null)}>&times;</button>
+            </div>
+            <div className={styles.modalBody}>{activeNote.note}</div>
+          </div>
         </div>
       )}
     </WidgetLayout>

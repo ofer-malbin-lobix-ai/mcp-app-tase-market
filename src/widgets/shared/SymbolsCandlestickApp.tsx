@@ -23,6 +23,7 @@ import styles from "./symbols-candlestick-widget.module.css";
 
 export interface SymbolsCandlestickConfig {
   toolName: string; // auto-fetch tool, e.g. "get-symbols-end-of-days-data"
+  symbolDatesToolName?: string; // "get-user-positions" or "get-user-watchlist" — fetches per-symbol startDate
 }
 
 function deriveTitle(toolName: string): string {
@@ -506,6 +507,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
+  const [symbolDates, setSymbolDates] = useState<Record<string, string>>({});
   const [sidebarPeriod, setSidebarPeriod] = useState<HeatmapPeriod>("1D");
   const [sidebarItems, setSidebarItems] = useState<StockData[] | null>(null);
   const [isFetchingPeriod, setIsFetchingPeriod] = useState(false);
@@ -562,10 +564,45 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       .catch((e) => console.error("Auto-fetch failed:", e));
   }, [needsAutoFetch, app]);
 
-  // Sync date inputs from eodData on first load
+  // Fetch per-symbol dates (positions/watchlist startDate) on mount
   useEffect(() => {
-    if (eodData?.dateFrom && !selectedDateFrom) setSelectedDateFrom(eodData.dateFrom);
-  }, [eodData?.dateFrom, selectedDateFrom]);
+    if (!config.symbolDatesToolName || !app || typeof app.callServerTool !== "function") return;
+    app.callServerTool({ name: config.symbolDatesToolName, arguments: {} })
+      .then((result) => {
+        try {
+          if (!result) return;
+          let parsed: unknown;
+          if (result.structuredContent) {
+            parsed = result.structuredContent;
+          } else {
+            const textContent = result.content?.find((c) => c.type === "text");
+            if (!textContent || textContent.type !== "text") return;
+            parsed = JSON.parse(textContent.text);
+            // ChatGPT double-wrap handling
+            if (parsed && typeof (parsed as Record<string, unknown>).text === "string") {
+              parsed = JSON.parse((parsed as Record<string, string>).text);
+            }
+          }
+          // Handle both positions[] and watchlist[] shapes
+          const data = parsed as Record<string, unknown>;
+          const items = (data.positions ?? data.watchlist) as Array<{ symbol: string; startDate: string }> | undefined;
+          if (!Array.isArray(items)) return;
+          const map: Record<string, string> = {};
+          for (const item of items) {
+            if (item.symbol && item.startDate) map[item.symbol] = item.startDate;
+          }
+          setSymbolDates(map);
+        } catch (e) {
+          console.error("Failed to parse symbol dates:", e);
+        }
+      })
+      .catch((e) => console.error("Failed to fetch symbol dates:", e));
+  }, [app, config.symbolDatesToolName]);
+
+  // Sync date inputs from eodData on first load (skip when per-symbol dates are active)
+  useEffect(() => {
+    if (eodData?.dateFrom && !selectedDateFrom && Object.keys(symbolDates).length === 0) setSelectedDateFrom(eodData.dateFrom);
+  }, [eodData?.dateFrom, selectedDateFrom, symbolDates]);
 
   useEffect(() => {
     if (eodData?.dateTo && !selectedDateTo) setSelectedDateTo(eodData.dateTo);
@@ -606,8 +643,12 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     setRefreshError(null);
     try {
       const timeframe = tf ?? selectedTimeframe;
-      const from = dateFrom ?? (selectedDateFrom || eodData?.dateFrom);
+      // Per-symbol date: use symbolDates[symbol] when available
+      const perSymbolDate = symbolDates[symbol];
+      const from = dateFrom ?? perSymbolDate ?? (selectedDateFrom || eodData?.dateFrom);
       const to = dateTo ?? (selectedDateTo || eodData?.dateTo);
+      // Update the "From" date input to reflect per-symbol date
+      if (perSymbolDate && !dateFrom) setSelectedDateFrom(perSymbolDate);
       const args: Record<string, unknown> = { symbol, timeframe };
       if (from) args.dateFrom = from;
       if (to) args.dateTo = to;
@@ -622,7 +663,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     } finally {
       setIsChartLoading(false);
     }
-  }, [app, eodData?.dateFrom, eodData?.dateTo, selectedTimeframe, selectedDateFrom, selectedDateTo]);
+  }, [app, eodData?.dateFrom, eodData?.dateTo, selectedTimeframe, selectedDateFrom, selectedDateTo, symbolDates]);
 
   const handleTimeframeChange = useCallback((tf: CandlestickTimeframe) => {
     setSelectedTimeframe(tf);
@@ -677,11 +718,13 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   }, [app, eodData, periodToolName]);
 
   // Auto-select first symbol when sidebar data loads
+  // When symbolDatesToolName is set, wait for symbolDates to be populated before auto-selecting
   useEffect(() => {
     if (sidebarSymbols.length > 0 && !selectedSymbol) {
+      if (config.symbolDatesToolName && Object.keys(symbolDates).length === 0) return;
       handleSelectSymbol(sidebarSymbols[0].symbol);
     }
-  }, [sidebarSymbols, selectedSymbol, handleSelectSymbol]);
+  }, [sidebarSymbols, selectedSymbol, handleSelectSymbol, config.symbolDatesToolName, symbolDates]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;

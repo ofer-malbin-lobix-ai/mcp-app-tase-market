@@ -523,7 +523,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       title: "Show My Position Candlestick",
       description: "Displays a candlestick view for the user's portfolio: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
       inputSchema: {
-        dateFrom: z.string().describe("Start date in YYYY-MM-DD format"),
+        dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, each symbol defaults to its position start date."),
         dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
       },
       _meta: { ui: { resourceUri: symbolsCandlestickResourceUri } },
@@ -1224,7 +1224,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       title: "Show My Watchlist Candlestick",
       description: "Displays a candlestick view for the user's watchlist: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
       inputSchema: {
-        dateFrom: z.string().describe("Start date in YYYY-MM-DD format"),
+        dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, each symbol defaults to its watchlist start date."),
         dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
       },
       _meta: { ui: { resourceUri: myWatchlistCandlestickResourceUri } },

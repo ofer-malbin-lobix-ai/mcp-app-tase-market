@@ -139,6 +139,133 @@
   color: var(--t-text-secondary);
 }
 
+/* Actions column */
+.thActions {
+  position: sticky;
+  top: 0;
+  background: var(--t-bg-secondary);
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--t-border);
+  width: 5rem;
+}
+
+.tdActions {
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.rowActions {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  line-height: 1;
+  position: relative;
+}
+
+.actionBtn:hover {
+  opacity: 1;
+}
+
+.actionBtn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--t-bg-tertiary, #333);
+  color: var(--t-text-primary, #fff);
+  font-size: 11px;
+  font-family: var(--font-sans, system-ui);
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.actionBtn:hover::after {
+  opacity: 1;
+}
+
+.actionBtnDisabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.actionBtnDisabled:hover {
+  opacity: 0.2;
+}
+
+/* Notes modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--t-bg-primary, #fff);
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-md, 8px);
+  width: min(90%, 400px);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.modalTitle {
+  font-weight: var(--font-weight-semibold, 600);
+  font-size: 0.9375rem;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: var(--t-text-secondary);
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.modalClose:hover {
+  color: var(--t-text-primary);
+}
+
+.modalBody {
+  padding: 1rem;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--t-text-primary);
+  line-height: 1.5;
+}
+
 .error {
   background: var(--t-error-bg);
   color: var(--t-error-text);
