@@ -1,0 +1,29 @@
+/* Theme CSS variables for light and dark modes.
+ * Static values — the theme toggle switches between these.
+ * Host-provided --color-* variables are NOT referenced here
+ * so the toggle always works.
+ */
+
+[data-theme="light"] {
+  --t-bg-primary: #ffffff;
+  --t-bg-secondary: #f5f5f5;
+  --t-bg-tertiary: #eeeeee;
+  --t-text-primary: #1a1a1a;
+  --t-text-secondary: #666666;
+  --t-border: #e5e5e5;
+  --t-accent: #2563eb;
+  --t-error-bg: #fef2f2;
+  --t-error-text: #dc2626;
+}
+
+[data-theme="dark"] {
+  --t-bg-primary: #0f172a;
+  --t-bg-secondary: #1e293b;
+  --t-bg-tertiary: #334155;
+  --t-text-primary: #e2e8f0;
+  --t-text-secondary: #94a3b8;
+  --t-border: #334155;
+  --t-accent: #3b82f6;
+  --t-error-bg: #450a0a;
+  --t-error-text: #fca5a5;
+}

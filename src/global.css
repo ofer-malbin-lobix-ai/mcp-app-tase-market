@@ -1,0 +1,19 @@
+@import "./components/theme.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 14px;
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+}
+
+code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9em;
+}

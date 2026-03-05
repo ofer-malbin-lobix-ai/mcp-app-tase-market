@@ -1,0 +1,100 @@
+{
+  "name": "mcp-app-tase-market",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "description": "MCP App for TASE (Tel Aviv Stock Exchange) end of day data visualization",
+  "license": "MIT",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "bin": {
+    "mcp-server-tase-end-of-day": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && cross-env INPUT=market-end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=market-uptrend-symbols-widget.html vite build && cross-env INPUT=my-position-end-of-day-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbol-intraday-candlestick-widget.html vite build && cross-env INPUT=my-position-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-market-landing-widget.html vite build && cross-env INPUT=market-sector-heatmap-widget.html vite build && cross-env INPUT=my-position-table-widget.html vite build && cross-env INPUT=my-positions-manager-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=symbols-table-widget.html vite build && cross-env INPUT=symbols-end-of-day-widget.html vite build && cross-env INPUT=market-last-update-widget.html vite build && cross-env INPUT=tase-market-settings-widget.html vite build && cross-env INPUT=my-watchlist-manager-widget.html vite build && cross-env INPUT=my-watchlist-table-widget.html vite build && cross-env INPUT=my-watchlist-end-of-day-widget.html vite build && cross-env INPUT=my-watchlist-candlestick-widget.html vite build",
+    "build:dashboard": "cross-env INPUT=market-dashboard-widget.html vite build",
+    "build:market-end-of-day": "cross-env INPUT=market-end-of-day-widget.html vite build",
+    "build:spirit": "cross-env INPUT=market-spirit-widget.html vite build",
+    "build:market-uptrend-symbols": "cross-env INPUT=market-uptrend-symbols-widget.html vite build",
+    "build:my-position-end-of-day": "cross-env INPUT=my-position-end-of-day-widget.html vite build",
+    "build:candlestick": "cross-env INPUT=symbol-candlestick-widget.html vite build",
+    "build:symbol-intraday-candlestick": "cross-env INPUT=symbol-intraday-candlestick-widget.html vite build",
+    "build:my-position-candlestick": "cross-env INPUT=my-position-candlestick-widget.html vite build",
+    "build:landing": "cross-env INPUT=tase-market-landing-widget.html vite build",
+    "build:market-sector-heatmap": "cross-env INPUT=market-sector-heatmap-widget.html vite build",
+    "build:my-position-table": "cross-env INPUT=my-position-table-widget.html vite build",
+    "build:my-positions-manager": "cross-env INPUT=my-positions-manager-widget.html vite build",
+    "build:symbols-candlestick": "cross-env INPUT=symbols-candlestick-widget.html vite build",
+    "build:symbols-table": "cross-env INPUT=symbols-table-widget.html vite build",
+    "build:symbols-end-of-day": "cross-env INPUT=symbols-end-of-day-widget.html vite build",
+    "build:market-last-update": "cross-env INPUT=market-last-update-widget.html vite build",
+    "build:settings": "cross-env INPUT=tase-market-settings-widget.html vite build",
+    "build:my-watchlist-manager": "cross-env INPUT=my-watchlist-manager-widget.html vite build",
+    "build:my-watchlist-table": "cross-env INPUT=my-watchlist-table-widget.html vite build",
+    "build:my-watchlist-end-of-day": "cross-env INPUT=my-watchlist-end-of-day-widget.html vite build",
+    "build:my-watchlist-candlestick": "cross-env INPUT=my-watchlist-candlestick-widget.html vite build",
+    "postbuild": "tsx scripts/generate-widget-version.ts",
+    "watch": "cross-env INPUT=end-of-day-widget.html vite build --watch",
+    "serve": "node dist/main.js",
+    "serve:dev": "tsx main.ts",
+    "start": "node dist/main.js",
+    "dev": "cross-env NODE_ENV=development concurrently 'npm run watch' 'tsx --watch main.ts'",
+    "test:start-chrome": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9226 --user-data-dir=/Users/ofermalbin/.claude/puppeteer-profile --no-first-run --no-default-browser-check --disable-extensions about:blank &",
+    "test:widget": "node tests/widget-tests.mjs",
+    "test:all": "node tests/widget-tests.mjs all",
+    "test:widget:dev": "node tests/widget-tests.mjs --mcp tase-market-dev",
+    "test:all:dev": "node tests/widget-tests.mjs all --mcp tase-market-dev",
+    "test:widget:claude": "node tests/widget-tests.mjs --platform claude-desktop",
+    "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop"
+  },
+  "dependencies": {
+    "@clerk/express": "^1.7.75",
+    "@clerk/mcp-tools": "^0.3.1",
+    "@modelcontextprotocol/ext-apps": "^1.1.2",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@prisma/adapter-neon": "^7.4.2",
+    "@prisma/client": "^7.4.2",
+    "@tanstack/react-table": "^8.21.3",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "express": "^5.1.0",
+    "lightweight-charts": "^5.1.0",
+    "lightweight-charts-react-components": "^1.4.0",
+    "node-cron": "^4.2.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "stream-json": "^1.9.1",
+    "ws": "^8.19.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.0",
+    "@types/node": "^25.3.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^5.1.3",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.4.2",
+    "puppeteer-core": "^24.37.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.0"
+  }
+}

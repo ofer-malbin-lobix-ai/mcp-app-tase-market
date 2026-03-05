@@ -1,0 +1,90 @@
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryCard {
+  background: var(--t-bg-secondary);
+  border-radius: var(--border-radius-md, 8px);
+  padding: 1rem;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--t-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+  font-size: var(--font-heading-md-size, 1.25rem);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.gainers {
+  color: #10b981;
+}
+
+.losers {
+  color: #ef4444;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.refreshButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-accent);
+  color: white;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.refreshButton:hover {
+  opacity: 0.9;
+}
+
+.symbolCell {
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.numericCell {
+  text-align: right;
+}
+
+.textCell {
+  white-space: nowrap;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--t-text-secondary);
+}
+
+.error {
+  background: var(--t-error-bg);
+  color: var(--t-error-text);
+  padding: 1rem;
+  border-radius: var(--border-radius-md, 8px);
+  margin: 1rem 0;
+}

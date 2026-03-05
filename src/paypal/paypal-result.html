@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription - TASE Market</title>
+  <script>
+    (function() {
+      var theme = 'light';
+      try {
+        var stored = localStorage.getItem('tase-theme');
+        if (stored === 'light' || stored === 'dark') { theme = stored; }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { theme = 'dark'; }
+      } catch(e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <style>
+    [data-theme="light"] {
+      --t-bg-primary: #ffffff;
+      --t-bg-secondary: #f5f5f5;
+      --t-bg-tertiary: #eeeeee;
+      --t-text-primary: #1a1a1a;
+      --t-text-secondary: #666666;
+      --t-border: #e5e5e5;
+      --t-accent: #2563eb;
+      --t-error-bg: #fef2f2;
+      --t-error-text: #dc2626;
+      --t-success-bg: #f0fdf4;
+      --t-success-text: #16a34a;
+      --t-warning-bg: #fffbeb;
+      --t-warning-text: #d97706;
+      --t-info-bg: #eff6ff;
+      --t-info-text: #2563eb;
+    }
+
+    [data-theme="dark"] {
+      --t-bg-primary: #0f172a;
+      --t-bg-secondary: #1e293b;
+      --t-bg-tertiary: #334155;
+      --t-text-primary: #e2e8f0;
+      --t-text-secondary: #94a3b8;
+      --t-border: #334155;
+      --t-accent: #3b82f6;
+      --t-error-bg: #450a0a;
+      --t-error-text: #fca5a5;
+      --t-success-bg: #052e16;
+      --t-success-text: #86efac;
+      --t-warning-bg: #451a03;
+      --t-warning-text: #fcd34d;
+      --t-info-bg: #172554;
+      --t-info-text: #93c5fd;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--t-bg-primary);
+      min-height: 100vh;
+      color: var(--t-text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .theme-toggle {
+      background: var(--t-bg-secondary);
+      border: 1px solid var(--t-border);
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+      background: var(--t-bg-tertiary);
+    }
+
+    .card {
+      background: var(--t-bg-secondary);
+      border: 1px solid var(--t-border);
+      border-radius: 16px;
+      padding: 3rem 2rem;
+    }
+
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .icon.success { color: var(--t-success-text); }
+    .icon.cancelled { color: var(--t-warning-text); }
+    .icon.error { color: var(--t-error-text); }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: var(--t-text-primary);
+    }
+
+    .message {
+      color: var(--t-text-secondary);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .plan-badge {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+    }
+
+    .instructions {
+      background: var(--t-info-bg);
+      border: 1px solid var(--t-accent);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--t-info-text);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--t-text-secondary);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <span class="page-title">TASE Market</span>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme"></button>
+    </div>
+    <div class="card">
+      <div id="content">
+        <!-- Content will be injected by JavaScript -->
+      </div>
+    </div>
+    <footer>
+      <p><a href="https://www.lobix.ai" target="_blank">www.lobix.ai</a></p>
+      <p style="margin-top: 0.5rem;">You can close this window.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Theme toggle
+    function getTheme() {
+      return document.documentElement.getAttribute('data-theme') || 'light';
+    }
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      try { localStorage.setItem('tase-theme', t); } catch(e) {}
+      updateToggleIcon();
+    }
+    function updateToggleIcon() {
+      var btn = document.getElementById('theme-toggle');
+      btn.textContent = getTheme() === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+      btn.title = getTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      setTheme(getTheme() === 'light' ? 'dark' : 'light');
+    });
+    updateToggleIcon();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const contentDiv = document.getElementById('content');
+
+    if (urlParams.get('success') === 'true') {
+      const plan = urlParams.get('plan') || 'subscription';
+      const isTrial = plan === 'trial';
+      contentDiv.innerHTML = `
+        <div class="icon success">&#10004;</div>
+        <h1>${isTrial ? 'Free Trial Activated!' : 'Subscription Activated!'}</h1>
+        <div class="plan-badge">${isTrial ? 'Free Trial — 7 Days' : plan + ' Plan'}</div>
+        <p class="message">
+          ${isTrial
+            ? 'Your free trial is now active.<br>Enjoy full access to TASE Market for 7 days.'
+            : 'Thank you for subscribing to TASE Market.<br>Your subscription is now active.'}
+        </p>
+        <div class="instructions">
+          You can now use the Tase Market tools with full access.
+        </div>
+      `;
+    } else if (urlParams.get('cancelled') === 'true') {
+      contentDiv.innerHTML = `
+        <div class="icon cancelled">&#10006;</div>
+        <h1>Checkout Cancelled</h1>
+        <p class="message">
+          Your subscription checkout was cancelled.<br>
+          No charges have been made.
+        </p>
+        <div class="instructions">
+          You can try again anytime by asking Chat "show the setting widget" to subscribe you to a plan.
+        </div>
+      `;
+    } else if (urlParams.get('error')) {
+      const error = urlParams.get('error').replace(/_/g, ' ');
+      const status = urlParams.get('status');
+      contentDiv.innerHTML = `
+        <div class="icon error">&#9888;</div>
+        <h1>Something Went Wrong</h1>
+        <p class="message">
+          There was an issue processing your subscription.<br>
+          Error: ${error}${status ? ` (Status: ${status})` : ''}
+        </p>
+        <div class="instructions">
+          Please try again or <a href="mailto:contact@lobix.ai" style="color: var(--t-accent); text-decoration: underline;">contact support</a> if the issue persists.
+        </div>
+      `;
+    } else {
+      contentDiv.innerHTML = `
+        <div class="icon">&#128269;</div>
+        <h1>Page Not Found</h1>
+        <p class="message">
+          This page should only be accessed after a PayPal checkout.
+        </p>
+      `;
+    }
+  </script>
+</body>
+</html>

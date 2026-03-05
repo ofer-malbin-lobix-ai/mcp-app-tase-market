@@ -1,0 +1,316 @@
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  min-width: 200px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--t-accent);
+}
+
+.clearButton {
+  position: absolute;
+  right: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--t-text-secondary);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  color: var(--t-text-primary);
+}
+
+.filterToggle {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+}
+
+.filterToggle:hover {
+  background: var(--t-bg-secondary);
+}
+
+.filterToggle.active {
+  background: var(--t-accent);
+  color: white;
+  border-color: var(--t-accent);
+}
+
+.clearFiltersButton {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: #dc2626;
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+}
+
+.clearFiltersButton:hover {
+  background: var(--t-error-bg);
+}
+
+.columnSelector {
+  position: relative;
+}
+
+.columnSelectorButton {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+}
+
+.columnSelectorButton:hover {
+  background: var(--t-bg-secondary);
+}
+
+.columnSelectorDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  min-width: 200px;
+  max-height: 400px;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+}
+
+.columnSelectorHeader {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--t-border);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.columnSelectorList {
+  display: flex;
+  flex-direction: column;
+}
+
+.columnCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  cursor: pointer;
+  font-size: var(--font-text-sm-size, 0.875rem);
+}
+
+.columnCheckbox:hover {
+  background: var(--t-bg-secondary);
+}
+
+.columnCheckbox input {
+  cursor: pointer;
+}
+
+.tableContainer {
+  overflow: auto;
+  max-height: 70vh;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-text-sm-size, 0.875rem);
+}
+
+.th,
+.td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--t-border);
+  white-space: nowrap;
+}
+
+.th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--t-text-secondary);
+  background: var(--t-bg-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.th:hover {
+  background: var(--t-bg-tertiary);
+}
+
+.filterRow {
+  background: var(--t-bg-secondary);
+}
+
+.filterCell {
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.filterInput {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-xs-size, 0.75rem);
+  min-width: 60px;
+}
+
+.filterInput:focus {
+  outline: none;
+  border-color: var(--t-accent);
+}
+
+.rangeFilter {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.rangeInput {
+  width: 100%;
+  min-width: 45px;
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-xs-size, 0.75rem);
+}
+
+.rangeInput:focus {
+  outline: none;
+  border-color: var(--t-accent);
+}
+
+.rangeInput::placeholder {
+  color: var(--t-text-secondary);
+  font-size: var(--font-text-xs-size, 0.7rem);
+}
+
+/* Hide number input spinners */
+.rangeInput::-webkit-outer-spin-button,
+.rangeInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.rangeInput[type=number] {
+  -moz-appearance: textfield;
+}
+
+.td {
+  font-family: var(--font-mono, monospace);
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.pageInfo {
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--t-text-secondary);
+}
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pageSizeSelect {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+}
+
+.pageButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pageButton {
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-primary);
+  color: var(--t-text-primary);
+  font-family: inherit;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  cursor: pointer;
+  min-width: 2rem;
+}
+
+.pageButton:hover:not(:disabled) {
+  background: var(--t-bg-secondary);
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageNumber {
+  padding: 0 0.5rem;
+  font-size: var(--font-text-sm-size, 0.875rem);
+  color: var(--t-text-secondary);
+}

@@ -1,0 +1,137 @@
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 480px;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-md, 8px);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-text-sm-size, 0.875rem);
+}
+
+.th {
+  position: sticky;
+  top: 0;
+  background: var(--t-bg-secondary);
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--t-text-secondary);
+  border-bottom: 1px solid var(--t-border);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.th:first-child,
+.thLeft {
+  text-align: left;
+}
+
+.th:hover {
+  background: var(--t-bg-tertiary);
+}
+
+.sortIcon {
+  opacity: 0.3;
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+}
+
+.sortIconActive {
+  opacity: 0.8;
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+}
+
+.tr:hover {
+  background: var(--t-bg-secondary);
+}
+
+.td {
+  padding: 0.4rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--t-border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tdLeft {
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--t-border);
+  white-space: nowrap;
+}
+
+.tdSymbol {
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.tdCompany {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--t-text-secondary);
+}
+
+.thEdit {
+  position: sticky;
+  top: 0;
+  background: var(--t-bg-secondary);
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--t-border);
+  width: 2rem;
+}
+
+.tdEdit {
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--t-text-secondary);
+  padding: 0.15rem 0.3rem;
+  border-radius: var(--border-radius-sm, 4px);
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.editBtn:hover {
+  opacity: 1;
+  background: var(--t-bg-tertiary);
+}
+
+.positive {
+  color: #10b981;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--t-text-secondary);
+}
+
+.error {
+  background: var(--t-error-bg);
+  color: var(--t-error-text);
+  padding: 1rem;
+  border-radius: var(--border-radius-md, 8px);
+  margin: 1rem 0;
+}

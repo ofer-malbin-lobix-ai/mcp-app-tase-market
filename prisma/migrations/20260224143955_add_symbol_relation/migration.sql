@@ -1,0 +1,3 @@
+-- Prisma relation between TaseSecuritiesEndOfDayTradingData.symbol and TaseSymbol.symbol
+-- No DB-level FK: EOD table contains historical symbols not yet in TaseSymbol
+-- Prisma handles the relation at the ORM level (include/select work via JOIN)
