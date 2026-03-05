@@ -9,6 +9,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { SymbolActions } from "../components/SymbolActions";
 import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./my-watchlist-table-widget.module.css";
 
@@ -354,34 +355,17 @@ function MyWatchlistTableApp() {
                   <td className={`${styles.tdLeft} ${styles.tdSymbol}`}>{row.symbol}</td>
                   <td className={styles.tdActions}>
                     <span className={styles.rowActions}>
-                      <button
-                        className={styles.actionBtn}
-                        title="Candlestick"
-                        data-tooltip="Candlestick"
-                        onClick={() => app.sendMessage({
-                          role: "user",
-                          content: [{ type: "text", text: `call show-symbol-candlestick-widget with symbol: "${row.symbol}"` }],
-                        })}
-                      >&#x1F56F;&#xFE0F;</button>
-                      <button
-                        className={styles.actionBtn}
-                        title="Intraday"
-                        data-tooltip="Intraday"
-                        onClick={() => app.sendMessage({
-                          role: "user",
-                          content: [{ type: "text", text: `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "${row.symbol}"` }],
-                        })}
-                      >&#x23F1;&#xFE0F;</button>
+                      <SymbolActions symbol={row.symbol} app={app} />
                       {symbolNotes[row.symbol] ? (
                         <button
-                          className={styles.actionBtn}
+                          className={styles.noteBtn}
                           title="Note"
                           data-tooltip="Note"
                           onClick={() => setActiveNote({ symbol: row.symbol, note: symbolNotes[row.symbol] })}
                         >&#x1F4DD;</button>
                       ) : (
                         <button
-                          className={`${styles.actionBtn} ${styles.actionBtnDisabled}`}
+                          className={`${styles.noteBtn} ${styles.noteBtnDisabled}`}
                           title="No note"
                           disabled
                         >&#x1F4DD;</button>

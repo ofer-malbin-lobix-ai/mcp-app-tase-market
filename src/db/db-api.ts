@@ -339,7 +339,7 @@ export async function fetchEndOfDaySymbolsByDate(
   if (period === "1D") {
     const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
       where: { symbol: { in: symbols }, tradeDate: date },
-      select: { ...EOD_SELECT, taseSymbol: { select: { companyName: true } } },
+      select: { ...EOD_SELECT, taseSymbol: { select: { companyName: true, companySector: true, companySubSector: true } } },
       orderBy: { symbol: "asc" },
     });
     return {
@@ -350,6 +350,8 @@ export async function fetchEndOfDaySymbolsByDate(
       items: rows.map((row) => ({
         ...rowToStockData(row),
         companyName: row.taseSymbol?.companyName ?? null,
+        sector: row.taseSymbol?.companySector ?? null,
+        subSector: row.taseSymbol?.companySubSector ?? null,
       })),
     };
   }

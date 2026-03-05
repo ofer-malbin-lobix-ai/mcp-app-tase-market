@@ -79,6 +79,21 @@
   color: var(--t-text-secondary);
 }
 
+.thActions {
+  position: sticky;
+  top: 0;
+  background: var(--t-bg-secondary);
+  padding: 0.5rem 0.4rem;
+  border-bottom: 1px solid var(--t-border);
+  width: 4rem;
+}
+
+.tdActions {
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--t-border);
+}
+
 .thEdit {
   position: sticky;
   top: 0;

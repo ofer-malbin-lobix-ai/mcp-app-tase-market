@@ -240,6 +240,20 @@ async function testMyPositionTable(page) {
   await sleep(2000);
   await screenshot(page, 'my-position-table-sorted');
 
+  // Verify SymbolActions buttons exist (Candlestick + Intraday)
+  const actionButtons = await frame.evaluate(() => {
+    const buttons = document.querySelectorAll('button[title="Candlestick"], button[title="Intraday"]');
+    return { candlestick: 0, intraday: 0, ...Object.fromEntries(
+      Array.from(buttons).reduce((m, b) => {
+        const key = b.title.toLowerCase();
+        m.set(key, (m.get(key) || 0) + 1);
+        return m;
+      }, new Map())
+    )};
+  });
+  console.log(`  ${actionButtons.candlestick > 0 ? '✅' : '⚠️ '} Candlestick buttons: ${actionButtons.candlestick}`);
+  console.log(`  ${actionButtons.intraday > 0 ? '✅' : '⚠️ '} Intraday buttons: ${actionButtons.intraday}`);
+
   console.log('  ✅ my-position-table passed');
 }
 
@@ -526,6 +540,21 @@ async function testMyWatchlistTable(page) {
     await sleep(6000);
     await screenshot(page, `my-watchlist-table-${period.toLowerCase()}`);
   }
+
+  // Verify SymbolActions buttons exist (Candlestick + Intraday)
+  const actionButtons = await frame.evaluate(() => {
+    const buttons = document.querySelectorAll('button[title="Candlestick"], button[title="Intraday"]');
+    return { candlestick: 0, intraday: 0, ...Object.fromEntries(
+      Array.from(buttons).reduce((m, b) => {
+        const key = b.title.toLowerCase();
+        m.set(key, (m.get(key) || 0) + 1);
+        return m;
+      }, new Map())
+    )};
+  });
+  console.log(`  ${actionButtons.candlestick > 0 ? '✅' : '⚠️ '} Candlestick buttons: ${actionButtons.candlestick}`);
+  console.log(`  ${actionButtons.intraday > 0 ? '✅' : '⚠️ '} Intraday buttons: ${actionButtons.intraday}`);
+
   console.log('  ✅ my-watchlist-table passed');
 }
 

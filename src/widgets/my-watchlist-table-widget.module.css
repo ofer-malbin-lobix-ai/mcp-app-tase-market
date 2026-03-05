@@ -161,7 +161,7 @@
   justify-content: center;
 }
 
-.actionBtn {
+.noteBtn {
   background: none;
   border: none;
   cursor: pointer;
@@ -173,11 +173,11 @@
   position: relative;
 }
 
-.actionBtn:hover {
+.noteBtn:hover {
   opacity: 1;
 }
 
-.actionBtn::after {
+.noteBtn::after {
   content: attr(data-tooltip);
   position: absolute;
   bottom: 100%;
@@ -195,16 +195,16 @@
   transition: opacity 0.15s;
 }
 
-.actionBtn:hover::after {
+.noteBtn:hover::after {
   opacity: 1;
 }
 
-.actionBtnDisabled {
+.noteBtnDisabled {
   opacity: 0.2;
   cursor: default;
 }
 
-.actionBtnDisabled:hover {
+.noteBtnDisabled:hover {
   opacity: 0.2;
 }
 

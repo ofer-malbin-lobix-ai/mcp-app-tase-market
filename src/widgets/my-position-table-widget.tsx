@@ -7,6 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { SymbolActions } from "../components/SymbolActions";
 import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./my-position-table-widget.module.css";
 
@@ -260,6 +261,7 @@ function MyPositionApp() {
                 <th {...thProps("symbol", styles.thLeft)}>
                   Symbol <SortIcon col="symbol" sortKey={sortKey} sortDir={sortDir} />
                 </th>
+                <th className={styles.thActions} />
                 <th {...thProps("securityId")}>
                   Sec ID <SortIcon col="securityId" sortKey={sortKey} sortDir={sortDir} />
                 </th>
@@ -288,6 +290,9 @@ function MyPositionApp() {
               {displayRows.map((row) => (
                 <tr key={row.symbol} className={styles.tr}>
                   <td className={`${styles.tdLeft} ${styles.tdSymbol}`}>{row.symbol}</td>
+                  <td className={styles.tdActions}>
+                    <SymbolActions symbol={row.symbol} app={app} />
+                  </td>
                   <td className={styles.td}>{row.securityId}</td>
                   <td className={`${styles.tdLeft} ${styles.tdCompany}`} title={row.companyName ?? ""}>
                     {row.companyName ?? "—"}

@@ -9,6 +9,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
+import { SymbolActions } from "../../components/SymbolActions";
 import { WidgetLayout } from "../../components/WidgetLayout";
 import styles from "./end-of-day-widget.module.css";
 
@@ -158,31 +159,7 @@ function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
       header: "",
       enableSorting: false,
       enableColumnFilter: false,
-      cell: (info) => {
-        const symbol = info.row.original.symbol;
-        return (
-          <span className={styles.rowActions}>
-            <button
-              className={styles.actionBtn}
-              title="Candlestick"
-              data-tooltip="Candlestick"
-              onClick={() => app.sendMessage({
-                role: "user",
-                content: [{ type: "text", text: `call show-symbol-candlestick-widget with symbol: "${symbol}"` }],
-              })}
-            >&#x1F56F;&#xFE0F;</button>
-            <button
-              className={styles.actionBtn}
-              title="Intraday"
-              data-tooltip="Intraday"
-              onClick={() => app.sendMessage({
-                role: "user",
-                content: [{ type: "text", text: `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "${symbol}"` }],
-              })}
-            >&#x23F1;&#xFE0F;</button>
-          </span>
-        );
-      },
+      cell: (info) => <SymbolActions symbol={info.row.original.symbol} app={app} />,
     }),
     columnHelper.accessor("securityId", {
       header: "Security ID",

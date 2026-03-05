@@ -1,0 +1,43 @@
+.rowActions {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  line-height: 1;
+  position: relative;
+}
+
+.actionBtn:hover {
+  opacity: 1;
+}
+
+.actionBtn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--t-bg-tertiary, #333);
+  color: var(--t-text-primary, #fff);
+  font-size: 11px;
+  font-family: var(--font-sans, system-ui);
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.actionBtn:hover::after {
+  opacity: 1;
+}
