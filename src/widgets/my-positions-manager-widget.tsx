@@ -167,7 +167,7 @@ function MyPositionsManagerApp() {
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: "get-user-positions", arguments: {} })
+    app.callServerTool({ name: "get-my-positions", arguments: {} })
       .then((result) => {
         const extracted = extractPositionsData(result);
         if (extracted) {
@@ -192,7 +192,7 @@ function MyPositionsManagerApp() {
 
   const refreshPositions = useCallback(async () => {
     if (!app || typeof app.callServerTool !== "function") return;
-    const result = await app.callServerTool({ name: "get-user-positions", arguments: {} });
+    const result = await app.callServerTool({ name: "get-my-positions", arguments: {} });
     const extracted = extractPositionsData(result);
     if (extracted) {
       if (extracted.error) {
@@ -254,7 +254,7 @@ function MyPositionsManagerApp() {
         args.alloc = parseFloat(form.alloc);
       }
       await app.callServerTool({
-        name: "set-user-position",
+        name: "set-my-position",
         arguments: args,
       });
       setShowForm(false);
@@ -272,7 +272,7 @@ function MyPositionsManagerApp() {
     setIsDeleting(symbol);
     try {
       await app.callServerTool({
-        name: "delete-user-position",
+        name: "delete-my-position",
         arguments: { symbol },
       });
       await refreshPositions();

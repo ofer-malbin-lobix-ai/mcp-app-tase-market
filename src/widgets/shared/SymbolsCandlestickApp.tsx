@@ -23,7 +23,7 @@ import styles from "./symbols-candlestick-widget.module.css";
 
 export interface SymbolsCandlestickConfig {
   toolName: string; // auto-fetch tool, e.g. "get-symbols-end-of-days-data"
-  symbolDatesToolName?: string; // "get-user-positions" or "get-user-watchlist" — fetches per-symbol startDate
+  symbolDatesToolName?: string; // "get-my-positions" or "get-my-watchlist" — fetches per-symbol startDate
 }
 
 function deriveTitle(toolName: string): string {

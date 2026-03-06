@@ -131,7 +131,7 @@ function MyWatchlistManagerApp() {
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: "get-user-watchlist", arguments: {} })
+    app.callServerTool({ name: "get-my-watchlist", arguments: {} })
       .then((result) => {
         const extracted = extractWatchlistData(result);
         if (extracted) {
@@ -156,7 +156,7 @@ function MyWatchlistManagerApp() {
 
   const refreshWatchlist = useCallback(async () => {
     if (!app || typeof app.callServerTool !== "function") return;
-    const result = await app.callServerTool({ name: "get-user-watchlist", arguments: {} });
+    const result = await app.callServerTool({ name: "get-my-watchlist", arguments: {} });
     const extracted = extractWatchlistData(result);
     if (extracted) {
       if (extracted.error) {
@@ -210,7 +210,7 @@ function MyWatchlistManagerApp() {
         args.note = form.note.trim();
       }
       await app.callServerTool({
-        name: "set-user-watchlist-item",
+        name: "set-my-watchlist-item",
         arguments: args,
       });
       setShowForm(false);
@@ -228,7 +228,7 @@ function MyWatchlistManagerApp() {
     setIsDeleting(symbol);
     try {
       await app.callServerTool({
-        name: "delete-user-watchlist-item",
+        name: "delete-my-watchlist-item",
         arguments: { symbol },
       });
       await refreshWatchlist();

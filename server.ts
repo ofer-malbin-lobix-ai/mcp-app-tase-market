@@ -928,7 +928,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data tool: Get user positions from Clerk privateMetadata
   registerAppTool(server,
-    "get-user-positions",
+    "get-my-positions",
     {
       title: "Get User Positions",
       description: "Returns the user's saved portfolio positions (symbol, start date, amount) stored in their profile.",
@@ -948,7 +948,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Upsert a user position
   registerAppTool(server,
-    "set-user-position",
+    "set-my-position",
     {
       title: "Set User Position",
       description: "Adds or updates a portfolio position (upserts by symbol).",
@@ -984,7 +984,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Delete a user position
   registerAppTool(server,
-    "delete-user-position",
+    "delete-my-position",
     {
       title: "Delete User Position",
       description: "Removes a portfolio position by symbol.",
@@ -1032,7 +1032,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data tool: Get user watchlist from Clerk privateMetadata
   registerAppTool(server,
-    "get-user-watchlist",
+    "get-my-watchlist",
     {
       title: "Get User Watchlist",
       description: "Returns the user's saved watchlist items (symbol, start date, note) stored in their profile.",
@@ -1052,7 +1052,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Upsert a watchlist item
   registerAppTool(server,
-    "set-user-watchlist-item",
+    "set-my-watchlist-item",
     {
       title: "Set User Watchlist Item",
       description: "Adds or updates a watchlist item (upserts by symbol).",
@@ -1083,7 +1083,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Delete a watchlist item
   registerAppTool(server,
-    "delete-user-watchlist-item",
+    "delete-my-watchlist-item",
     {
       title: "Delete User Watchlist Item",
       description: "Removes a watchlist item by symbol.",

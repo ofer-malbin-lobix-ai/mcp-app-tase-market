@@ -181,7 +181,7 @@ function MyWatchlistTableApp() {
     if (!app || typeof app.callServerTool !== "function") return;
     (async () => {
       try {
-        const result = await app.callServerTool({ name: "get-user-watchlist", arguments: {} });
+        const result = await app.callServerTool({ name: "get-my-watchlist", arguments: {} });
         if (!result) return;
         let parsed: unknown = null;
         if (result.structuredContent) {

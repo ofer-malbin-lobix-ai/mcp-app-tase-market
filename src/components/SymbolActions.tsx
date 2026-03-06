@@ -6,8 +6,8 @@ export function SymbolActions({ symbol, app, startDate }: { symbol: string; app:
     <span className={styles.rowActions}>
       <button
         className={styles.actionBtn}
-        title="Candlestick"
-        data-tooltip="Candlestick"
+        title="Symbol Candlestick"
+        data-tooltip="Symbol Candlestick"
         onClick={() => app.sendMessage({
           role: "user",
           content: [{ type: "text", text: `call show-symbol-candlestick-widget with symbol: "${symbol}"` }],
@@ -15,8 +15,8 @@ export function SymbolActions({ symbol, app, startDate }: { symbol: string; app:
       >&#x1F56F;&#xFE0F;</button>
       <button
         className={styles.actionBtn}
-        title="Intraday"
-        data-tooltip="Intraday"
+        title="Intraday Candlestick"
+        data-tooltip="Intraday Candlestick"
         onClick={() => app.sendMessage({
           role: "user",
           content: [{ type: "text", text: `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "${symbol}"` }],
@@ -24,8 +24,8 @@ export function SymbolActions({ symbol, app, startDate }: { symbol: string; app:
       >&#x23F1;&#xFE0F;</button>
       <button
         className={styles.actionBtn}
-        title="End of Days"
-        data-tooltip="End of Days"
+        title="Symbol End of Days"
+        data-tooltip="Symbol End of Days"
         onClick={() => app.sendMessage({
           role: "user",
           content: [{ type: "text", text: `call show-symbol-end-of-days-widget with symbol: "${symbol}"${startDate ? `, dateFrom: "${startDate}"` : ""}` }],
