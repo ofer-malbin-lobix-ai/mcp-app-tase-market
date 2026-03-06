@@ -14,10 +14,10 @@ Copy-paste these into Claude Desktop to test each widget.
 | 8 | my-position-table | `call show-my-position-table-widget` |
 | 9 | my-position-end-of-day | `call show-my-position-end-of-day-widget` |
 | 10 | my-position-candlestick | `call show-my-position-candlestick-widget` |
-| 11 | my-watchlist-manager | `call show-my-watchlist-manager-widget` |
-| 12 | my-watchlist-table | `call show-my-watchlist-table-widget` |
-| 13 | my-watchlist-end-of-day | `call show-my-watchlist-end-of-day-widget` |
-| 14 | my-watchlist-candlestick | `call show-my-watchlist-candlestick-widget` |
+| 11 | watchlist-manager | `call show-watchlist-manager-widget` |
+| 12 | watchlist-table | `call show-watchlist-table-widget` |
+| 13 | watchlist-end-of-day | `call show-watchlist-end-of-day-widget` |
+| 14 | watchlist-candlestick | `call show-watchlist-candlestick-widget` |
 | 15 | symbols-table | `call show-symbols-table-widget with symbols: ["TEVA", "NICE", "ESLT"]` |
 | 16 | symbols-end-of-day | `call show-symbols-end-of-day-widget with symbols: ["TEVA", "NICE", "ESLT"]` |
 | 17 | symbols-candlestick | `call show-symbols-candlestick-widget with symbols: ["TEVA", "NICE", "ESLT"]` |

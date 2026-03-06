@@ -38,10 +38,10 @@
  *   symbol-intraday-candlestick  — show-symbol-intraday-candlestick-widget (TEVA) + timeframe switch
  *   symbol-end-of-days           — show-symbol-end-of-days-widget (TEVA) date range EOD
  *   market-last-update             — show-market-last-update-widget + refresh
- *   my-watchlist-manager     — show-my-watchlist-manager-widget + add/edit/delete
- *   my-watchlist-table       — show-my-watchlist-table-widget (auto-fetch symbols) + period buttons
- *   my-watchlist-end-of-day  — show-my-watchlist-end-of-day-widget (auto-fetch symbols) + sort + filters
- *   my-watchlist-candlestick — show-my-watchlist-candlestick-widget (auto-fetch symbols) + symbol switch + period
+ *   watchlist-manager     — show-watchlist-manager-widget + add/edit/delete
+ *   watchlist-table       — show-watchlist-table-widget (auto-fetch symbols) + period buttons
+ *   watchlist-end-of-day  — show-watchlist-end-of-day-widget (auto-fetch symbols) + sort + filters
+ *   watchlist-candlestick — show-watchlist-candlestick-widget (auto-fetch symbols) + symbol switch + period
  *   settings                — show-tase-market-settings-widget + subscribe button + footer
  *   landing                 — show-tase-market-landing-widget + Symbols tab + Reference tab
  *   refresh-mcp             — refresh the MCP connector in ChatGPT Settings (cache bust)
@@ -501,16 +501,16 @@ async function testLastUpdate(page) {
   console.log('  ✅ market-last-update passed');
 }
 
-async function testMyWatchlistManager(page) {
-  console.log('\n🧪 Test: my-watchlist-manager');
+async function testWatchlistManager(page) {
+  console.log('\n🧪 Test: watchlist-manager');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} call show-my-watchlist-manager-widget`);
+  await sendMessage(page, `@${MCP_NAME} call show-watchlist-manager-widget`);
   console.log('  Waiting for widget...');
   await sleep(30000);
 
   const frame = await waitForWidgetFrame(page, { selector: 'button, table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
-  await screenshot(page, 'my-watchlist-manager');
+  await screenshot(page, 'watchlist-manager');
 
   const itemCount = await frame.evaluate(() => document.querySelectorAll('tbody tr').length);
   console.log(`  ${itemCount > 0 ? '✅' : '⚠️ '} Watchlist items loaded: ${itemCount}`);
@@ -519,7 +519,7 @@ async function testMyWatchlistManager(page) {
     const editClicked = await clickButton(frame, 'Edit');
     console.log(`  ${editClicked ? '✅' : '⚠️ '} Edit button ${editClicked ? 'clicked' : 'not found'}`);
     await sleep(1000);
-    await screenshot(page, 'my-watchlist-manager-edit');
+    await screenshot(page, 'watchlist-manager-edit');
 
     const cancelClicked = await clickButton(frame, 'Cancel');
     console.log(`  ${cancelClicked ? '✅' : '⚠️ '} Cancel button ${cancelClicked ? 'clicked' : 'not found'}`);
@@ -529,18 +529,18 @@ async function testMyWatchlistManager(page) {
   const addClicked = await clickButton(frame, '+ Add to Watchlist');
   console.log(`  ${addClicked ? '✅' : '⚠️ '} Add to Watchlist button ${addClicked ? 'clicked' : 'not found'}`);
   await sleep(1000);
-  await screenshot(page, 'my-watchlist-manager-add-form');
+  await screenshot(page, 'watchlist-manager-add-form');
 
-  console.log('  ✅ my-watchlist-manager passed');
+  console.log('  ✅ watchlist-manager passed');
 }
 
-async function testMyWatchlistTable(page) {
-  console.log('\n🧪 Test: my-watchlist-table');
+async function testWatchlistTable(page) {
+  console.log('\n🧪 Test: watchlist-table');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} call show-my-watchlist-table-widget`);
+  await sendMessage(page, `@${MCP_NAME} call show-watchlist-table-widget`);
   console.log('  Waiting for widget...');
   await sleep(30000);
-  await screenshot(page, 'my-watchlist-table-1d');
+  await screenshot(page, 'watchlist-table-1d');
 
   const frame = await waitForWidgetFrame(page, { selector: 'table' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
@@ -549,7 +549,7 @@ async function testMyWatchlistTable(page) {
     const clicked = await clickButton(frame, period);
     console.log(`  ${clicked ? '✅' : '⚠️ '} ${period} button ${clicked ? 'clicked' : 'not found'}`);
     await sleep(6000);
-    await screenshot(page, `my-watchlist-table-${period.toLowerCase()}`);
+    await screenshot(page, `watchlist-table-${period.toLowerCase()}`);
   }
 
   // Verify SymbolActions buttons exist (Candlestick + Intraday)
@@ -566,22 +566,22 @@ async function testMyWatchlistTable(page) {
   console.log(`  ${actionButtons.candlestick > 0 ? '✅' : '⚠️ '} Candlestick buttons: ${actionButtons.candlestick}`);
   console.log(`  ${actionButtons.intraday > 0 ? '✅' : '⚠️ '} Intraday buttons: ${actionButtons.intraday}`);
 
-  console.log('  ✅ my-watchlist-table passed');
+  console.log('  ✅ watchlist-table passed');
 }
 
-async function testMyWatchlistEndOfDay(page) {
+async function testWatchlistEndOfDay(page) {
   await testEndOfDay(page, {
-    testName: 'my-watchlist-end-of-day',
-    message: `@${MCP_NAME} call show-my-watchlist-end-of-day-widget`,
-    prefix: 'my-watchlist-end-of-day',
+    testName: 'watchlist-end-of-day',
+    message: `@${MCP_NAME} call show-watchlist-end-of-day-widget`,
+    prefix: 'watchlist-end-of-day',
   });
 }
 
-async function testMyWatchlistCandlestick(page) {
+async function testWatchlistCandlestick(page) {
   await testCandlestickShared(page, {
-    testName: 'my-watchlist-candlestick',
-    message: `@${MCP_NAME} call show-my-watchlist-candlestick-widget`,
-    prefix: 'my-watchlist-candlestick',
+    testName: 'watchlist-candlestick',
+    message: `@${MCP_NAME} call show-watchlist-candlestick-widget`,
+    prefix: 'watchlist-candlestick',
   });
 }
 
@@ -976,39 +976,39 @@ async function testLastUpdateDesktop() {
   console.log('  ✅ market-last-update (Claude Desktop) passed');
 }
 
-async function testMyWatchlistManagerDesktop() {
-  console.log('\n🧪 Test: my-watchlist-manager (Claude Desktop)');
+async function testWatchlistManagerDesktop() {
+  console.log('\n🧪 Test: watchlist-manager (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('call show-my-watchlist-manager-widget');
+  await sendMessageDesktop('call show-watchlist-manager-widget');
   console.log('  Waiting for widget...');
   await sleep(35000);
-  await screenshotDesktop('cd-my-watchlist-manager');
-  console.log('  ✅ my-watchlist-manager (Claude Desktop) passed');
+  await screenshotDesktop('cd-watchlist-manager');
+  console.log('  ✅ watchlist-manager (Claude Desktop) passed');
 }
 
-async function testMyWatchlistTableDesktop() {
-  console.log('\n🧪 Test: my-watchlist-table (Claude Desktop)');
+async function testWatchlistTableDesktop() {
+  console.log('\n🧪 Test: watchlist-table (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('call show-my-watchlist-table-widget');
+  await sendMessageDesktop('call show-watchlist-table-widget');
   console.log('  Waiting for widget...');
   await sleep(35000);
-  await screenshotDesktop('cd-my-watchlist-table');
-  console.log('  ✅ my-watchlist-table (Claude Desktop) passed');
+  await screenshotDesktop('cd-watchlist-table');
+  console.log('  ✅ watchlist-table (Claude Desktop) passed');
 }
 
-async function testMyWatchlistEndOfDayDesktop() {
+async function testWatchlistEndOfDayDesktop() {
   await testEndOfDayDesktop({
-    testName: 'my-watchlist-end-of-day',
-    message: 'call show-my-watchlist-end-of-day-widget',
-    prefix: 'my-watchlist-end-of-day',
+    testName: 'watchlist-end-of-day',
+    message: 'call show-watchlist-end-of-day-widget',
+    prefix: 'watchlist-end-of-day',
   });
 }
 
-async function testMyWatchlistCandlestickDesktop() {
+async function testWatchlistCandlestickDesktop() {
   await testCandlestickSharedDesktop({
-    testName: 'my-watchlist-candlestick',
-    message: 'call show-my-watchlist-candlestick-widget',
-    prefix: 'my-watchlist-candlestick',
+    testName: 'watchlist-candlestick',
+    message: 'call show-watchlist-candlestick-widget',
+    prefix: 'watchlist-candlestick',
   });
 }
 
@@ -1048,10 +1048,10 @@ const CHATGPT_TEST_MAP = {
   'symbols-candlestick':      testSymbolsCandlestick,
   'symbols-table':            testSymbolsTable,
   'symbol-candlestick':       testSymbolCandlestick,
-  'my-watchlist-manager':     testMyWatchlistManager,
-  'my-watchlist-table':       testMyWatchlistTable,
-  'my-watchlist-end-of-day':  testMyWatchlistEndOfDay,
-  'my-watchlist-candlestick': testMyWatchlistCandlestick,
+  'watchlist-manager':     testWatchlistManager,
+  'watchlist-table':       testWatchlistTable,
+  'watchlist-end-of-day':  testWatchlistEndOfDay,
+  'watchlist-candlestick': testWatchlistCandlestick,
   'symbol-intraday-candlestick':   testSymbolIntraday,
   'symbol-end-of-days':            testSymbolEndOfDays,
   'market-last-update':              testLastUpdate,
@@ -1074,10 +1074,10 @@ const CLAUDE_DESKTOP_TEST_MAP = {
   'symbols-candlestick':      testSymbolsCandlestickDesktop,
   'symbols-table':            testSymbolsTableDesktop,
   'symbol-candlestick':       testSymbolCandlestickDesktop,
-  'my-watchlist-manager':     testMyWatchlistManagerDesktop,
-  'my-watchlist-table':       testMyWatchlistTableDesktop,
-  'my-watchlist-end-of-day':  testMyWatchlistEndOfDayDesktop,
-  'my-watchlist-candlestick': testMyWatchlistCandlestickDesktop,
+  'watchlist-manager':     testWatchlistManagerDesktop,
+  'watchlist-table':       testWatchlistTableDesktop,
+  'watchlist-end-of-day':  testWatchlistEndOfDayDesktop,
+  'watchlist-candlestick': testWatchlistCandlestickDesktop,
   'symbol-intraday-candlestick':   testSymbolIntradayDesktop,
   'symbol-end-of-days':            testSymbolEndOfDaysDesktop,
   'market-last-update':              testLastUpdateDesktop,

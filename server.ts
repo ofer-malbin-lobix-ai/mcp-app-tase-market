@@ -235,10 +235,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const symbolsEndOfDayResourceUri = `ui://tase-end-of-day/symbols-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const intradayCandlestickResourceUri = `ui://tase-end-of-day/symbol-intraday-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const marketLastUpdateResourceUri = `ui://tase-end-of-day/market-last-update-widget-ver-${WIDGET_VERSION}.html`;
-  const myWatchlistManagerResourceUri = `ui://tase-end-of-day/my-watchlist-manager-widget-ver-${WIDGET_VERSION}.html`;
-  const myWatchlistTableResourceUri = `ui://tase-end-of-day/my-watchlist-table-widget-ver-${WIDGET_VERSION}.html`;
-  const myWatchlistEndOfDayResourceUri = `ui://tase-end-of-day/my-watchlist-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
-  const myWatchlistCandlestickResourceUri = `ui://tase-end-of-day/my-watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
+  const watchlistManagerResourceUri = `ui://tase-end-of-day/watchlist-manager-widget-ver-${WIDGET_VERSION}.html`;
+  const watchlistTableResourceUri = `ui://tase-end-of-day/watchlist-table-widget-ver-${WIDGET_VERSION}.html`;
+  const watchlistEndOfDayResourceUri = `ui://tase-end-of-day/watchlist-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
+  const watchlistCandlestickResourceUri = `ui://tase-end-of-day/watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1032,7 +1032,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Data tool: Get user watchlist from Clerk privateMetadata
   registerAppTool(server,
-    "get-my-watchlist",
+    "get-watchlist",
     {
       title: "Get User Watchlist",
       description: "Returns the user's saved watchlist items (symbol, start date, note) stored in their profile.",
@@ -1052,7 +1052,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Upsert a watchlist item
   registerAppTool(server,
-    "set-my-watchlist-item",
+    "set-watchlist-item",
     {
       title: "Set User Watchlist Item",
       description: "Adds or updates a watchlist item (upserts by symbol).",
@@ -1083,7 +1083,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // App-only tool: Delete a watchlist item
   registerAppTool(server,
-    "delete-my-watchlist-item",
+    "delete-watchlist-item",
     {
       title: "Delete User Watchlist Item",
       description: "Removes a watchlist item by symbol.",
@@ -1107,14 +1107,14 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show My Watchlist Manager widget
+  // UI tool: Show Watchlist Manager widget
   registerAppTool(server,
-    "show-my-watchlist-manager-widget",
+    "show-watchlist-manager-widget",
     {
-      title: "Show My Watchlist Manager",
+      title: "Show Watchlist Manager",
       description: "Displays an interactive manager to add, edit, and delete watchlist items stored in your profile.",
       inputSchema: {},
-      _meta: { ui: { resourceUri: myWatchlistManagerResourceUri } },
+      _meta: { ui: { resourceUri: watchlistManagerResourceUri } },
     },
     async (_args, extra): Promise<CallToolResult> => {
       const userId = getUserIdFromExtra(extra);
@@ -1129,12 +1129,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // ─── Watchlist data tools ──────────────────────────────────────────
 
-  // Data-only tool: Get My Watchlist Table Data
+  // Data-only tool: Get Watchlist Table Data
   registerAppTool(server,
-    "get-my-watchlist-table-data",
+    "get-watchlist-table-data",
     {
-      title: "Get My Watchlist Table Data",
-      description: "Returns EOD data for the user's watchlist symbols. Period controls the change %: 1D=daily, 1W=weekly (5 trading days), 1M=monthly (21 trading days), 3M=quarterly (63 trading days). Data only - use show-my-watchlist-table-widget for visualization.",
+      title: "Get Watchlist Table Data",
+      description: "Returns EOD data for the user's watchlist symbols. Period controls the change %: 1D=daily, 1W=weekly (5 trading days), 1M=monthly (21 trading days), 3M=quarterly (63 trading days). Data only - use show-watchlist-table-widget for visualization.",
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
         period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
@@ -1155,16 +1155,16 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show My Watchlist Table widget
+  // UI tool: Show Watchlist Table widget
   registerAppTool(server,
-    "show-my-watchlist-table-widget",
+    "show-watchlist-table-widget",
     {
-      title: "Show My Watchlist Table",
+      title: "Show Watchlist Table",
       description: "Displays the user's watchlist symbols as an interactive EOD table with sortable columns (Symbol, Company, Close, Change%, Turnover, RSI, EZ) and period selector (1D/1W/1M/3M).",
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
-      _meta: { ui: { resourceUri: myWatchlistTableResourceUri } },
+      _meta: { ui: { resourceUri: watchlistTableResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
       const { symbols, error } = await getUserWatchlistSymbols(extra);
@@ -1180,12 +1180,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // Data-only tool: Get My Watchlist End of Day Data
+  // Data-only tool: Get Watchlist End of Day Data
   registerAppTool(server,
-    "get-my-watchlist-end-of-day-data",
+    "get-watchlist-end-of-day-data",
     {
-      title: "Get My Watchlist End of Day Data",
-      description: "Returns TASE end of day data for the user's watchlist symbols on a single trade date. Data only - use show-my-watchlist-end-of-day-widget for visualization.",
+      title: "Get Watchlist End of Day Data",
+      description: "Returns TASE end of day data for the user's watchlist symbols on a single trade date. Data only - use show-watchlist-end-of-day-widget for visualization.",
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -1205,16 +1205,16 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show My Watchlist End of Day widget (single date)
+  // UI tool: Show Watchlist End of Day widget (single date)
   registerAppTool(server,
-    "show-my-watchlist-end-of-day-widget",
+    "show-watchlist-end-of-day-widget",
     {
-      title: "Show My Watchlist End of Day",
+      title: "Show Watchlist End of Day",
       description: "Displays TASE end of day data for the user's watchlist symbols on a single trade date with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
-      _meta: { ui: { resourceUri: myWatchlistEndOfDayResourceUri } },
+      _meta: { ui: { resourceUri: watchlistEndOfDayResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
       const { symbols, error } = await getUserWatchlistSymbols(extra);
@@ -1230,12 +1230,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // Data-only tool: Get My Watchlist Period Data
+  // Data-only tool: Get Watchlist Period Data
   registerAppTool(server,
-    "get-my-watchlist-period-data",
+    "get-watchlist-period-data",
     {
-      title: "Get My Watchlist Period Data",
-      description: "Returns last price and period change % for the user's watchlist symbols. Used by the my-watchlist candlestick widget sidebar.",
+      title: "Get Watchlist Period Data",
+      description: "Returns last price and period change % for the user's watchlist symbols. Used by the watchlist candlestick widget sidebar.",
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
         period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
@@ -1256,17 +1256,17 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show My Watchlist Candlestick widget
+  // UI tool: Show Watchlist Candlestick widget
   registerAppTool(server,
-    "show-my-watchlist-candlestick-widget",
+    "show-watchlist-candlestick-widget",
     {
-      title: "Show My Watchlist Candlestick",
+      title: "Show Watchlist Candlestick",
       description: "Displays a candlestick view for the user's watchlist: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
       inputSchema: {
         dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, each symbol defaults to its watchlist start date."),
         dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
       },
-      _meta: { ui: { resourceUri: myWatchlistCandlestickResourceUri } },
+      _meta: { ui: { resourceUri: watchlistCandlestickResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
       const { symbols, error } = await getUserWatchlistSymbols(extra);
@@ -1504,38 +1504,38 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   );
 
   registerAppResource(server,
-    myWatchlistManagerResourceUri, myWatchlistManagerResourceUri,
+    watchlistManagerResourceUri, watchlistManagerResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-watchlist-manager-widget.html"), "utf-8");
-      return { contents: [{ uri: myWatchlistManagerResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-manager-widget.html"), "utf-8");
+      return { contents: [{ uri: watchlistManagerResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 
   registerAppResource(server,
-    myWatchlistTableResourceUri, myWatchlistTableResourceUri,
+    watchlistTableResourceUri, watchlistTableResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-watchlist-table-widget.html"), "utf-8");
-      return { contents: [{ uri: myWatchlistTableResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-table-widget.html"), "utf-8");
+      return { contents: [{ uri: watchlistTableResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 
   registerAppResource(server,
-    myWatchlistEndOfDayResourceUri, myWatchlistEndOfDayResourceUri,
+    watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-watchlist-end-of-day-widget.html"), "utf-8");
-      return { contents: [{ uri: myWatchlistEndOfDayResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-end-of-day-widget.html"), "utf-8");
+      return { contents: [{ uri: watchlistEndOfDayResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 
   registerAppResource(server,
-    myWatchlistCandlestickResourceUri, myWatchlistCandlestickResourceUri,
+    watchlistCandlestickResourceUri, watchlistCandlestickResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-watchlist-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: myWatchlistCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-candlestick-widget.html"), "utf-8");
+      return { contents: [{ uri: watchlistCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 

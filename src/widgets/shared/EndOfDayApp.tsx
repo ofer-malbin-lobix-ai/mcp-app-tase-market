@@ -1,6 +1,6 @@
 /**
  * Shared End of Day Widget Component (single date picker)
- * Used by all 4 end-of-day widgets: market, symbols, my-position, my-watchlist.
+ * Used by all 4 end-of-day widgets: market, symbols, my-position, watchlist.
  */
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";

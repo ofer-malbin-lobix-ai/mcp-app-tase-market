@@ -1,6 +1,6 @@
 /**
  * Shared Symbols Candlestick Widget Component
- * Used by all 3 symbols candlestick widgets: symbols, my-position, my-watchlist.
+ * Used by all 3 symbols candlestick widgets: symbols, my-position, watchlist.
  */
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
@@ -23,7 +23,7 @@ import styles from "./symbols-candlestick-widget.module.css";
 
 export interface SymbolsCandlestickConfig {
   toolName: string; // auto-fetch tool, e.g. "get-symbols-end-of-days-data"
-  symbolDatesToolName?: string; // "get-my-positions" or "get-my-watchlist" — fetches per-symbol startDate
+  symbolDatesToolName?: string; // "get-my-positions" or "get-watchlist" — fetches per-symbol startDate
 }
 
 function deriveTitle(toolName: string): string {

@@ -22,7 +22,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --noEmit && cross-env INPUT=market-end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=market-uptrend-symbols-widget.html vite build && cross-env INPUT=my-position-end-of-day-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbol-intraday-candlestick-widget.html vite build && cross-env INPUT=my-position-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-market-landing-widget.html vite build && cross-env INPUT=market-sector-heatmap-widget.html vite build && cross-env INPUT=my-position-table-widget.html vite build && cross-env INPUT=my-positions-manager-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=symbols-table-widget.html vite build && cross-env INPUT=symbols-end-of-day-widget.html vite build && cross-env INPUT=market-last-update-widget.html vite build && cross-env INPUT=tase-market-settings-widget.html vite build && cross-env INPUT=my-watchlist-manager-widget.html vite build && cross-env INPUT=my-watchlist-table-widget.html vite build && cross-env INPUT=my-watchlist-end-of-day-widget.html vite build && cross-env INPUT=my-watchlist-candlestick-widget.html vite build && cross-env INPUT=symbol-end-of-days-widget.html vite build",
+    "build": "tsc --noEmit && cross-env INPUT=market-end-of-day-widget.html vite build && cross-env INPUT=market-spirit-widget.html vite build && cross-env INPUT=market-uptrend-symbols-widget.html vite build && cross-env INPUT=my-position-end-of-day-widget.html vite build && cross-env INPUT=symbol-candlestick-widget.html vite build && cross-env INPUT=symbol-intraday-candlestick-widget.html vite build && cross-env INPUT=my-position-candlestick-widget.html vite build && cross-env INPUT=market-dashboard-widget.html vite build && cross-env INPUT=tase-market-landing-widget.html vite build && cross-env INPUT=market-sector-heatmap-widget.html vite build && cross-env INPUT=my-position-table-widget.html vite build && cross-env INPUT=my-positions-manager-widget.html vite build && cross-env INPUT=symbols-candlestick-widget.html vite build && cross-env INPUT=symbols-table-widget.html vite build && cross-env INPUT=symbols-end-of-day-widget.html vite build && cross-env INPUT=market-last-update-widget.html vite build && cross-env INPUT=tase-market-settings-widget.html vite build && cross-env INPUT=watchlist-manager-widget.html vite build && cross-env INPUT=watchlist-table-widget.html vite build && cross-env INPUT=watchlist-end-of-day-widget.html vite build && cross-env INPUT=watchlist-candlestick-widget.html vite build && cross-env INPUT=symbol-end-of-days-widget.html vite build",
     "build:symbol-end-of-days": "cross-env INPUT=symbol-end-of-days-widget.html vite build",
     "build:dashboard": "cross-env INPUT=market-dashboard-widget.html vite build",
     "build:market-end-of-day": "cross-env INPUT=market-end-of-day-widget.html vite build",
@@ -41,10 +41,10 @@
     "build:symbols-end-of-day": "cross-env INPUT=symbols-end-of-day-widget.html vite build",
     "build:market-last-update": "cross-env INPUT=market-last-update-widget.html vite build",
     "build:settings": "cross-env INPUT=tase-market-settings-widget.html vite build",
-    "build:my-watchlist-manager": "cross-env INPUT=my-watchlist-manager-widget.html vite build",
-    "build:my-watchlist-table": "cross-env INPUT=my-watchlist-table-widget.html vite build",
-    "build:my-watchlist-end-of-day": "cross-env INPUT=my-watchlist-end-of-day-widget.html vite build",
-    "build:my-watchlist-candlestick": "cross-env INPUT=my-watchlist-candlestick-widget.html vite build",
+    "build:watchlist-manager": "cross-env INPUT=watchlist-manager-widget.html vite build",
+    "build:watchlist-table": "cross-env INPUT=watchlist-table-widget.html vite build",
+    "build:watchlist-end-of-day": "cross-env INPUT=watchlist-end-of-day-widget.html vite build",
+    "build:watchlist-candlestick": "cross-env INPUT=watchlist-candlestick-widget.html vite build",
     "postbuild": "tsx scripts/generate-widget-version.ts",
     "watch": "cross-env INPUT=end-of-day-widget.html vite build --watch",
     "serve": "node dist/main.js",

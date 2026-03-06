@@ -1,5 +1,5 @@
 /**
- * My Watchlist Manager Widget
+ * Watchlist Manager Widget
  * Allows users to add, edit, and delete watchlist items stored in Clerk privateMetadata.
  * Columns: Symbol | Start Date | Note | Actions (Edit / Delete)
  */
@@ -9,7 +9,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout } from "../components/WidgetLayout";
-import styles from "./my-watchlist-manager-widget.module.css";
+import styles from "./watchlist-manager-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ function validateForm(form: FormState, isEdit: boolean): FormErrors {
 
 // ─── Main App ────────────────────────────────────────────────────────
 
-function MyWatchlistManagerApp() {
+function WatchlistManagerApp() {
   const [data, setData] = useState<UserWatchlistData | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
@@ -89,7 +89,7 @@ function MyWatchlistManagerApp() {
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
-    appInfo: { name: "My Watchlist Manager", version: "1.0.0" },
+    appInfo: { name: "Watchlist Manager", version: "1.0.0" },
     capabilities: {},
     onAppCreated: (app) => {
       app.onteardown = async () => ({});
@@ -131,7 +131,7 @@ function MyWatchlistManagerApp() {
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: "get-my-watchlist", arguments: {} })
+    app.callServerTool({ name: "get-watchlist", arguments: {} })
       .then((result) => {
         const extracted = extractWatchlistData(result);
         if (extracted) {
@@ -156,7 +156,7 @@ function MyWatchlistManagerApp() {
 
   const refreshWatchlist = useCallback(async () => {
     if (!app || typeof app.callServerTool !== "function") return;
-    const result = await app.callServerTool({ name: "get-my-watchlist", arguments: {} });
+    const result = await app.callServerTool({ name: "get-watchlist", arguments: {} });
     const extracted = extractWatchlistData(result);
     if (extracted) {
       if (extracted.error) {
@@ -210,7 +210,7 @@ function MyWatchlistManagerApp() {
         args.note = form.note.trim();
       }
       await app.callServerTool({
-        name: "set-my-watchlist-item",
+        name: "set-watchlist-item",
         arguments: args,
       });
       setShowForm(false);
@@ -228,7 +228,7 @@ function MyWatchlistManagerApp() {
     setIsDeleting(symbol);
     try {
       await app.callServerTool({
-        name: "delete-my-watchlist-item",
+        name: "delete-watchlist-item",
         arguments: { symbol },
       });
       await refreshWatchlist();
@@ -376,6 +376,6 @@ function MyWatchlistManagerApp() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MyWatchlistManagerApp />
+    <WatchlistManagerApp />
   </StrictMode>,
 );

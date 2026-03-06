@@ -1,5 +1,5 @@
 /**
- * My Watchlist Table Widget
+ * Watchlist Table Widget
  * Displays EOD data for user's watchlist symbols in a sortable table.
  * Columns: Symbol | Company | Close | {period}% | Turnover | RSI | EZ
  * Period selector switches the change % and close price.
@@ -11,7 +11,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { SymbolActions } from "../components/SymbolActions";
 import { WidgetLayout } from "../components/WidgetLayout";
-import styles from "./my-watchlist-table-widget.module.css";
+import styles from "./watchlist-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -120,7 +120,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 
 // ─── Main App ────────────────────────────────────────────────────────
 
-function MyWatchlistTableApp() {
+function WatchlistTableApp() {
   const [baseData, setBaseData] = useState<EndOfDaySymbolsData | null>(null);
   const [period, setPeriod] = useState<HeatmapPeriod>("1D");
   const [periodOverlay, setPeriodOverlay] = useState<Map<
@@ -137,7 +137,7 @@ function MyWatchlistTableApp() {
   const [activeNote, setActiveNote] = useState<{ symbol: string; note: string } | null>(null);
 
   const { app, error } = useApp({
-    appInfo: { name: "My Watchlist Table", version: "1.0.0" },
+    appInfo: { name: "Watchlist Table", version: "1.0.0" },
     capabilities: {},
     onAppCreated: (app) => {
       app.onteardown = async () => ({});
@@ -181,7 +181,7 @@ function MyWatchlistTableApp() {
     if (!app || typeof app.callServerTool !== "function") return;
     (async () => {
       try {
-        const result = await app.callServerTool({ name: "get-my-watchlist", arguments: {} });
+        const result = await app.callServerTool({ name: "get-watchlist", arguments: {} });
         if (!result) return;
         let parsed: unknown = null;
         if (result.structuredContent) {
@@ -249,7 +249,7 @@ function MyWatchlistTableApp() {
       try {
         const args: Record<string, unknown> = { symbols: baseData.symbols, period: p };
         if (baseData.dateTo) args.tradeDate = baseData.dateTo;
-        const result = await app.callServerTool({ name: "get-my-watchlist-table-data", arguments: args });
+        const result = await app.callServerTool({ name: "get-watchlist-table-data", arguments: args });
         const fetched = extractData(result);
         if (fetched) {
           const overlay = new Map<string, { closingPrice: number | null; change: number | null }>();
@@ -299,7 +299,7 @@ function MyWatchlistTableApp() {
 
   return (
     <WidgetLayout
-      title="My Watchlist Table"
+      title="Watchlist Table"
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}
@@ -431,6 +431,6 @@ function MyWatchlistTableApp() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MyWatchlistTableApp />
+    <WatchlistTableApp />
   </StrictMode>,
 );
