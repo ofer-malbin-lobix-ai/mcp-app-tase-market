@@ -16,6 +16,8 @@ import {
 } from "lightweight-charts-react-components";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import type { NavItem } from "../../components/NavRow";
+import { NavRow } from "../../components/NavRow";
 import { WidgetLayout } from "../../components/WidgetLayout";
 import styles from "./symbols-candlestick-widget.module.css";
 
@@ -24,6 +26,7 @@ import styles from "./symbols-candlestick-widget.module.css";
 export interface SymbolsCandlestickConfig {
   toolName: string; // auto-fetch tool, e.g. "get-symbols-end-of-days-data"
   symbolDatesToolName?: string; // "get-my-positions" or "get-watchlist" — fetches per-symbol startDate
+  navButtons?: NavItem[];
 }
 
 function deriveTitle(toolName: string): string {
@@ -736,6 +739,9 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       app={app}
       hostContext={hostContext}
     >
+      {config.navButtons && config.navButtons.length > 0 && (
+        <NavRow app={app} items={config.navButtons} />
+      )}
 
       {eodData && (
         <div className={styles.controls}>

@@ -9,6 +9,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { NavRow } from "../components/NavRow";
 import { SymbolActions } from "../components/SymbolActions";
 import { WidgetLayout } from "../components/WidgetLayout";
 import styles from "./watchlist-table-widget.module.css";
@@ -304,6 +305,15 @@ function WatchlistTableApp() {
       app={app}
       hostContext={hostContext}
     >
+      <NavRow
+        app={app}
+        items={[
+          { label: "Manager", prompt: "call show-watchlist-manager-widget" },
+          { label: "Candlestick", prompt: "call show-watchlist-candlestick-widget" },
+          { label: "End of Day", prompt: "call show-watchlist-end-of-day-widget" },
+        ]}
+      />
+
       <div className={styles.headerExtra}>
         <div className={styles.periodBar}>
           {PERIODS.map((p) => (

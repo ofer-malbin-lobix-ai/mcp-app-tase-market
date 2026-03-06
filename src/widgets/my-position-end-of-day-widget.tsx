@@ -7,6 +7,11 @@ import { renderEndOfDayApp } from "./shared/EndOfDayApp";
 
 const config: EndOfDayAppConfig = {
   toolName: "get-my-position-end-of-day-data",
+  navButtons: [
+    { label: "Manager", prompt: "call show-my-positions-manager-widget" },
+    { label: "Table", prompt: "call show-my-position-table-widget" },
+    { label: "Candlestick", prompt: "call show-my-position-candlestick-widget" },
+  ],
 };
 
 renderEndOfDayApp(config);

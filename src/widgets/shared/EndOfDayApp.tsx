@@ -7,6 +7,8 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
+import type { NavItem } from "../../components/NavRow";
+import { NavRow } from "../../components/NavRow";
 import { WidgetLayout } from "../../components/WidgetLayout";
 import styles from "./end-of-day-widget.module.css";
 
@@ -26,6 +28,7 @@ export interface EndOfDayAppConfig {
   toolName: string;
   isMarketView?: boolean;
   passSymbolsOnRefresh?: boolean;
+  navButtons?: NavItem[];
 }
 
 // --- App component ---
@@ -193,6 +196,9 @@ function EndOfDayInner({
 
   return (
     <WidgetLayout title={deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext}>
+      {config.navButtons && config.navButtons.length > 0 && (
+        <NavRow app={app} items={config.navButtons} />
+      )}
       {data && (
         <div className={styles.summary}>
           <div className={styles.summaryCard}>

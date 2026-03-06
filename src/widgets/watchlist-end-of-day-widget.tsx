@@ -7,6 +7,11 @@ import { renderEndOfDayApp } from "./shared/EndOfDayApp";
 
 const config: EndOfDayAppConfig = {
   toolName: "get-watchlist-end-of-day-data",
+  navButtons: [
+    { label: "Manager", prompt: "call show-watchlist-manager-widget" },
+    { label: "Table", prompt: "call show-watchlist-table-widget" },
+    { label: "Candlestick", prompt: "call show-watchlist-candlestick-widget" },
+  ],
 };
 
 renderEndOfDayApp(config);
