@@ -36,6 +36,7 @@
  *   symbols-table           — show-symbols-table-widget (TEVA, NICE, ESLT) + period buttons
  *   symbol-candlestick      — show-symbol-candlestick-widget (single symbol: TEVA)
  *   symbol-intraday-candlestick  — show-symbol-intraday-candlestick-widget (TEVA) + timeframe switch
+ *   symbol-end-of-days           — show-symbol-end-of-days-widget (TEVA) date range EOD
  *   market-last-update             — show-market-last-update-widget + refresh
  *   my-watchlist-manager     — show-my-watchlist-manager-widget + add/edit/delete
  *   my-watchlist-table       — show-my-watchlist-table-widget (auto-fetch symbols) + period buttons
@@ -469,6 +470,16 @@ async function testSymbolIntraday(page) {
   await screenshot(page, 'symbol-intraday-candlestick-1h');
 
   console.log('  ✅ symbol-intraday-candlestick passed');
+}
+
+async function testSymbolEndOfDays(page) {
+  console.log('\n🧪 Test: symbol-end-of-days');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} call show-symbol-end-of-days-widget with symbol: "TEVA"`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'symbol-end-of-days');
+  console.log('  ✅ symbol-end-of-days passed');
 }
 
 async function testLastUpdate(page) {
@@ -945,6 +956,16 @@ async function testSymbolIntradayDesktop() {
   console.log('  ✅ symbol-intraday-candlestick (Claude Desktop) passed');
 }
 
+async function testSymbolEndOfDaysDesktop() {
+  console.log('\n🧪 Test: symbol-end-of-days (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('call show-symbol-end-of-days-widget with symbol: "TEVA"');
+  console.log('  Waiting for widget...');
+  await sleep(40000);
+  await screenshotDesktop('cd-symbol-end-of-days');
+  console.log('  ✅ symbol-end-of-days (Claude Desktop) passed');
+}
+
 async function testLastUpdateDesktop() {
   console.log('\n🧪 Test: market-last-update (Claude Desktop)');
   await newChatDesktop();
@@ -1032,6 +1053,7 @@ const CHATGPT_TEST_MAP = {
   'my-watchlist-end-of-day':  testMyWatchlistEndOfDay,
   'my-watchlist-candlestick': testMyWatchlistCandlestick,
   'symbol-intraday-candlestick':   testSymbolIntraday,
+  'symbol-end-of-days':            testSymbolEndOfDays,
   'market-last-update':              testLastUpdate,
   'settings':                 testSettings,
   'landing':                  testLanding,
@@ -1057,6 +1079,7 @@ const CLAUDE_DESKTOP_TEST_MAP = {
   'my-watchlist-end-of-day':  testMyWatchlistEndOfDayDesktop,
   'my-watchlist-candlestick': testMyWatchlistCandlestickDesktop,
   'symbol-intraday-candlestick':   testSymbolIntradayDesktop,
+  'symbol-end-of-days':            testSymbolEndOfDaysDesktop,
   'market-last-update':              testLastUpdateDesktop,
   'settings':                 testSettingsDesktop,
   'landing':                  testLandingDesktop,

@@ -5,7 +5,7 @@ import styles from "./WidgetLayout.module.css";
 
 interface WidgetLayoutProps {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   children: ReactNode;
   app: App;
   hostContext?: McpUiHostContext;

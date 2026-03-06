@@ -314,7 +314,7 @@ export async function fetchEndOfDaySymbols(
       ...(symbols && symbols.length > 0 ? { symbol: { in: symbols } } : {}),
       tradeDate: { gte: from, lte: to },
     },
-    select: EOD_SELECT,
+    select: { ...EOD_SELECT, taseSymbol: { select: { companyName: true, companySector: true, companySubSector: true } } },
     orderBy: [{ symbol: "asc" }, { tradeDate: "asc" }],
   });
 
@@ -323,7 +323,12 @@ export async function fetchEndOfDaySymbols(
     count: rows.length,
     dateFrom: toDateStr(from),
     dateTo: toDateStr(to),
-    items: rows.map(rowToStockData),
+    items: rows.map((row) => ({
+      ...rowToStockData(row),
+      companyName: row.taseSymbol?.companyName ?? null,
+      sector: row.taseSymbol?.companySector ?? null,
+      subSector: row.taseSymbol?.companySubSector ?? null,
+    })),
   };
 }
 

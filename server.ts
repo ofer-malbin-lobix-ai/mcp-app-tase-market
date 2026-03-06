@@ -231,6 +231,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const myPositionsManagerResourceUri = `ui://tase-end-of-day/my-positions-manager-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsCandlestickWidgetResourceUri = `ui://tase-end-of-day/symbols-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsTableResourceUri = `ui://tase-end-of-day/symbols-table-widget-ver-${WIDGET_VERSION}.html`;
+  const symbolEndOfDaysResourceUri = `ui://tase-end-of-day/symbol-end-of-days-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsEndOfDayResourceUri = `ui://tase-end-of-day/symbols-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const intradayCandlestickResourceUri = `ui://tase-end-of-day/symbol-intraday-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const marketLastUpdateResourceUri = `ui://tase-end-of-day/market-last-update-widget-ver-${WIDGET_VERSION}.html`;
@@ -841,6 +842,44 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // Data-only tool: Get Symbol End of Days data (single symbol, date range)
+  registerAppTool(server,
+    "get-symbol-end-of-days-data",
+    {
+      title: "Get Symbol End of Days Data",
+      description: "Returns TASE end of day data for a single symbol across a date range. Data only - use show-symbol-end-of-days-widget for visualization.",
+      inputSchema: {
+        symbol: z.string().describe("Stock symbol (e.g. 'TEVA')"),
+        dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
+        dateTo: z.string().optional().describe("End date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
+      },
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchEndOfDaySymbols([args.symbol], args.dateFrom, args.dateTo);
+      return formatEndOfDaySymbolsResult(data);
+    },
+  );
+
+  // UI tool: Show Symbol End of Days widget (single symbol, date range) (single symbol, date range)
+  registerAppTool(server,
+    "show-symbol-end-of-days-widget",
+    {
+      title: "Show Symbol End of Days",
+      description: "Displays TASE end of day data for a single symbol across a date range with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
+      inputSchema: {
+        symbol: z.string().describe("Stock symbol (e.g. 'TEVA')"),
+        dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
+        dateTo: z.string().optional().describe("End date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
+      },
+      _meta: { ui: { resourceUri: symbolEndOfDaysResourceUri } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchEndOfDaySymbols([args.symbol], args.dateFrom, args.dateTo);
+      return formatEndOfDaySymbolsResult(data);
+    },
+  );
+
   // Data-only tool: Get Symbols End of Day data (single date)
   registerAppTool(server,
     "get-symbols-end-of-day-data",
@@ -1425,6 +1464,15 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (): Promise<ReadResourceResult> => {
       const html = await fs.readFile(path.join(DIST_DIR, "symbols-table-widget.html"), "utf-8");
       return { contents: [{ uri: symbolsTableResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
+    },
+  );
+
+  registerAppResource(server,
+    symbolEndOfDaysResourceUri, symbolEndOfDaysResourceUri,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async (): Promise<ReadResourceResult> => {
+      const html = await fs.readFile(path.join(DIST_DIR, "symbol-end-of-days-widget.html"), "utf-8");
+      return { contents: [{ uri: symbolEndOfDaysResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
     },
   );
 

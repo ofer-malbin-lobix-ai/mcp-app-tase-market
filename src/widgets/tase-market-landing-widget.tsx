@@ -26,11 +26,12 @@ const WIDGET_REFERENCE = [
   { n: 14, widget: "symbols-candlestick", showTool: "show-symbols-candlestick-widget", showParams: "symbols, dateFrom, dateTo?", dataTools: ["get-symbols-end-of-days-data", "get-symbol-candlestick-data", "get-symbols-period-data"], dataParams: ["symbols?, dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "symbols, tradeDate?, period?"] },
   { n: 15, widget: "symbols-table", showTool: "show-symbols-table-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-table-data"], dataParams: ["symbols, tradeDate?, period?"] },
   { n: 16, widget: "symbols-end-of-day", showTool: "show-symbols-end-of-day-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-end-of-day-data"], dataParams: ["symbols, tradeDate?"] },
-  { n: 17, widget: "symbol-candlestick", showTool: "show-symbol-candlestick-widget", showParams: "symbol, dateFrom?, dateTo?, timeframe?", dataTools: ["get-symbol-candlestick-data"], dataParams: ["symbol, dateFrom?, dateTo?, timeframe?"] },
-  { n: 18, widget: "symbol-intraday-candlestick", showTool: "show-symbol-intraday-candlestick-widget", showParams: "securityIdOrSymbol", dataTools: ["get-symbol-intraday-candlestick-data"], dataParams: ["securityIdOrSymbol"] },
-  { n: 19, widget: "market-last-update", showTool: "show-market-last-update-widget", showParams: "none", dataTools: ["get-market-last-update-data"], dataParams: ["none"] },
-  { n: 20, widget: "settings", showTool: "show-tase-market-settings-widget", showParams: "none", dataTools: ["get-tase-market-settings-data"], dataParams: ["none"] },
-  { n: 21, widget: "landing", showTool: "show-tase-market-landing-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
+  { n: 17, widget: "symbol-end-of-days", showTool: "show-symbol-end-of-days-widget", showParams: "symbol, dateFrom?, dateTo?", dataTools: ["get-symbol-end-of-days-data"], dataParams: ["symbol, dateFrom?, dateTo?"] },
+  { n: 18, widget: "symbol-candlestick", showTool: "show-symbol-candlestick-widget", showParams: "symbol, dateFrom?, dateTo?, timeframe?", dataTools: ["get-symbol-candlestick-data"], dataParams: ["symbol, dateFrom?, dateTo?, timeframe?"] },
+  { n: 19, widget: "symbol-intraday-candlestick", showTool: "show-symbol-intraday-candlestick-widget", showParams: "securityIdOrSymbol", dataTools: ["get-symbol-intraday-candlestick-data"], dataParams: ["securityIdOrSymbol"] },
+  { n: 20, widget: "market-last-update", showTool: "show-market-last-update-widget", showParams: "none", dataTools: ["get-market-last-update-data"], dataParams: ["none"] },
+  { n: 21, widget: "settings", showTool: "show-tase-market-settings-widget", showParams: "none", dataTools: ["get-tase-market-settings-data"], dataParams: ["none"] },
+  { n: 22, widget: "landing", showTool: "show-tase-market-landing-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
 ];
 
 const DATA_TOOL_REFERENCE = [
@@ -54,10 +55,11 @@ const DATA_TOOL_REFERENCE = [
   { n: 18, tool: "get-symbols-period-data", params: "symbols, tradeDate?, period?", visibility: "model, app", usedBy: "symbols-candlestick" },
   { n: 19, tool: "get-symbols-table-data", params: "symbols, tradeDate?, period?", visibility: "model, app", usedBy: "symbols-table" },
   { n: 20, tool: "get-symbols-end-of-day-data", params: "symbols, tradeDate?", visibility: "model, app", usedBy: "symbols-end-of-day" },
-  { n: 21, tool: "get-symbol-candlestick-data", params: "symbol, dateFrom?, dateTo?, timeframe?", visibility: "model, app", usedBy: "symbol-candlestick, my-position-candlestick, my-watchlist-candlestick, symbols-candlestick" },
-  { n: 22, tool: "get-symbol-intraday-candlestick-data", params: "securityIdOrSymbol", visibility: "model, app", usedBy: "symbol-intraday-candlestick" },
-  { n: 23, tool: "get-market-last-update-data", params: "none", visibility: "model, app", usedBy: "market-last-update" },
-  { n: 24, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
+  { n: 21, tool: "get-symbol-end-of-days-data", params: "symbol, dateFrom?, dateTo?", visibility: "model, app", usedBy: "symbol-end-of-days" },
+  { n: 22, tool: "get-symbol-candlestick-data", params: "symbol, dateFrom?, dateTo?, timeframe?", visibility: "model, app", usedBy: "symbol-candlestick, my-position-candlestick, my-watchlist-candlestick, symbols-candlestick" },
+  { n: 23, tool: "get-symbol-intraday-candlestick-data", params: "securityIdOrSymbol", visibility: "model, app", usedBy: "symbol-intraday-candlestick" },
+  { n: 24, tool: "get-market-last-update-data", params: "none", visibility: "model, app", usedBy: "market-last-update" },
+  { n: 25, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
 ];
 
 const TOOL_GROUPS = [
@@ -95,6 +97,7 @@ const TOOL_GROUPS = [
     tools: [
       { icon: "\u{1F4CA}", name: "Symbols Table", description: "EOD table for any symbols with period selector", prompt: "call show-symbols-table-widget" },
       { icon: "\u{1F4CB}", name: "Symbols End of Day", description: "Full DataTable for symbols on a single date", prompt: "call show-symbols-end-of-day-widget" },
+      { icon: "\u{1F4C8}", name: "Symbol End of Days", description: "Single-symbol EOD data across a date range", prompt: "call show-symbol-end-of-days-widget" },
       { icon: "\u{1F56F}\u{FE0F}", name: "Symbols Candlestick", description: "Candlestick chart for any symbols", prompt: "call show-symbols-candlestick-widget" },
       { icon: "\u{1F56F}\u{FE0F}", name: "Symbol Candlestick", description: "Single-symbol candlestick chart", prompt: "call show-symbol-candlestick-widget" },
       { icon: "\u{23F1}\u{FE0F}", name: "Symbol Intraday Candlestick", description: "Intraday candlestick chart with configurable timeframes", prompt: "call show-symbol-intraday-candlestick-widget" },
@@ -117,13 +120,13 @@ function ReferencePanel() {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          Widgets (21)
+          Widgets (22)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("data")}
         >
-          Data Tools (24)
+          Data Tools (25)
         </button>
       </div>
 

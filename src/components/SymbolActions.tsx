@@ -22,6 +22,15 @@ export function SymbolActions({ symbol, app }: { symbol: string; app: App }) {
           content: [{ type: "text", text: `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "${symbol}"` }],
         })}
       >&#x23F1;&#xFE0F;</button>
+      <button
+        className={styles.actionBtn}
+        title="End of Days"
+        data-tooltip="End of Days"
+        onClick={() => app.sendMessage({
+          role: "user",
+          content: [{ type: "text", text: `call show-symbol-end-of-days-widget with symbol: "${symbol}"` }],
+        })}
+      >&#x1F4C5;</button>
     </span>
   );
 }

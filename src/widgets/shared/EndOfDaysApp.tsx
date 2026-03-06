@@ -1,6 +1,6 @@
 /**
- * Shared End of Day Widget Component (single date picker)
- * Used by all 4 end-of-day widgets: market, symbols, my-position, my-watchlist.
+ * Shared End of Days Widget Component (date range: dateFrom + dateTo)
+ * Used by date-range widgets like symbol-end-of-days.
  */
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
@@ -19,18 +19,23 @@ import {
   formatVolume,
 } from "./end-of-day-shared";
 
-// Re-export types for backward compatibility
-export type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
-
-export interface EndOfDayAppConfig {
+export interface EndOfDaysAppConfig {
   toolName: string;
-  isMarketView?: boolean;
-  passSymbolsOnRefresh?: boolean;
 }
+
+// Override column visibility for single-symbol date-range views:
+// Hide redundant Symbol/Company/Sector, show Date
+const DAYS_COLUMN_VISIBILITY: Record<string, boolean> = {
+  ...INITIAL_COLUMN_VISIBILITY,
+  symbol: false,
+  companyName: false,
+  sector: false,
+  tradeDate: true,
+};
 
 // --- App component ---
 
-function EndOfDayApp({ config }: { config: EndOfDayAppConfig }) {
+function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
   const [data, setData] = useState<EndOfDayWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
@@ -97,55 +102,57 @@ function EndOfDayApp({ config }: { config: EndOfDayAppConfig }) {
   if (!app) return <div className={styles.loading}>Connecting...</div>;
 
   return (
-    <EndOfDayInner
+    <EndOfDaysInner
       app={app}
       data={data}
       setData={setData}
       hostContext={hostContext}
       config={config}
+      toolInput={toolInput}
     />
   );
 }
 
 // --- Inner component ---
 
-function EndOfDayInner({
+function EndOfDaysInner({
   app,
   data,
   setData,
   hostContext,
   config,
+  toolInput,
 }: {
   app: App;
   data: EndOfDayWidgetData | null;
   setData: React.Dispatch<React.SetStateAction<EndOfDayWidgetData | null>>;
   hostContext?: McpUiHostContext;
-  config: EndOfDayAppConfig;
+  config: EndOfDaysAppConfig;
+  toolInput: Record<string, unknown>;
 }) {
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedMarketType, setSelectedMarketType] = useState("");
+  const [selectedDateFrom, setSelectedDateFrom] = useState("");
+  const [selectedDateTo, setSelectedDateTo] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
-  // Sync date from data
-  const dateValue = data?.tradeDate || data?.dateFrom || "";
+  // Sync dates from data
   useEffect(() => {
-    if (dateValue && !selectedDate) setSelectedDate(dateValue);
-  }, [dateValue, selectedDate]);
+    if (data?.dateFrom && !selectedDateFrom) setSelectedDateFrom(data.dateFrom);
+  }, [data?.dateFrom, selectedDateFrom]);
 
-  // Sync market type from data (market widget only)
   useEffect(() => {
-    if (data?.marketType && !selectedMarketType) setSelectedMarketType(data.marketType);
-  }, [data?.marketType, selectedMarketType]);
+    if (data?.dateTo && !selectedDateTo) setSelectedDateTo(data.dateTo);
+  }, [data?.dateTo, selectedDateTo]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     setRefreshError(null);
     try {
       const args: Record<string, unknown> = {};
-      if (selectedDate) args.tradeDate = selectedDate;
-      if (config.isMarketView && selectedMarketType) args.marketType = selectedMarketType;
-      if (config.passSymbolsOnRefresh && data?.symbols?.length) args.symbols = data.symbols;
+      if (selectedDateFrom) args.dateFrom = selectedDateFrom;
+      if (selectedDateTo) args.dateTo = selectedDateTo;
+      // Always re-send symbol from original toolInput
+      if (toolInput.symbol) args.symbol = toolInput.symbol;
       const result = await app.callServerTool({ name: config.toolName, arguments: args });
       const extracted = extractEndOfDayData(result);
       if (extracted) {
@@ -159,12 +166,12 @@ function EndOfDayInner({
     } finally {
       setIsRefreshing(false);
     }
-  }, [app, config, data, selectedDate, selectedMarketType, setData]);
+  }, [app, config, toolInput, selectedDateFrom, selectedDateTo, setData]);
 
-  // CRITICAL: Memoize columns to prevent infinite re-renders
+  // Always show date column for date-range widgets
   const columns = useMemo(
-    () => createEndOfDayColumns(app, config.isMarketView),
-    [app, config.isMarketView]
+    () => createEndOfDayColumns(app, true),
+    [app]
   );
 
   // CRITICAL: Memoize rows to prevent infinite re-renders
@@ -185,61 +192,70 @@ function EndOfDayInner({
     totalVolume: summaryRows.reduce((sum, row) => sum + Number(row.volume ?? 0), 0),
   }), [summaryRows]);
 
-  const subtitle = data
-    ? config.isMarketView
-      ? `${data.tradeDate}${data.marketType ? ` \u00b7 ${data.marketType}` : ""}`
-      : `${data.symbols?.length ? data.symbols.join(", ") : "All symbols"} \u00b7 ${data.dateFrom ?? ""}`
-    : undefined;
+  // Subtitle: "TEVA · 2026-01-01 → 2026-03-06" with tooltip on symbol showing company/sector/subsector
+  const subtitle = useMemo(() => {
+    if (!data) return undefined;
+    const symbol = data.symbols?.[0] ?? "";
+    const first = rows[0];
+    const tooltipParts: string[] = [];
+    if (first?.companyName) tooltipParts.push(`Company: ${first.companyName}`);
+    if (first?.sector) tooltipParts.push(`Sector: ${first.sector}`);
+    if (first?.subSector) tooltipParts.push(`Sub-Sector: ${first.subSector}`);
+    const tooltip = tooltipParts.join("\n");
+    const dateRange = `${data.dateFrom ?? ""} \u2192 ${data.dateTo ?? ""}`;
+    if (!symbol) return dateRange;
+    return (
+      <>
+        <span title={tooltip || undefined} style={{ cursor: tooltip ? "help" : undefined }}>{symbol}</span>
+        {" \u00b7 "}{dateRange}
+      </>
+    );
+  }, [data, rows]);
 
   return (
     <WidgetLayout title={deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext}>
       {data && (
-        <div className={styles.summary}>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Total Stocks</div>
-            <div className={styles.summaryValue}>{marketSummary.totalStocks}</div>
+        <>
+          <div className={styles.summary}>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Trading Days</div>
+              <div className={styles.summaryValue}>{marketSummary.totalStocks}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Up Days</div>
+              <div className={`${styles.summaryValue} ${styles.gainers}`}>{marketSummary.gainers}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Down Days</div>
+              <div className={`${styles.summaryValue} ${styles.losers}`}>{marketSummary.losers}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryLabel}>Total Volume</div>
+              <div className={styles.summaryValue}>{formatVolume(marketSummary.totalVolume)}</div>
+            </div>
           </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Gainers</div>
-            <div className={`${styles.summaryValue} ${styles.gainers}`}>{marketSummary.gainers}</div>
-          </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Losers</div>
-            <div className={`${styles.summaryValue} ${styles.losers}`}>{marketSummary.losers}</div>
-          </div>
-          <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Total Volume</div>
-            <div className={styles.summaryValue}>{formatVolume(marketSummary.totalVolume)}</div>
-          </div>
-        </div>
+        </>
       )}
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>
-          {config.isMarketView ? "Trade Date:" : "Date:"}
+          From:
           <input
             type="date"
             className={styles.dateInput}
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            value={selectedDateFrom}
+            onChange={(e) => setSelectedDateFrom(e.target.value)}
           />
         </label>
-        {config.isMarketView && (
-          <label className={styles.dateLabel}>
-            Market Type:
-            <select
-              className={styles.dateInput}
-              value={selectedMarketType}
-              onChange={(e) => setSelectedMarketType(e.target.value)}
-            >
-              <option value="">{"\u2014"}</option>
-              <option value="STOCK">Stock</option>
-              <option value="BOND">Bond</option>
-              <option value="TASE UP STOCK">TASE UP Stock</option>
-              <option value="LOAN">Loan</option>
-            </select>
-          </label>
-        )}
+        <label className={styles.dateLabel}>
+          To:
+          <input
+            type="date"
+            className={styles.dateInput}
+            value={selectedDateTo}
+            onChange={(e) => setSelectedDateTo(e.target.value)}
+          />
+        </label>
         <button
           className={styles.refreshButton}
           onClick={handleRefresh}
@@ -261,7 +277,7 @@ function EndOfDayInner({
           columns={columns}
           initialPageSize={50}
           storageKey={`tase-${config.toolName.replace(/^get-/, "").replace(/-data$/, "")}-column-visibility`}
-          initialColumnVisibility={INITIAL_COLUMN_VISIBILITY}
+          initialColumnVisibility={DAYS_COLUMN_VISIBILITY}
           onFilteredRowsChange={handleFilteredRowsChange}
         />
       ) : null}
@@ -271,10 +287,10 @@ function EndOfDayInner({
 
 // --- Entry point helper ---
 
-export function renderEndOfDayApp(config: EndOfDayAppConfig) {
+export function renderEndOfDaysApp(config: EndOfDaysAppConfig) {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <EndOfDayApp config={config} />
+      <EndOfDaysApp config={config} />
     </StrictMode>
   );
 }
