@@ -267,6 +267,31 @@ function WatchlistManagerApp() {
         </div>
       )}
 
+      <div className={styles.navRow}>
+        {[
+          { label: "Table", prompt: "call show-watchlist-table-widget" },
+          { label: "Candlestick", prompt: "call show-watchlist-candlestick-widget" },
+          { label: "End of Day", prompt: "call show-watchlist-end-of-day-widget" },
+        ].map((nav) => (
+          <button
+            key={nav.label}
+            className={styles.navBtn}
+            onClick={async () => {
+              try {
+                await app.sendMessage({
+                  role: "user",
+                  content: [{ type: "text", text: nav.prompt }],
+                });
+              } catch (e) {
+                console.error("sendMessage failed:", e);
+              }
+            }}
+          >
+            {nav.label}
+          </button>
+        ))}
+      </div>
+
       {authError && (
         <div className={styles.authError}>
           <strong>Authentication required:</strong> {authError}
