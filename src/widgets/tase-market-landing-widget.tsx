@@ -103,11 +103,6 @@ const TOOL_GROUPS = [
       { icon: "\u{23F1}\u{FE0F}", name: "Symbol Intraday Candlestick", description: "Intraday candlestick chart with configurable timeframes", prompt: "call show-symbol-intraday-candlestick-widget" },
     ],
   },
-  {
-    title: "Reference",
-    type: "reference" as const,
-    tools: [] as { icon: string; name: string; description: string; prompt: string }[],
-  },
 ];
 
 function ReferencePanel() {
@@ -234,6 +229,7 @@ interface LandingInnerProps {
 
 function LandingInner({ hostContext, app }: LandingInnerProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const [refOpen, setRefOpen] = useState(false);
 
   return (
     <WidgetLayout title="TASE Market Tools" app={app} hostContext={hostContext} titleClassName={styles.title}>
@@ -249,52 +245,57 @@ function LandingInner({ hostContext, app }: LandingInnerProps) {
               {group.title}
             </button>
           ))}
-          <button
-            className={styles.settingsBtn}
-            title="Settings"
-            onClick={async () => {
-              try {
-                await app.sendMessage({
-                  role: "user",
-                  content: [{ type: "text", text: "call show-tase-market-settings-widget" }],
-                });
-              } catch (e) {
-                console.error("sendMessage failed:", e);
-              }
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6.5 1L6.2 2.6C5.8 2.8 5.4 3 5.1 3.3L3.5 2.7L2 5.3L3.4 6.4C3.4 6.6 3.3 6.8 3.3 7C3.3 7.2 3.4 7.4 3.4 7.6L2 8.7L3.5 11.3L5.1 10.7C5.4 11 5.8 11.2 6.2 11.4L6.5 13H9.5L9.8 11.4C10.2 11.2 10.6 11 10.9 10.7L12.5 11.3L14 8.7L12.6 7.6C12.6 7.4 12.7 7.2 12.7 7C12.7 6.8 12.6 6.6 12.6 6.4L14 5.3L12.5 2.7L10.9 3.3C10.6 3 10.2 2.8 9.8 2.6L9.5 1H6.5ZM8 5C9.1 5 10 5.9 10 7C10 8.1 9.1 9 8 9C6.9 9 6 8.1 6 7C6 5.9 6.9 5 8 5Z" fill="currentColor"/>
-            </svg>
-          </button>
         </div>
         <div className={styles.tabPanel}>
-          {"type" in TOOL_GROUPS[activeTab] && TOOL_GROUPS[activeTab].type === "reference" ? (
-            <ReferencePanel />
-          ) : (
-            TOOL_GROUPS[activeTab].tools.map((tool) => (
-              <button
-                key={tool.name}
-                className={styles.featureCard}
-                onClick={async () => {
-                  try {
-                    await app.sendMessage({
-                      role: "user",
-                      content: [{ type: "text", text: tool.prompt }],
-                    });
-                  } catch (e) {
-                    console.error("sendMessage failed:", e);
-                  }
-                }}
-              >
-                <span className={styles.featureIcon}>{tool.icon}</span>
-                <span className={styles.featureName}>{tool.name}</span>
-                <span className={styles.featureDescription}>{tool.description}</span>
-              </button>
-            ))
-          )}
+          {TOOL_GROUPS[activeTab].tools.map((tool) => (
+            <button
+              key={tool.name}
+              className={styles.featureCard}
+              onClick={async () => {
+                try {
+                  await app.sendMessage({
+                    role: "user",
+                    content: [{ type: "text", text: tool.prompt }],
+                  });
+                } catch (e) {
+                  console.error("sendMessage failed:", e);
+                }
+              }}
+            >
+              <span className={styles.featureIcon}>{tool.icon}</span>
+              <span className={styles.featureName}>{tool.name}</span>
+              <span className={styles.featureDescription}>{tool.description}</span>
+            </button>
+          ))}
         </div>
       </div>
+
+      <div className={styles.metaRow}>
+        <button className={styles.referenceToggle} onClick={() => setRefOpen(!refOpen)}>
+          <span className={`${styles.referenceArrow} ${refOpen ? styles.referenceArrowOpen : ""}`}>&#9654;</span>
+          Reference
+        </button>
+        <button
+          className={styles.settingsBtn}
+          title="Settings"
+          onClick={async () => {
+            try {
+              await app.sendMessage({
+                role: "user",
+                content: [{ type: "text", text: "call show-tase-market-settings-widget" }],
+              });
+            } catch (e) {
+              console.error("sendMessage failed:", e);
+            }
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 1L6.2 2.6C5.8 2.8 5.4 3 5.1 3.3L3.5 2.7L2 5.3L3.4 6.4C3.4 6.6 3.3 6.8 3.3 7C3.3 7.2 3.4 7.4 3.4 7.6L2 8.7L3.5 11.3L5.1 10.7C5.4 11 5.8 11.2 6.2 11.4L6.5 13H9.5L9.8 11.4C10.2 11.2 10.6 11 10.9 10.7L12.5 11.3L14 8.7L12.6 7.6C12.6 7.4 12.7 7.2 12.7 7C12.7 6.8 12.6 6.6 12.6 6.4L14 5.3L12.5 2.7L10.9 3.3C10.6 3 10.2 2.8 9.8 2.6L9.5 1H6.5ZM8 5C9.1 5 10 5.9 10 7C10 8.1 9.1 9 8 9C6.9 9 6 8.1 6 7C6 5.9 6.9 5 8 5Z" fill="currentColor"/>
+          </svg>
+          Settings
+        </button>
+      </div>
+      {refOpen && <div className={styles.referenceContent}><ReferencePanel /></div>}
 
       </div>
     </WidgetLayout>
