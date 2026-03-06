@@ -133,6 +133,7 @@ function MyWatchlistTableApp() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const [symbolNotes, setSymbolNotes] = useState<Record<string, string>>({});
+  const [symbolStartDates, setSymbolStartDates] = useState<Record<string, string>>({});
   const [activeNote, setActiveNote] = useState<{ symbol: string; note: string } | null>(null);
 
   const { app, error } = useApp({
@@ -195,13 +196,16 @@ function MyWatchlistTableApp() {
             }
           }
         }
-        const watchlist = (parsed as { watchlist?: { symbol: string; note?: string }[] })?.watchlist;
+        const watchlist = (parsed as { watchlist?: { symbol: string; note?: string; startDate?: string }[] })?.watchlist;
         if (!Array.isArray(watchlist)) return;
         const notes: Record<string, string> = {};
+        const dates: Record<string, string> = {};
         for (const item of watchlist) {
           if (item.note) notes[item.symbol] = item.note;
+          if (item.startDate) dates[item.symbol] = item.startDate;
         }
         setSymbolNotes(notes);
+        setSymbolStartDates(dates);
       } catch (e) {
         console.error("Failed to fetch watchlist notes:", e);
       }
@@ -355,7 +359,7 @@ function MyWatchlistTableApp() {
                   <td className={`${styles.tdLeft} ${styles.tdSymbol}`}>{row.symbol}</td>
                   <td className={styles.tdActions}>
                     <span className={styles.rowActions}>
-                      <SymbolActions symbol={row.symbol} app={app} />
+                      <SymbolActions symbol={row.symbol} app={app} startDate={symbolStartDates[row.symbol]} />
                       {symbolNotes[row.symbol] ? (
                         <button
                           className={styles.noteBtn}

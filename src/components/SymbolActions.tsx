@@ -1,7 +1,7 @@
 import type { App } from "@modelcontextprotocol/ext-apps";
 import styles from "./symbol-actions.module.css";
 
-export function SymbolActions({ symbol, app }: { symbol: string; app: App }) {
+export function SymbolActions({ symbol, app, startDate }: { symbol: string; app: App; startDate?: string | null }) {
   return (
     <span className={styles.rowActions}>
       <button
@@ -28,7 +28,7 @@ export function SymbolActions({ symbol, app }: { symbol: string; app: App }) {
         data-tooltip="End of Days"
         onClick={() => app.sendMessage({
           role: "user",
-          content: [{ type: "text", text: `call show-symbol-end-of-days-widget with symbol: "${symbol}"` }],
+          content: [{ type: "text", text: `call show-symbol-end-of-days-widget with symbol: "${symbol}"${startDate ? `, dateFrom: "${startDate}"` : ""}` }],
         })}
       >&#x1F4C5;</button>
     </span>

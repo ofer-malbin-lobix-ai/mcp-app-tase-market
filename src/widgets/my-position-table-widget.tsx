@@ -50,6 +50,7 @@ interface DisplayRow {
   profitLoss: number | null;
   profitLossPct: number | null;
   period: number | null;
+  startDate: string | null;
 }
 
 // ─── Extraction ─────────────────────────────────────────────────────
@@ -229,6 +230,7 @@ function MyPositionApp() {
         profitLoss,
         profitLossPct,
         period,
+        startDate: pos?.startDate ?? null,
       };
     });
 
@@ -291,7 +293,7 @@ function MyPositionApp() {
                 <tr key={row.symbol} className={styles.tr}>
                   <td className={`${styles.tdLeft} ${styles.tdSymbol}`}>{row.symbol}</td>
                   <td className={styles.tdActions}>
-                    <SymbolActions symbol={row.symbol} app={app} />
+                    <SymbolActions symbol={row.symbol} app={app} startDate={row.startDate} />
                   </td>
                   <td className={styles.td}>{row.securityId}</td>
                   <td className={`${styles.tdLeft} ${styles.tdCompany}`} title={row.companyName ?? ""}>
