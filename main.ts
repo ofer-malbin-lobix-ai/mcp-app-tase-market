@@ -77,10 +77,26 @@ export async function startStreamableHTTPServer(
   });
 
   // OAuth metadata endpoints (public, before Clerk middleware)
-  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile"] });
+  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] });
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
-  app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
+  app.get("/.well-known/oauth-authorization-server", async (req: Request, res: Response) => {
+    // Wrap Clerk's handler to inject "openid" into scopes_supported
+    // (Clerk doesn't accept scope customization for auth server metadata)
+    const fakeRes = {
+      json(data: Record<string, unknown>) {
+        const scopes = Array.isArray(data.scopes_supported) ? data.scopes_supported as string[] : [];
+        if (!scopes.includes("openid")) {
+          scopes.push("openid");
+        }
+        data.scopes_supported = scopes;
+        res.json(data);
+      },
+      status(code: number) { res.status(code); return fakeRes; },
+      send(body: unknown) { res.send(body); return fakeRes; },
+    };
+    await authServerMetadataHandlerClerk(req as never, fakeRes as never);
+  });
 
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
