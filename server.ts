@@ -72,6 +72,11 @@ function resourceContent(uri: string, html: string) {
   return { contents: [{ uri, mimeType: RESOURCE_MIME_TYPE, text: html, _meta: { ui: RESOURCE_UI_META } }] };
 }
 
+// Tool annotations for ChatGPT app submission
+const READ_ONLY_ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, openWorldHint: false } as const;
+const WRITE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const;
+const DELETE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: true, openWorldHint: false } as const;
+
 // Input schemas
 const getTaseDataSchema = {
   marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter"),
@@ -266,6 +271,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Market End of Day Data",
       description: "Returns TASE end of day data including prices, volume, and technical indicators. Data only - use show-market-end-of-day-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getTaseDataSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -281,6 +287,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market End of Day",
       description: "Displays Tel Aviv Stock Exchange end of day data with interactive table visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getTaseDataSchema,
       _meta: { ui: { resourceUri: endOfDayResourceUri } },
     },
@@ -303,6 +310,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Market Spirit Data",
       description: "Returns TASE Market Spirit indicator: Defense (bearish, score 0-2), Selective (neutral, score 3-4), or Attack (bullish, score 5-6). Data only - use show-market-spirit-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getMarketSpiritSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -318,6 +326,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market Spirit",
       description: "Displays TASE Market Spirit as an interactive traffic light. Red = Defense (bearish), Yellow = Selective (neutral), Green = Attack (bullish).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getMarketSpiritSchema,
       _meta: { ui: { resourceUri: marketSpiritResourceUri } },
     },
@@ -340,6 +349,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Market Uptrend Symbols Data",
       description: "Returns TASE symbols currently in uptrend with EZ values (% distance from SMA20). Data only - use show-market-uptrend-symbols-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getUptrendSymbolsSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -355,6 +365,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market Uptrend Symbols",
       description: "Displays TASE symbols currently in uptrend with EZ values (% distance from SMA20) as an interactive list.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getUptrendSymbolsSchema,
       _meta: { ui: { resourceUri: uptrendSymbolsResourceUri } },
     },
@@ -377,6 +388,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get My Position End of Day Data",
       description: "Returns TASE end of day data for the user's portfolio symbols on a single trade date. Data only - use show-my-position-end-of-day-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -402,6 +414,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show My Position End of Day",
       description: "Displays TASE end of day data for the user's portfolio symbols on a single trade date with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -427,6 +440,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Candlestick Data",
       description: "Returns TASE candlestick chart data (OHLCV) for a single symbol across a date range. Data only - use show-symbol-candlestick-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getCandlestickSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -442,6 +456,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbol Candlestick Chart",
       description: "Displays a candlestick chart for a single TASE symbol across a date range with OHLCV data.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getCandlestickSchema,
       _meta: { ui: { resourceUri: candlestickResourceUri } },
     },
@@ -457,6 +472,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbol Intraday Candlestick Data",
       description: "Returns TASE intraday trading data for a single symbol/securityId. Raw tick data for client-side candlestick aggregation. Data only - use show-symbol-intraday-candlestick-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getIntradayCandlestickSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -474,6 +490,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbol Intraday Candlestick",
       description: "Displays an intraday candlestick chart for a single TASE symbol with configurable timeframes (1m, 3m, 5m, 10m, 30m, 1h). Auto-refreshes every 30 minutes.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getIntradayCandlestickSchema,
       _meta: { ui: { resourceUri: intradayCandlestickResourceUri } },
     },
@@ -491,6 +508,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Market Last Update Data",
       description: "Returns TASE last-update trading data for all securities including last price, change%, volume, and trading phase. Data only - use show-market-last-update-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -517,6 +535,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market Last Update",
       description: "Displays TASE last-update trading data with interactive table visualization showing real-time prices, changes, and volume.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: marketLastUpdateResourceUri } },
     },
@@ -543,6 +562,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show My Position Candlestick",
       description: "Displays a candlestick view for the user's portfolio: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, each symbol defaults to its position start date."),
         dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
@@ -578,6 +598,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get My Position Period Data",
       description: "Returns last price and period change % for the user's portfolio symbols. Used by the my-position candlestick widget sidebar.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
         period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
@@ -604,6 +625,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market Dashboard",
       description: "Displays a single-page market overview combining Market Spirit, end-of-day stats (gainers/losers), and uptrend symbols count.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getTaseDataSchema,
       _meta: { ui: { resourceUri: dashboardResourceUri } },
     },
@@ -637,6 +659,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Market Sector Heatmap Data",
       description: "Returns TASE stock data grouped by sector and sub-sector with marketCap and change % for heatmap visualization. Data only - use show-market-sector-heatmap-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getSectorHeatmapSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -664,6 +687,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Market Sector Heatmap",
       description: "Displays TASE stocks as a nested treemap heatmap: sectors → sub-sectors → symbols. Rectangles sized by market cap, colored by change %. Click to drill down.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getSectorHeatmapSchema,
       _meta: { ui: { resourceUri: sectorHeatmapResourceUri } },
     },
@@ -686,6 +710,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get My Position Table Data",
       description: "Returns EOD data for the user's portfolio symbols enriched with position metadata (avgEntryPrice, startDate, amount, side) for P&L calculation. Data only - use show-my-position-table-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -718,6 +743,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show My Positions Table",
       description: "Displays the user's portfolio P&L table with sortable columns (Symbol, SecID, Company, Close, Avg Price, Profit/Loss, %, Period).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -750,6 +776,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbols End of Days Data",
       description: "Returns TASE end of day data for specific symbols across a date range. Data only - use show-symbols-end-of-days-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: getEndOfDaySymbolsSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -765,6 +792,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbols Period Data",
       description: "Returns last price and period change % for a list of symbols. Used by the symbols candlestick widget sidebar.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
@@ -789,6 +817,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbols Candlestick",
       description: "Displays a candlestick view: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols to display (e.g. ['TEVA', 'LUMI'])"),
         dateFrom: z.string().describe("Start date in YYYY-MM-DD format"),
@@ -821,6 +850,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbols Table Data",
       description: "Returns EOD data for specified symbols. Period controls the change %: 1D=daily, 1W=weekly (5 trading days), 1M=monthly (21 trading days), 3M=quarterly (63 trading days). Data only - use show-symbols-table-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols (e.g. ['TEVA', 'LUMI'])"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
@@ -845,6 +875,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbols Table",
       description: "Displays specified symbols as an interactive EOD table with sortable columns (Symbol, Company, Close, Change%, Turnover, RSI, EZ) and period selector (1D/1W/1M/3M).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols (e.g. ['TEVA', 'LUMI'])"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
@@ -868,6 +899,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbol End of Days Data",
       description: "Returns TASE end of day data for a single symbol across a date range. Data only - use show-symbol-end-of-days-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().describe("Stock symbol (e.g. 'TEVA')"),
         dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
@@ -887,6 +919,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbol End of Days",
       description: "Displays TASE end of day data for a single symbol across a date range with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().describe("Stock symbol (e.g. 'TEVA')"),
         dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
@@ -906,6 +939,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Symbols End of Day Data",
       description: "Returns TASE end of day data for specific symbols on a single trade date. Data only - use show-symbols-end-of-day-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols (e.g. ['TEVA', 'LUMI'])"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
@@ -929,6 +963,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Symbols End of Day",
       description: "Displays TASE end of day data for specific symbols on a single trade date with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         symbols: z.array(z.string()).describe("List of stock symbols (e.g. ['TEVA', 'LUMI'])"),
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
@@ -952,6 +987,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get User Positions",
       description: "Returns the user's saved portfolio positions (symbol, start date, amount) stored in their profile.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -972,6 +1008,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Set User Position",
       description: "Adds or updates a portfolio position (upserts by symbol).",
+      annotations: WRITE_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().min(1).describe("Stock symbol (e.g. 'TEVA')"),
         startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Start date in YYYY-MM-DD format"),
@@ -1008,6 +1045,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Delete User Position",
       description: "Removes a portfolio position by symbol.",
+      annotations: DELETE_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().min(1).describe("Stock symbol to remove (e.g. 'TEVA')"),
       },
@@ -1034,6 +1072,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show My Positions Manager",
       description: "Displays an interactive manager to add, edit, and delete portfolio positions stored in your profile.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: myPositionsManagerResourceUri } },
     },
@@ -1056,6 +1095,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get User Watchlist",
       description: "Returns the user's saved watchlist items (symbol, start date, note) stored in their profile.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -1076,6 +1116,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Set User Watchlist Item",
       description: "Adds or updates a watchlist item (upserts by symbol).",
+      annotations: WRITE_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().min(1).describe("Stock symbol (e.g. 'TEVA')"),
         startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Start date in YYYY-MM-DD format"),
@@ -1107,6 +1148,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Delete User Watchlist Item",
       description: "Removes a watchlist item by symbol.",
+      annotations: DELETE_ANNOTATIONS,
       inputSchema: {
         symbol: z.string().min(1).describe("Stock symbol to remove (e.g. 'TEVA')"),
       },
@@ -1133,6 +1175,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Watchlist Manager",
       description: "Displays an interactive manager to add, edit, and delete watchlist items stored in your profile.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: watchlistManagerResourceUri } },
     },
@@ -1155,6 +1198,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Watchlist Table Data",
       description: "Returns EOD data for the user's watchlist symbols. Period controls the change %: 1D=daily, 1W=weekly (5 trading days), 1M=monthly (21 trading days), 3M=quarterly (63 trading days). Data only - use show-watchlist-table-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
         period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
@@ -1181,6 +1225,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Watchlist Table",
       description: "Displays the user's watchlist symbols as an interactive EOD table with sortable columns (Symbol, Company, Close, Change%, Turnover, RSI, EZ) and period selector (1D/1W/1M/3M).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -1206,6 +1251,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Watchlist End of Day Data",
       description: "Returns TASE end of day data for the user's watchlist symbols on a single trade date. Data only - use show-watchlist-end-of-day-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -1231,6 +1277,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Watchlist End of Day",
       description: "Displays TASE end of day data for the user's watchlist symbols on a single trade date with full interactive DataTable (all columns, summary cards, date selector, column visibility).",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
       },
@@ -1256,6 +1303,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get Watchlist Period Data",
       description: "Returns last price and period change % for the user's watchlist symbols. Used by the watchlist candlestick widget sidebar.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
         period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
@@ -1282,6 +1330,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show Watchlist Candlestick",
       description: "Displays a candlestick view for the user's watchlist: sidebar with symbol table (Last, Chg, Chg%) and a chart area. Click a symbol to view its candlestick chart.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, each symbol defaults to its watchlist start date."),
         dateTo: z.string().optional().describe("End date in YYYY-MM-DD format"),
@@ -1316,6 +1365,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show TASE Market Tools",
       description: "Displays the TASE Data Hub landing page with available tools and a subscribe button.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: subscriptionResourceUri } },
     },
@@ -1332,6 +1382,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Get TASE Market Settings Data",
       description: "Returns TASE Market settings data including subscription URL.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { visibility: ["model", "app"] } },
     },
@@ -1349,6 +1400,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     {
       title: "Show TASE Market Settings",
       description: "Displays the TASE Market settings page with subscription, account info, and app settings.",
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: settingsResourceUri } },
     },

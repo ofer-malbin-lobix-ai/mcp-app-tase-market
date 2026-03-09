@@ -66,6 +66,16 @@ export async function startStreamableHTTPServer(
     res.status(200).json({ status: "ok" });
   });
 
+  // OpenAI domain verification for ChatGPT app submission
+  app.get("/.well-known/openai-apps-challenge", (_req: Request, res: Response) => {
+    const token = process.env.OPENAI_APPS_CHALLENGE_TOKEN;
+    if (!token) {
+      res.status(404).send("Not configured");
+      return;
+    }
+    res.type("text/plain").send(token);
+  });
+
   // OAuth metadata endpoints (public, before Clerk middleware)
   const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile"] });
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
