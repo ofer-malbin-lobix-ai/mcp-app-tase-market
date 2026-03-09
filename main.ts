@@ -77,86 +77,10 @@ export async function startStreamableHTTPServer(
   });
 
   // OAuth metadata endpoints (public, before Clerk middleware)
-  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] });
+  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile"] });
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
-  app.get("/.well-known/oauth-authorization-server", async (req: Request, res: Response) => {
-    // Wrap Clerk's handler to:
-    // 1. Inject "openid" into scopes_supported
-    // 2. Rewrite registration_endpoint to our proxy (so we can PATCH openid onto new clients)
-    const fakeRes = {
-      json(data: Record<string, unknown>) {
-        const scopes = Array.isArray(data.scopes_supported) ? data.scopes_supported as string[] : [];
-        if (!scopes.includes("openid")) {
-          scopes.push("openid");
-        }
-        data.scopes_supported = scopes;
-        // Point registration to our proxy so we can add openid to newly created clients
-        if (data.registration_endpoint) {
-          const baseUrl = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3001}`;
-          data.registration_endpoint = `${baseUrl}/oauth/register`;
-        }
-        res.json(data);
-      },
-      status(code: number) { res.status(code); return fakeRes; },
-      send(body: unknown) { res.send(body); return fakeRes; },
-    };
-    await authServerMetadataHandlerClerk(req as never, fakeRes as never);
-  });
-
-  // Proxy OAuth dynamic client registration to Clerk, then PATCH openid scope onto the new client
-  app.post("/oauth/register", async (req: Request, res: Response) => {
-    try {
-      const clerkRegistrationUrl = "https://clerk.professorai.app/oauth/register";
-      // Forward the registration request to Clerk
-      const clerkRes = await fetch(clerkRegistrationUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req.body),
-      });
-      const data = await clerkRes.json() as Record<string, unknown>;
-      if (!clerkRes.ok) {
-        res.status(clerkRes.status).json(data);
-        return;
-      }
-      // PATCH the newly created client to add openid scope
-      const clientId = data.client_id as string;
-      const clerkSecretKey = process.env.CLERK_SECRET_KEY;
-      if (clientId && clerkSecretKey) {
-        // Find the OAuth app by client_id (paginate — Clerk defaults to 20 per page)
-        let oaAppId: string | undefined;
-        let offset = 0;
-        const limit = 100;
-        while (!oaAppId) {
-          const listRes = await fetch(`https://api.clerk.com/v1/oauth_applications?limit=${limit}&offset=${offset}`, {
-            headers: { Authorization: `Bearer ${clerkSecretKey}` },
-          });
-          const listData = await listRes.json() as { data: Array<{ id: string; client_id: string; scopes: string }>; total_count: number };
-          const oaApp = listData.data?.find((a) => a.client_id === clientId);
-          if (oaApp) {
-            oaAppId = oaApp.id;
-            if (!oaApp.scopes.includes("openid")) {
-              const patchRes = await fetch(`https://api.clerk.com/v1/oauth_applications/${oaApp.id}`, {
-                method: "PATCH",
-                headers: { Authorization: `Bearer ${clerkSecretKey}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ scopes: `${oaApp.scopes} openid` }),
-              });
-              console.log(`[oauth/register] Patched ${oaApp.id} openid scope: ${patchRes.ok}`);
-            }
-          }
-          offset += limit;
-          if (!listData.data?.length || offset >= (listData.total_count ?? offset)) break;
-        }
-        if (!oaAppId) {
-          console.warn(`[oauth/register] Could not find OAuth app for client_id ${clientId}`);
-        }
-      }
-      res.status(clerkRes.status).json(data);
-    } catch (err) {
-      console.error("[oauth/register proxy]", err);
-      res.status(500).json({ error: "Registration proxy failed" });
-    }
-  });
+  app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
 
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
