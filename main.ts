@@ -216,8 +216,23 @@ export async function startStreamableHTTPServer(
     }
   };
 
+  // Wrap mcpAuthClerk to add scope="email profile" to WWW-Authenticate header.
+  // Without this, ChatGPT falls back to scopes_supported from Clerk's OpenID Connect
+  // discovery (which includes "openid"), causing invalid_scope on dynamically registered clients.
+  // Per MCP spec, scope in WWW-Authenticate takes highest priority for scope selection.
+  const mcpAuth = (req: Request, res: Response, next: NextFunction) => {
+    const originalSetHeader = res.setHeader.bind(res);
+    res.setHeader = function (name: string, value: string | string[]) {
+      if (name.toLowerCase() === 'www-authenticate' && typeof value === 'string') {
+        value = `${value}, scope="email profile"`;
+      }
+      return originalSetHeader(name, value);
+    } as typeof res.setHeader;
+    mcpAuthClerk(req, res, next);
+  };
+
   // Protected MCP endpoint with subscription check
-  app.all("/mcp", mcpAuthClerk, requireSubscription, mcpHandler);
+  app.all("/mcp", mcpAuth, requireSubscription, mcpHandler);
 
   const httpServer = app.listen(port, (err) => {
     if (err) {
