@@ -1,6 +1,6 @@
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { clerkClient } from "@clerk/express";
 import fs from "node:fs/promises";
 import { readFileSync } from "node:fs";
@@ -51,6 +51,26 @@ const __dirname = path.dirname(__filename);
 const DIST_DIR = __filename.endsWith(".ts")
   ? path.join(__dirname, "dist")
   : __dirname;
+
+// CSP and domain for ChatGPT app submission
+const RESOURCE_UI_META = {
+  csp: {
+    connectDomains: [] as string[],
+    resourceDomains: [] as string[],
+  },
+  domain: "tase-market-mcp-apps-lobix-ai.oaiusercontent.com",
+};
+
+// Resource listing config (resources/list)
+const RESOURCE_CONFIG = {
+  mimeType: RESOURCE_MIME_TYPE,
+  _meta: { ui: RESOURCE_UI_META },
+};
+
+// Helper: build resource content item with CSP/domain metadata
+function resourceContent(uri: string, html: string) {
+  return { contents: [{ uri, mimeType: RESOURCE_MIME_TYPE, text: html, _meta: { ui: RESOURCE_UI_META } }] };
+}
 
 // Input schemas
 const getTaseDataSchema = {
@@ -1341,203 +1361,31 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   );
 
   // Register resources
-  registerAppResource(server,
-    myPositionResourceUri, myPositionResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-position-table-widget.html"), "utf-8");
-      return { contents: [{ uri: myPositionResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
+  const readWidget = (uri: string, file: string) =>
+    async () => resourceContent(uri, await fs.readFile(path.join(DIST_DIR, file), "utf-8"));
 
-  registerAppResource(server,
-    sectorHeatmapResourceUri, sectorHeatmapResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-sector-heatmap-widget.html"), "utf-8");
-      return { contents: [{ uri: sectorHeatmapResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    endOfDayResourceUri, endOfDayResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-end-of-day-widget.html"), "utf-8");
-      return { contents: [{ uri: endOfDayResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    marketSpiritResourceUri, marketSpiritResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-spirit-widget.html"), "utf-8");
-      return { contents: [{ uri: marketSpiritResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    uptrendSymbolsResourceUri, uptrendSymbolsResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-uptrend-symbols-widget.html"), "utf-8");
-      return { contents: [{ uri: uptrendSymbolsResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-position-end-of-day-widget.html"), "utf-8");
-      return { contents: [{ uri: endOfDaySymbolsResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    candlestickResourceUri, candlestickResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbol-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: candlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    symbolsCandlestickResourceUri, symbolsCandlestickResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-position-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: symbolsCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    dashboardResourceUri, dashboardResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-dashboard-widget.html"), "utf-8");
-      return { contents: [{ uri: dashboardResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    subscriptionResourceUri, subscriptionResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "tase-market-landing-widget.html"), "utf-8");
-      return { contents: [{ uri: subscriptionResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    settingsResourceUri, settingsResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE, _meta: { ui: { permissions: { clipboardWrite: {} } } } },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "tase-market-settings-widget.html"), "utf-8");
-      return { contents: [{ uri: settingsResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    myPositionsManagerResourceUri, myPositionsManagerResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "my-positions-manager-widget.html"), "utf-8");
-      return { contents: [{ uri: myPositionsManagerResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    symbolsCandlestickWidgetResourceUri, symbolsCandlestickWidgetResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbols-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: symbolsCandlestickWidgetResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    symbolsTableResourceUri, symbolsTableResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbols-table-widget.html"), "utf-8");
-      return { contents: [{ uri: symbolsTableResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    symbolEndOfDaysResourceUri, symbolEndOfDaysResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbol-end-of-days-widget.html"), "utf-8");
-      return { contents: [{ uri: symbolEndOfDaysResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    symbolsEndOfDayResourceUri, symbolsEndOfDayResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbols-end-of-day-widget.html"), "utf-8");
-      return { contents: [{ uri: symbolsEndOfDayResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    intradayCandlestickResourceUri, intradayCandlestickResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "symbol-intraday-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: intradayCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    marketLastUpdateResourceUri, marketLastUpdateResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "market-last-update-widget.html"), "utf-8");
-      return { contents: [{ uri: marketLastUpdateResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    watchlistManagerResourceUri, watchlistManagerResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-manager-widget.html"), "utf-8");
-      return { contents: [{ uri: watchlistManagerResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    watchlistTableResourceUri, watchlistTableResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-table-widget.html"), "utf-8");
-      return { contents: [{ uri: watchlistTableResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-end-of-day-widget.html"), "utf-8");
-      return { contents: [{ uri: watchlistEndOfDayResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
-
-  registerAppResource(server,
-    watchlistCandlestickResourceUri, watchlistCandlestickResourceUri,
-    { mimeType: RESOURCE_MIME_TYPE },
-    async (): Promise<ReadResourceResult> => {
-      const html = await fs.readFile(path.join(DIST_DIR, "watchlist-candlestick-widget.html"), "utf-8");
-      return { contents: [{ uri: watchlistCandlestickResourceUri, mimeType: RESOURCE_MIME_TYPE, text: html }] };
-    },
-  );
+  registerAppResource(server, myPositionResourceUri, myPositionResourceUri, RESOURCE_CONFIG, readWidget(myPositionResourceUri, "my-position-table-widget.html"));
+  registerAppResource(server, sectorHeatmapResourceUri, sectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(sectorHeatmapResourceUri, "market-sector-heatmap-widget.html"));
+  registerAppResource(server, endOfDayResourceUri, endOfDayResourceUri, RESOURCE_CONFIG, readWidget(endOfDayResourceUri, "market-end-of-day-widget.html"));
+  registerAppResource(server, marketSpiritResourceUri, marketSpiritResourceUri, RESOURCE_CONFIG, readWidget(marketSpiritResourceUri, "market-spirit-widget.html"));
+  registerAppResource(server, uptrendSymbolsResourceUri, uptrendSymbolsResourceUri, RESOURCE_CONFIG, readWidget(uptrendSymbolsResourceUri, "market-uptrend-symbols-widget.html"));
+  registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day-widget.html"));
+  registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick-widget.html"));
+  registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick-widget.html"));
+  registerAppResource(server, dashboardResourceUri, dashboardResourceUri, RESOURCE_CONFIG, readWidget(dashboardResourceUri, "market-dashboard-widget.html"));
+  registerAppResource(server, subscriptionResourceUri, subscriptionResourceUri, RESOURCE_CONFIG, readWidget(subscriptionResourceUri, "tase-market-landing-widget.html"));
+  registerAppResource(server, settingsResourceUri, settingsResourceUri, { ...RESOURCE_CONFIG, _meta: { ui: { ...RESOURCE_UI_META, permissions: { clipboardWrite: {} } } } }, readWidget(settingsResourceUri, "tase-market-settings-widget.html"));
+  registerAppResource(server, myPositionsManagerResourceUri, myPositionsManagerResourceUri, RESOURCE_CONFIG, readWidget(myPositionsManagerResourceUri, "my-positions-manager-widget.html"));
+  registerAppResource(server, symbolsCandlestickWidgetResourceUri, symbolsCandlestickWidgetResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickWidgetResourceUri, "symbols-candlestick-widget.html"));
+  registerAppResource(server, symbolsTableResourceUri, symbolsTableResourceUri, RESOURCE_CONFIG, readWidget(symbolsTableResourceUri, "symbols-table-widget.html"));
+  registerAppResource(server, symbolEndOfDaysResourceUri, symbolEndOfDaysResourceUri, RESOURCE_CONFIG, readWidget(symbolEndOfDaysResourceUri, "symbol-end-of-days-widget.html"));
+  registerAppResource(server, symbolsEndOfDayResourceUri, symbolsEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(symbolsEndOfDayResourceUri, "symbols-end-of-day-widget.html"));
+  registerAppResource(server, intradayCandlestickResourceUri, intradayCandlestickResourceUri, RESOURCE_CONFIG, readWidget(intradayCandlestickResourceUri, "symbol-intraday-candlestick-widget.html"));
+  registerAppResource(server, marketLastUpdateResourceUri, marketLastUpdateResourceUri, RESOURCE_CONFIG, readWidget(marketLastUpdateResourceUri, "market-last-update-widget.html"));
+  registerAppResource(server, watchlistManagerResourceUri, watchlistManagerResourceUri, RESOURCE_CONFIG, readWidget(watchlistManagerResourceUri, "watchlist-manager-widget.html"));
+  registerAppResource(server, watchlistTableResourceUri, watchlistTableResourceUri, RESOURCE_CONFIG, readWidget(watchlistTableResourceUri, "watchlist-table-widget.html"));
+  registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day-widget.html"));
+  registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick-widget.html"));
 
   return server;
 }
