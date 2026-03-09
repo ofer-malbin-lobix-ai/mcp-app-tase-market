@@ -80,7 +80,22 @@ export async function startStreamableHTTPServer(
   const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile"] });
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
-  app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
+  app.get("/.well-known/oauth-authorization-server", async (req: Request, res: Response) => {
+    // Wrap Clerk's handler to remove "openid" from scopes_supported.
+    // ChatGPT auto-requests any OIDC scope it sees advertised, but Clerk's DCR
+    // doesn't enable openid on dynamically registered clients — causing invalid_scope.
+    const fakeRes = {
+      json(data: Record<string, unknown>) {
+        if (Array.isArray(data.scopes_supported)) {
+          data.scopes_supported = (data.scopes_supported as string[]).filter((s) => s !== "openid");
+        }
+        res.json(data);
+      },
+      status(code: number) { res.status(code); return fakeRes; },
+      send(body: unknown) { res.send(body); return fakeRes; },
+    };
+    await authServerMetadataHandlerClerk(req as never, fakeRes as never);
+  });
 
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
