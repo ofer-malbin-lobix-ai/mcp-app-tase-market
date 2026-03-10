@@ -77,10 +77,72 @@ export async function startStreamableHTTPServer(
   });
 
   // OAuth metadata endpoints (public, before Clerk middleware)
-  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] });
-  app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
-  app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
-  app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
+  // Override authorization_servers to point to our server so clients fetch auth server metadata
+  // from us (where we rewrite registration_endpoint to proxy DCR and inject openid scope)
+  const baseUrl = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3001}`;
+  const wrappedProtectedResourceHandler = async (req: Request, res: Response) => {
+    const fakeRes = {
+      json(data: Record<string, unknown>) {
+        data.authorization_servers = [baseUrl];
+        res.json(data);
+      },
+      status(code: number) { res.status(code); return fakeRes; },
+    };
+    await protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] })(req as never, fakeRes as never);
+  };
+  app.get("/.well-known/oauth-protected-resource", wrappedProtectedResourceHandler);
+  app.get("/.well-known/oauth-protected-resource/mcp", wrappedProtectedResourceHandler);
+  app.get("/.well-known/oauth-authorization-server", async (req: Request, res: Response) => {
+    // Rewrite registration_endpoint to our proxy so we can PATCH openid onto new DCR clients
+    const fakeRes = {
+      json(data: Record<string, unknown>) {
+        if (data.registration_endpoint) {
+          data.registration_endpoint = `${baseUrl}/oauth/register`;
+        }
+        res.json(data);
+      },
+      status(code: number) { res.status(code); return fakeRes; },
+    };
+    await authServerMetadataHandlerClerk(req as never, fakeRes as never);
+  });
+
+  // Proxy DCR to Clerk, then PATCH openid scope onto the new client
+  app.post("/oauth/register", async (req: Request, res: Response) => {
+    try {
+      const clerkRes = await fetch("https://clerk.professorai.app/oauth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body),
+      });
+      const data = await clerkRes.json() as Record<string, unknown>;
+      if (!clerkRes.ok) {
+        res.status(clerkRes.status).json(data);
+        return;
+      }
+      // PATCH openid onto the newly created client
+      const clientId = data.client_id as string;
+      const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+      if (clientId && clerkSecretKey) {
+        const listRes = await fetch(`https://api.clerk.com/v1/oauth_applications?limit=100`, {
+          headers: { Authorization: `Bearer ${clerkSecretKey}` },
+        });
+        const listData = await listRes.json() as { data: Array<{ id: string; client_id: string; scopes: string }> };
+        const oaApp = listData.data?.find((a) => a.client_id === clientId);
+        if (oaApp && !oaApp.scopes.includes("openid")) {
+          const patchRes = await fetch(`https://api.clerk.com/v1/oauth_applications/${oaApp.id}`, {
+            method: "PATCH",
+            headers: { Authorization: `Bearer ${clerkSecretKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ scopes: `${oaApp.scopes} openid` }),
+          });
+          console.log(`[oauth/register] Patched ${oaApp.id} openid scope: ${patchRes.ok}`);
+        }
+      }
+      res.status(clerkRes.status).json(data);
+    } catch (err) {
+      console.error("[oauth/register proxy]", err);
+      res.status(500).json({ error: "Registration proxy failed" });
+    }
+  });
 
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
