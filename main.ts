@@ -77,7 +77,7 @@ export async function startStreamableHTTPServer(
   });
 
   // OAuth metadata endpoints (public, before Clerk middleware)
-  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile"] });
+  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] });
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
   app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
