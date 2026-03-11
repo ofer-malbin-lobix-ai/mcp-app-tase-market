@@ -216,7 +216,15 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const { providers } = options;
 
   function getUserIdFromExtra(extra: { authInfo?: { extra?: Record<string, unknown> } }): string | null {
-    return (extra?.authInfo?.extra?.userId as string) ?? null;
+    const authExtra = extra?.authInfo?.extra;
+    if (!authExtra) return null;
+
+    // Auth0 token: Clerk userId is in custom claim
+    const clerkUserId = authExtra["https://tase-market.mcp-apps.lobix.ai/clerk_user_id"];
+    if (clerkUserId && typeof clerkUserId === "string") return clerkUserId;
+
+    // Legacy: direct Clerk userId (stdio/backward compat)
+    return (authExtra.userId as string) ?? null;
   }
 
   async function getUserPositionSymbols(extra: any): Promise<{ symbols: string[]; error?: string }> {
@@ -250,7 +258,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const endOfDaySymbolsResourceUri = `ui://tase-end-of-day/my-position-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const candlestickResourceUri = `ui://tase-end-of-day/symbol-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsCandlestickResourceUri = `ui://tase-end-of-day/my-position-candlestick-widget-ver-${WIDGET_VERSION}.html`;
-  const dashboardResourceUri = `ui://tase-end-of-day/market-dashboard-widget-ver-${WIDGET_VERSION}.html`;
   const subscriptionResourceUri = `ui://tase-end-of-day/tase-market-landing-widget-ver-${WIDGET_VERSION}.html`;
   const settingsResourceUri = `ui://tase-end-of-day/tase-market-settings-widget-ver-${WIDGET_VERSION}.html`;
   const myPositionsManagerResourceUri = `ui://tase-end-of-day/my-positions-manager-widget-ver-${WIDGET_VERSION}.html`;
@@ -615,40 +622,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
           type: "text",
           text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
         }],
-      };
-    },
-  );
-
-  // UI tool: Show Market Dashboard
-  registerAppTool(server,
-    "show-market-dashboard-widget",
-    {
-      title: "Show Market Dashboard",
-      description: "Displays a single-page market overview combining Market Spirit, end-of-day stats (gainers/losers), and uptrend symbols count.",
-      annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getTaseDataSchema,
-      _meta: { ui: { resourceUri: dashboardResourceUri } },
-    },
-    async (args): Promise<CallToolResult> => {
-      const [spirit, eod, uptrend] = await Promise.allSettled([
-        providers.fetchMarketSpirit(args.marketType, args.tradeDate),
-        providers.fetchEndOfDay(args.marketType, args.tradeDate),
-        providers.fetchUptrendSymbols(args.marketType, args.tradeDate),
-      ]);
-      const parts: string[] = [];
-      if (spirit.status === "fulfilled") parts.push(`Spirit: ${spirit.value.score ?? "Unknown"}`);
-      if (eod.status === "fulfilled") parts.push(`${eod.value.items.length} stocks`);
-      if (uptrend.status === "fulfilled") parts.push(`${uptrend.value.count} in uptrend`);
-      const tradeDate = spirit.status === "fulfilled" ? spirit.value.tradeDate
-        : eod.status === "fulfilled" ? eod.value.tradeDate
-        : uptrend.status === "fulfilled" ? uptrend.value.tradeDate : "N/A";
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Dashboard for ${tradeDate}: ${parts.join(" | ")}`,
-          },
-        ],
       };
     },
   );
@@ -1424,7 +1397,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day-widget.html"));
   registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick-widget.html"));
   registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick-widget.html"));
-  registerAppResource(server, dashboardResourceUri, dashboardResourceUri, RESOURCE_CONFIG, readWidget(dashboardResourceUri, "market-dashboard-widget.html"));
   registerAppResource(server, subscriptionResourceUri, subscriptionResourceUri, RESOURCE_CONFIG, readWidget(subscriptionResourceUri, "tase-market-landing-widget.html"));
   registerAppResource(server, settingsResourceUri, settingsResourceUri, { ...RESOURCE_CONFIG, _meta: { ui: { ...RESOURCE_UI_META, permissions: { clipboardWrite: {} } } } }, readWidget(settingsResourceUri, "tase-market-settings-widget.html"));
   registerAppResource(server, myPositionsManagerResourceUri, myPositionsManagerResourceUri, RESOURCE_CONFIG, readWidget(myPositionsManagerResourceUri, "my-positions-manager-widget.html"));

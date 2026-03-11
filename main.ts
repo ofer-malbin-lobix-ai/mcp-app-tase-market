@@ -9,11 +9,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { clerkMiddleware, getAuth } from "@clerk/express";
-import {
-  mcpAuthClerk,
-  protectedResourceHandlerClerk,
-  authServerMetadataHandlerClerk,
-} from "@clerk/mcp-tools/express";
+import { auth } from "express-oauth2-jwt-bearer";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -76,11 +72,32 @@ export async function startStreamableHTTPServer(
     res.type("text/plain").send(token);
   });
 
-  // OAuth metadata endpoints (public, before Clerk middleware)
-  const protectedResourceHandler = protectedResourceHandlerClerk({ scopes_supported: ["email", "profile", "openid"] });
+  const baseUrl = process.env.APP_URL ?? `http://localhost:${port}`;
+
+  // Auth0 configuration
+  const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+  const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE ?? baseUrl;
+
+  // Auth0 JWT validation middleware
+  const auth0Middleware = AUTH0_DOMAIN
+    ? auth({
+        issuerBaseURL: `https://${AUTH0_DOMAIN}`,
+        audience: AUTH0_AUDIENCE,
+      })
+    : undefined;
+
+  // OAuth Protected Resource Metadata (RFC 9728)
+  // resource must match Auth0 API identifier (audience) so tokens are issued for the correct API
+  const protectedResourceHandler = (_req: Request, res: Response) => {
+    res.json({
+      resource: AUTH0_AUDIENCE,
+      authorization_servers: AUTH0_DOMAIN ? [`https://${AUTH0_DOMAIN}`] : [],
+      scopes_supported: ["openid", "email", "profile"],
+      service_documentation: baseUrl,
+    });
+  };
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
-  app.get("/.well-known/oauth-authorization-server", authServerMetadataHandlerClerk);
 
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
@@ -100,15 +117,19 @@ export async function startStreamableHTTPServer(
   // Mount fetch-last-update-from-tase-data-hub route (backend API, no auth — pass-through to TASE Data Hub)
   app.use(createFetchLastUpdateFromTaseDataHubRouter());
 
-  // Helper to extract userId from request (works with mcpAuthClerk)
+  // Namespace for Auth0 custom claims
+  const AUTH0_CLAIM_NAMESPACE = "https://tase-market.mcp-apps.lobix.ai";
+
+  // Helper to extract userId from request (Auth0 JWT or Clerk session)
   const resolveUserId = (req: Request): string | null => {
-    // Try OAuth token (set by mcpAuthClerk)
-    const oauthAuth = (req as Request & { auth?: { extra?: { userId?: string } } }).auth;
-    if (oauthAuth?.extra?.userId) {
-      return oauthAuth.extra.userId;
+    // Try Auth0 JWT (transformed to MCP AuthInfo) — Clerk userId is in extra (payload) custom claim
+    const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
+    const clerkUserId = authInfo?.extra?.[`${AUTH0_CLAIM_NAMESPACE}/clerk_user_id`];
+    if (clerkUserId && typeof clerkUserId === "string") {
+      return clerkUserId;
     }
 
-    // Try Clerk session (for browser requests)
+    // Fallback: Clerk session (for browser requests — subscribe page, etc.)
     const clerkAuth = getAuth(req);
     if (clerkAuth?.userId) {
       return clerkAuth.userId;
@@ -132,7 +153,7 @@ export async function startStreamableHTTPServer(
     const userId = resolveUserId(req);
 
     if (!userId) {
-      // No user ID - let mcpAuthClerk handle 401
+      // No user ID - let auth middleware handle 401
       next();
       return;
     }
@@ -140,7 +161,6 @@ export async function startStreamableHTTPServer(
     const hasSubscription = await checkSubscription(userId);
 
     if (!hasSubscription) {
-      const baseUrl = process.env.APP_URL ?? `http://localhost:${port}`;
       const token = generateSubscribeToken(userId);
       const subscribeUrl = `${baseUrl}/subscribe?token=${token}`;
 
@@ -170,7 +190,6 @@ export async function startStreamableHTTPServer(
   // MCP endpoint handler
   const mcpHandler = async (req: Request, res: Response) => {
     const userId = resolveUserId(req);
-    const baseUrl = process.env.APP_URL ?? `http://localhost:${port}`;
     let subscribeUrl = `${baseUrl}/subscribe`;
     if (userId) {
       const token = generateSubscribeToken(userId);
@@ -188,7 +207,9 @@ export async function startStreamableHTTPServer(
 
     try {
       await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
+      // Cast needed: express-oauth2-jwt-bearer augments req.auth type globally,
+      // but we transform it to MCP AuthInfo in mcpAuth middleware at runtime
+      await transport.handleRequest(req as any, res, req.body);
     } catch (error) {
       console.error("MCP error:", error);
       if (!res.headersSent) {
@@ -201,8 +222,42 @@ export async function startStreamableHTTPServer(
     }
   };
 
+  // Auth0 authentication middleware for MCP endpoint
+  // Validates the JWT and transforms req.auth into MCP AuthInfo format
+  const mcpAuth = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.headers.authorization) {
+      const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
+      res.status(401).set({
+        "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}"`,
+      }).json({ error: "Unauthorized" });
+      return;
+    }
+    if (auth0Middleware) {
+      // Validate JWT with Auth0, then transform to MCP AuthInfo format
+      auth0Middleware(req, res, (err?: unknown) => {
+        if (err) { next(err); return; }
+        // Transform Auth0's VerifyJwtResult into MCP's AuthInfo
+        const auth0Result = (req as any).auth;
+        if (auth0Result?.payload) {
+          const token = (req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
+          (req as any).auth = {
+            token,
+            clientId: auth0Result.payload.azp ?? auth0Result.payload.sub ?? "",
+            scopes: (auth0Result.payload.scope ?? "").split(" ").filter(Boolean),
+            expiresAt: auth0Result.payload.exp,
+            extra: auth0Result.payload,
+          };
+        }
+        next();
+      });
+    } else {
+      // No Auth0 configured — pass through (stdio/local dev)
+      next();
+    }
+  };
+
   // Protected MCP endpoint with subscription check
-  app.all("/mcp", mcpAuthClerk, requireSubscription, mcpHandler);
+  app.all("/mcp", mcpAuth, requireSubscription, mcpHandler);
 
   const httpServer = app.listen(port, (err) => {
     if (err) {
