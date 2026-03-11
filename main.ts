@@ -99,6 +99,20 @@ export async function startStreamableHTTPServer(
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
   app.get("/.well-known/oauth-protected-resource/mcp", protectedResourceHandler);
 
+  // Proxy Auth0 authorization server metadata for MCP clients that fetch it from the resource server
+  if (AUTH0_DOMAIN) {
+    app.get("/.well-known/oauth-authorization-server", async (_req: Request, res: Response) => {
+      try {
+        const response = await fetch(`https://${AUTH0_DOMAIN}/.well-known/openid-configuration`);
+        const metadata = await response.json();
+        res.json(metadata);
+      } catch (error) {
+        console.error("Failed to fetch Auth0 metadata:", error);
+        res.status(502).json({ error: "Failed to fetch authorization server metadata" });
+      }
+    });
+  }
+
   // Apply Clerk middleware for all requests
   app.use(clerkMiddleware());
 
@@ -243,7 +257,16 @@ export async function startStreamableHTTPServer(
     if (auth0Middleware) {
       // Validate JWT with Auth0, then transform to MCP AuthInfo format
       auth0Middleware(req, res, (err?: unknown) => {
-        if (err) { next(err); return; }
+        if (err) {
+          // Invalid token — return 401 with PRM to trigger re-auth
+          const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
+          if (!res.headersSent) {
+            res.status(401).set({
+              "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", error="invalid_token"`,
+            }).json({ error: "Invalid token" });
+          }
+          return;
+        }
         // Transform Auth0's VerifyJwtResult into MCP's AuthInfo
         const auth0Result = (req as any).auth;
         if (auth0Result?.payload) {
