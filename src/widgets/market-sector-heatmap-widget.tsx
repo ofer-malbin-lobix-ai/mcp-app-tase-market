@@ -8,7 +8,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { WidgetLayout } from "../components/WidgetLayout";
+import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -265,6 +265,7 @@ function HeatmapApp() {
   const [data, setData] = useState<SectorHeatmapResponse | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
+  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -278,6 +279,7 @@ function HeatmapApp() {
       };
 
       app.ontoolresult = async (result) => {
+        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const d = extractHeatmapData(result);
         if (d) setData(d);
         else setNeedsAutoFetch(true);
@@ -297,6 +299,7 @@ function HeatmapApp() {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: "get-market-sector-heatmap-data", arguments: toolInput })
       .then((result) => {
+        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const d = extractHeatmapData(result);
         if (d) setData(d);
       })
@@ -319,6 +322,11 @@ function HeatmapApp() {
   if (!app) {
     return <div style={{ color: "var(--t-text-secondary)", padding: 16 }}>Connecting...</div>;
   }
+  if (subscribeUrl !== null) return (
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
+    </WidgetLayout>
+  );
   return <HeatmapInner app={app} data={data} setData={setData} hostContext={hostContext} />;
 }
 
@@ -412,6 +420,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
       if (tradeDate) args.tradeDate = tradeDate;
       if (period) args.period = period;
       const result = await app.callServerTool({ name: "get-market-sector-heatmap-data", arguments: args });
+      if (handleSubscriptionRedirect(result, app)) return;
       const d = extractHeatmapData(result);
       if (d) setData(d);
       else setRefreshError("No data found for this date");

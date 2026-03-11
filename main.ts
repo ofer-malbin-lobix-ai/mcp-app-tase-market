@@ -150,6 +150,14 @@ export async function startStreamableHTTPServer(
       return;
     }
 
+    // Exempt settings/landing tools from subscription check
+    const toolName = (req.body as { params?: { name?: string } })?.params?.name;
+    const EXEMPT_TOOLS = ["get-tase-market-settings-data", "show-tase-market-settings-widget", "show-tase-market-landing-widget"];
+    if (toolName && EXEMPT_TOOLS.includes(toolName)) {
+      next();
+      return;
+    }
+
     const userId = resolveUserId(req);
 
     if (!userId) {

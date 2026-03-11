@@ -7,7 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
-import { WidgetLayout } from "../../components/WidgetLayout";
+import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import styles from "./end-of-day-widget.module.css";
 
 import type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
@@ -39,6 +39,7 @@ function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
   const [data, setData] = useState<EndOfDayWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
+  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -56,6 +57,7 @@ function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
 
       app.ontoolresult = async (result) => {
         try {
+          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractEndOfDayData(result);
           if (extracted) {
             setData(extracted);
@@ -86,6 +88,7 @@ function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: config.toolName, arguments: toolInput })
       .then((result) => {
+        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const fetched = extractEndOfDayData(result);
         if (fetched) setData(fetched);
       })
@@ -100,6 +103,11 @@ function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (subscribeUrl !== null) return (
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
+    </WidgetLayout>
+  );
 
   return (
     <EndOfDaysInner
@@ -154,6 +162,7 @@ function EndOfDaysInner({
       // Always re-send symbol from original toolInput
       if (toolInput.symbol) args.symbol = toolInput.symbol;
       const result = await app.callServerTool({ name: config.toolName, arguments: args });
+      if (handleSubscriptionRedirect(result, app)) return;
       const extracted = extractEndOfDayData(result);
       if (extracted) {
         setData(extracted);

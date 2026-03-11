@@ -6,7 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
-import { WidgetLayout } from "../components/WidgetLayout";
+import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import styles from "./market-uptrend-symbols-widget.module.css";
 
@@ -44,6 +44,7 @@ function UptrendSymbolsWidget() {
   const [data, setData] = useState<UptrendSymbolsData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
+  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -60,6 +61,7 @@ function UptrendSymbolsWidget() {
 
       app.ontoolresult = async (result) => {
         try {
+          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const uptrendSymbolsData = extractUptrendSymbolsData(result);
           if (uptrendSymbolsData) {
             setData(uptrendSymbolsData);
@@ -88,6 +90,7 @@ function UptrendSymbolsWidget() {
     try {
       app.callServerTool({ name: "get-market-uptrend-symbols-data", arguments: toolInput })
         .then((result) => {
+          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const fetchedData = extractUptrendSymbolsData(result);
           if (fetchedData) {
             setData(fetchedData);
@@ -111,6 +114,11 @@ function UptrendSymbolsWidget() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (subscribeUrl !== null) return (
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
+    </WidgetLayout>
+  );
 
   return (
     <UptrendSymbolsWidgetInner
@@ -151,6 +159,7 @@ function UptrendSymbolsWidgetInner({ app, data, setData, hostContext }: UptrendS
         name: "get-market-uptrend-symbols-data",
         arguments: args,
       });
+      if (handleSubscriptionRedirect(result, app)) return;
       const uptrendSymbolsData = extractUptrendSymbolsData(result);
       if (uptrendSymbolsData) {
         setData(uptrendSymbolsData);

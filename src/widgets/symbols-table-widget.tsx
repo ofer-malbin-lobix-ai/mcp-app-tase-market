@@ -9,7 +9,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { WidgetLayout } from "../components/WidgetLayout";
+import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 import styles from "./symbols-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -130,6 +130,7 @@ function SymbolsTableApp() {
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("symbol");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -141,6 +142,7 @@ function SymbolsTableApp() {
 
       app.ontoolresult = async (result) => {
         try {
+          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractData(result);
           if (extracted) {
             setBaseData(extracted);
@@ -210,6 +212,7 @@ function SymbolsTableApp() {
         const args: Record<string, unknown> = { symbols: baseData.symbols, period: p };
         if (baseData.dateTo) args.tradeDate = baseData.dateTo;
         const result = await app.callServerTool({ name: "get-symbols-table-data", arguments: args });
+        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const fetched = extractData(result);
         if (fetched) {
           const overlay = new Map<string, { closingPrice: number | null; change: number | null }>();
@@ -251,6 +254,11 @@ function SymbolsTableApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (subscribeUrl !== null) return (
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
+    </WidgetLayout>
+  );
 
   const thProps = (col: SortKey, extraClass?: string) => ({
     className: `${styles.th}${extraClass ? ` ${extraClass}` : ""}`,

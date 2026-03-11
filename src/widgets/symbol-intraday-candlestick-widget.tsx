@@ -7,7 +7,7 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { WidgetLayout } from "../components/WidgetLayout";
+import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 import type { CandlestickData, HistogramData, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
@@ -203,6 +203,7 @@ function IntradayCandlestickApp() {
   const [data, setData] = useState<IntradayCandlestickWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
+  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -217,6 +218,7 @@ function IntradayCandlestickApp() {
 
       app.ontoolresult = async (result) => {
         try {
+          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractIntradayData(result);
           if (extracted) {
             setData(extracted);
@@ -247,6 +249,7 @@ function IntradayCandlestickApp() {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: "get-symbol-intraday-candlestick-data", arguments: {} })
       .then((result) => {
+        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const fetched = extractIntradayData(result);
         if (fetched) setData(fetched);
       })
@@ -261,6 +264,11 @@ function IntradayCandlestickApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (subscribeUrl !== null) return (
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
+    </WidgetLayout>
+  );
 
   return <IntradayAppInner app={app} data={data} setData={setData} toolInput={toolInput} hostContext={hostContext} />;
 }
@@ -374,6 +382,7 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
         name: "get-symbol-intraday-candlestick-data",
         arguments: args,
       });
+      if (handleSubscriptionRedirect(result, app)) return;
       const fetched = extractIntradayData(result);
       if (fetched) {
         setData(fetched);

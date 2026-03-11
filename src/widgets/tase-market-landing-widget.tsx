@@ -14,30 +14,29 @@ const WIDGET_REFERENCE = [
   { n: 2, widget: "market-spirit", showTool: "show-market-spirit-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-spirit-data"], dataParams: ["marketType?, tradeDate?"] },
   { n: 3, widget: "market-uptrend-symbols", showTool: "show-market-uptrend-symbols-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-uptrend-symbols-data"], dataParams: ["marketType?, tradeDate?"] },
   { n: 4, widget: "market-sector-heatmap", showTool: "show-market-sector-heatmap-widget", showParams: "marketType?, tradeDate?, period?", dataTools: ["get-market-sector-heatmap-data"], dataParams: ["marketType?, tradeDate?, period?"] },
-  { n: 5, widget: "market-dashboard", showTool: "show-market-dashboard-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-spirit-data", "get-market-end-of-day-data", "get-market-uptrend-symbols-data"], dataParams: ["(same as individual tools)"] },
-  { n: 6, widget: "my-position-table", showTool: "show-my-position-table-widget", showParams: "tradeDate?", dataTools: ["get-my-position-table-data"], dataParams: ["tradeDate?"] },
-  { n: 7, widget: "my-position-candlestick", showTool: "show-my-position-candlestick-widget", showParams: "dateFrom, dateTo?", dataTools: ["get-my-position-end-of-day-data", "get-symbol-candlestick-data", "get-my-position-period-data"], dataParams: ["dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?"] },
-  { n: 8, widget: "my-position-end-of-day", showTool: "show-my-position-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-my-position-end-of-day-data"], dataParams: ["tradeDate?"] },
-  { n: 9, widget: "my-positions-manager", showTool: "show-my-positions-manager-widget", showParams: "none", dataTools: ["get-my-positions", "set-my-position", "delete-my-position"], dataParams: ["none", "symbol, startDate, amount, avgEntryPrice?, alloc?, side?", "symbol"] },
-  { n: 10, widget: "watchlist-manager", showTool: "show-watchlist-manager-widget", showParams: "none", dataTools: ["get-watchlist", "set-watchlist-item", "delete-watchlist-item"], dataParams: ["none", "symbol, startDate, note?", "symbol"] },
-  { n: 11, widget: "watchlist-table", showTool: "show-watchlist-table-widget", showParams: "tradeDate?", dataTools: ["get-watchlist-table-data"], dataParams: ["tradeDate?, period?"] },
-  { n: 12, widget: "watchlist-end-of-day", showTool: "show-watchlist-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-watchlist-end-of-day-data"], dataParams: ["tradeDate?"] },
-  { n: 13, widget: "watchlist-candlestick", showTool: "show-watchlist-candlestick-widget", showParams: "dateFrom, dateTo?", dataTools: ["get-watchlist-end-of-day-data", "get-symbol-candlestick-data", "get-watchlist-period-data"], dataParams: ["dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?"] },
-  { n: 14, widget: "symbols-candlestick", showTool: "show-symbols-candlestick-widget", showParams: "symbols, dateFrom, dateTo?", dataTools: ["get-symbols-end-of-days-data", "get-symbol-candlestick-data", "get-symbols-period-data"], dataParams: ["symbols?, dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "symbols, tradeDate?, period?"] },
-  { n: 15, widget: "symbols-table", showTool: "show-symbols-table-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-table-data"], dataParams: ["symbols, tradeDate?, period?"] },
-  { n: 16, widget: "symbols-end-of-day", showTool: "show-symbols-end-of-day-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-end-of-day-data"], dataParams: ["symbols, tradeDate?"] },
-  { n: 17, widget: "symbol-end-of-days", showTool: "show-symbol-end-of-days-widget", showParams: "symbol, dateFrom?, dateTo?", dataTools: ["get-symbol-end-of-days-data"], dataParams: ["symbol, dateFrom?, dateTo?"] },
-  { n: 18, widget: "symbol-candlestick", showTool: "show-symbol-candlestick-widget", showParams: "symbol, dateFrom?, dateTo?, timeframe?", dataTools: ["get-symbol-candlestick-data"], dataParams: ["symbol, dateFrom?, dateTo?, timeframe?"] },
-  { n: 19, widget: "symbol-intraday-candlestick", showTool: "show-symbol-intraday-candlestick-widget", showParams: "securityIdOrSymbol", dataTools: ["get-symbol-intraday-candlestick-data"], dataParams: ["securityIdOrSymbol"] },
-  { n: 20, widget: "market-last-update", showTool: "show-market-last-update-widget", showParams: "none", dataTools: ["get-market-last-update-data"], dataParams: ["none"] },
-  { n: 21, widget: "settings", showTool: "show-tase-market-settings-widget", showParams: "none", dataTools: ["get-tase-market-settings-data"], dataParams: ["none"] },
-  { n: 22, widget: "landing", showTool: "show-tase-market-landing-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
+  { n: 5, widget: "my-position-table", showTool: "show-my-position-table-widget", showParams: "tradeDate?", dataTools: ["get-my-position-table-data"], dataParams: ["tradeDate?"] },
+  { n: 6, widget: "my-position-candlestick", showTool: "show-my-position-candlestick-widget", showParams: "dateFrom, dateTo?", dataTools: ["get-my-position-end-of-day-data", "get-symbol-candlestick-data", "get-my-position-period-data"], dataParams: ["dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?"] },
+  { n: 7, widget: "my-position-end-of-day", showTool: "show-my-position-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-my-position-end-of-day-data"], dataParams: ["tradeDate?"] },
+  { n: 8, widget: "my-positions-manager", showTool: "show-my-positions-manager-widget", showParams: "none", dataTools: ["get-my-positions", "set-my-position", "delete-my-position"], dataParams: ["none", "symbol, startDate, amount, avgEntryPrice?, alloc?, side?", "symbol"] },
+  { n: 9, widget: "watchlist-manager", showTool: "show-watchlist-manager-widget", showParams: "none", dataTools: ["get-watchlist", "set-watchlist-item", "delete-watchlist-item"], dataParams: ["none", "symbol, startDate, note?", "symbol"] },
+  { n: 10, widget: "watchlist-table", showTool: "show-watchlist-table-widget", showParams: "tradeDate?", dataTools: ["get-watchlist-table-data"], dataParams: ["tradeDate?, period?"] },
+  { n: 11, widget: "watchlist-end-of-day", showTool: "show-watchlist-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-watchlist-end-of-day-data"], dataParams: ["tradeDate?"] },
+  { n: 12, widget: "watchlist-candlestick", showTool: "show-watchlist-candlestick-widget", showParams: "dateFrom, dateTo?", dataTools: ["get-watchlist-end-of-day-data", "get-symbol-candlestick-data", "get-watchlist-period-data"], dataParams: ["dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?"] },
+  { n: 13, widget: "symbols-candlestick", showTool: "show-symbols-candlestick-widget", showParams: "symbols, dateFrom, dateTo?", dataTools: ["get-symbols-end-of-days-data", "get-symbol-candlestick-data", "get-symbols-period-data"], dataParams: ["symbols?, dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "symbols, tradeDate?, period?"] },
+  { n: 14, widget: "symbols-table", showTool: "show-symbols-table-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-table-data"], dataParams: ["symbols, tradeDate?, period?"] },
+  { n: 15, widget: "symbols-end-of-day", showTool: "show-symbols-end-of-day-widget", showParams: "symbols, tradeDate?", dataTools: ["get-symbols-end-of-day-data"], dataParams: ["symbols, tradeDate?"] },
+  { n: 16, widget: "symbol-end-of-days", showTool: "show-symbol-end-of-days-widget", showParams: "symbol, dateFrom?, dateTo?", dataTools: ["get-symbol-end-of-days-data"], dataParams: ["symbol, dateFrom?, dateTo?"] },
+  { n: 17, widget: "symbol-candlestick", showTool: "show-symbol-candlestick-widget", showParams: "symbol, dateFrom?, dateTo?, timeframe?", dataTools: ["get-symbol-candlestick-data"], dataParams: ["symbol, dateFrom?, dateTo?, timeframe?"] },
+  { n: 18, widget: "symbol-intraday-candlestick", showTool: "show-symbol-intraday-candlestick-widget", showParams: "securityIdOrSymbol", dataTools: ["get-symbol-intraday-candlestick-data"], dataParams: ["securityIdOrSymbol"] },
+  { n: 19, widget: "market-last-update", showTool: "show-market-last-update-widget", showParams: "none", dataTools: ["get-market-last-update-data"], dataParams: ["none"] },
+  { n: 20, widget: "settings", showTool: "show-tase-market-settings-widget", showParams: "none", dataTools: ["get-tase-market-settings-data"], dataParams: ["none"] },
+  { n: 21, widget: "landing", showTool: "show-tase-market-landing-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
 ];
 
 const DATA_TOOL_REFERENCE = [
-  { n: 1, tool: "get-market-end-of-day-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-end-of-day, market-dashboard" },
-  { n: 2, tool: "get-market-spirit-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-spirit, market-dashboard" },
-  { n: 3, tool: "get-market-uptrend-symbols-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-uptrend-symbols, market-dashboard" },
+  { n: 1, tool: "get-market-end-of-day-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-end-of-day" },
+  { n: 2, tool: "get-market-spirit-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-spirit" },
+  { n: 3, tool: "get-market-uptrend-symbols-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-uptrend-symbols" },
   { n: 4, tool: "get-market-sector-heatmap-data", params: "marketType?, tradeDate?, period?", visibility: "model, app", usedBy: "market-sector-heatmap" },
   { n: 5, tool: "get-my-position-table-data", params: "tradeDate?", visibility: "model, app", usedBy: "my-position-table" },
   { n: 6, tool: "get-my-position-end-of-day-data", params: "tradeDate?", visibility: "model, app", usedBy: "my-position-end-of-day, my-position-candlestick" },
@@ -66,7 +65,6 @@ const TOOL_GROUPS = [
   {
     title: "Market",
     tools: [
-      { icon: "\u{1F4CA}", name: "Market Dashboard", description: "Single-page overview combining market spirit, top movers, and uptrend count", prompt: "call show-market-dashboard-widget" },
       { icon: "\u{1F6A6}", name: "Market Spirit", description: "Traffic light indicator for market conditions", prompt: "call show-market-spirit-widget" },
       { icon: "\u{1F4C8}", name: "Market End of Day", description: "Full market data with prices, volume, and technical indicators", prompt: "call show-market-end-of-day-widget" },
       { icon: "\u{2B06}\u{FE0F}", name: "Market Uptrend Symbols", description: "Symbols in uptrend with EZ values", prompt: "call show-market-uptrend-symbols-widget" },
@@ -115,7 +113,7 @@ function ReferencePanel() {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          Widgets (22)
+          Widgets (21)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
