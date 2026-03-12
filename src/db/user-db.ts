@@ -29,7 +29,8 @@ export async function ensureUser(userId: string, email?: string) {
           data: { legacyClerkId: existingByEmail.id },
         });
       }
-      // Migrate: create new user, move all related records, delete old user
+      // Migrate: clear email on old record (unique constraint), create new user, move data, delete old
+      await prisma.appUser.update({ where: { id: existingByEmail.id }, data: { email: null } });
       await prisma.appUser.create({ data: { id: userId, email } });
       await prisma.userPosition.updateMany({ where: { userId: existingByEmail.id }, data: { userId } });
       await prisma.userWatchlistItem.updateMany({ where: { userId: existingByEmail.id }, data: { userId } });
