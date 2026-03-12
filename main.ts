@@ -18,10 +18,10 @@ import type { Request, Response, NextFunction } from "express";
 import { createServer } from "./server.js";
 import type { TaseDataProviders } from "./src/types.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
-import { checkSubscription } from "./src/paypal/subscription-check.js";
+import { checkSubscription, clearSubscriptionCache } from "./src/paypal/subscription-check.js";
 import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { ensureUser } from "./src/db/user-db.js";
+import { ensureUser, getUserSubscription, upsertSubscription } from "./src/db/user-db.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { createFetchEndOfDayFromTaseDataHubRouter } from "./src/tase-data-hub/fetch-end-of-day-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -175,6 +175,21 @@ export async function startStreamableHTTPServer(
     const hasSubscription = await checkSubscription(userId);
 
     if (!hasSubscription) {
+      // Auto-grant 7-day free trial on first tool call (no subscription record yet)
+      const existingSub = await getUserSubscription(userId);
+      if (!existingSub) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        await upsertSubscription(userId, {
+          freeTrial: true,
+          freeTrialUsed: true,
+          expiresAt: expiresAt.toISOString().split('T')[0],
+        });
+        clearSubscriptionCache(userId);
+        next();
+        return;
+      }
+
       const token = generateSubscribeToken(userId);
       const subscribeUrl = `${baseUrl}/subscribe?token=${token}`;
 

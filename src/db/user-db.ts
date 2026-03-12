@@ -12,21 +12,7 @@ export async function ensureUser(userId: string, email?: string) {
     return existing;
   }
 
-  const user = await prisma.appUser.create({ data: { id: userId, email } });
-
-  // Auto-grant 7-day free trial for new users
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
-  await prisma.userSubscription.create({
-    data: {
-      userId,
-      freeTrial: true,
-      freeTrialUsed: true,
-      expiresAt: expiresAt.toISOString().split('T')[0],
-    },
-  });
-
-  return user;
+  return prisma.appUser.create({ data: { id: userId, email } });
 }
 
 // ─── Positions ──────────────────────────────────────────────────────
