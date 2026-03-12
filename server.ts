@@ -52,20 +52,21 @@ const DIST_DIR = __filename.endsWith(".ts")
   ? path.join(__dirname, "dist")
   : __dirname;
 
-// CSP and domain for ChatGPT app submission
-const RESOURCE_UI_META = {
-  csp: {
-    connectDomains: [] as string[],
-    resourceDomains: [] as string[],
-  },
-  domain: "tase-market-mcp-apps-lobix-ai.oaiusercontent.com",
-};
+// CSP metadata for widget resources
+function buildResourceUiMeta(domain?: string) {
+  const meta: Record<string, unknown> = {
+    csp: {
+      connectDomains: [] as string[],
+      resourceDomains: [] as string[],
+    },
+  };
+  if (domain) meta.domain = domain;
+  return meta;
+}
 
-// Resource listing config (resources/list)
-const RESOURCE_CONFIG = {
-  mimeType: RESOURCE_MIME_TYPE,
-  _meta: { ui: RESOURCE_UI_META },
-};
+// Built lazily inside createServer based on domain option
+let RESOURCE_UI_META: Record<string, unknown>;
+let RESOURCE_CONFIG: { mimeType: string; _meta: { ui: Record<string, unknown> } };
 
 // Helper: build resource content item with CSP/domain metadata
 function resourceContent(uri: string, html: string) {
@@ -212,8 +213,12 @@ function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
  * Creates a new MCP server instance.
  * Requires a `providers` object for data fetching (use dbProviders from src/db-api.ts).
  */
-export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders }): McpServer {
+export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string }): McpServer {
   const { providers } = options;
+
+  // Initialize resource UI metadata with optional domain
+  RESOURCE_UI_META = buildResourceUiMeta(options.domain);
+  RESOURCE_CONFIG = { mimeType: RESOURCE_MIME_TYPE, _meta: { ui: RESOURCE_UI_META } };
 
   function getUserIdFromExtra(extra: { authInfo?: { extra?: Record<string, unknown> } }): string | null {
     const authExtra = extra?.authInfo?.extra;

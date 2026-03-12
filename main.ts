@@ -39,7 +39,7 @@ const WIDGET_VERSION = JSON.parse(readFileSync(path.join(__main_dirname, "dist",
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
  */
 export async function startStreamableHTTPServer(
-  createServer: (options: { subscribeUrl?: string; providers: TaseDataProviders }) => McpServer,
+  createServer: (options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string }) => McpServer,
 ): Promise<void> {
   const port = parseInt(process.env.PORT ?? "3001", 10);
 
@@ -217,7 +217,11 @@ export async function startStreamableHTTPServer(
       const token = generateSubscribeToken(userId);
       subscribeUrl += `?token=${token}`;
     }
-    const server = createServer({ subscribeUrl, providers: dbProviders });
+    // Detect host to set correct widget domain format
+    // ChatGPT sends "openai-mcp/1.0.0" user-agent; others (Claude Desktop) get no domain
+    const isChatGPT = req.headers["user-agent"]?.includes("openai-mcp");
+    const domain = isChatGPT ? "tase-market-mcp-apps-lobix-ai.oaiusercontent.com" : undefined;
+    const server = createServer({ subscribeUrl, providers: dbProviders, domain });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
