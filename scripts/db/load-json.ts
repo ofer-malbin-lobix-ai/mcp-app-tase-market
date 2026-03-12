@@ -1,11 +1,11 @@
 /**
  * Load historical EOD data from a JSON dump into the database.
  * Uses streaming JSON parser for large files.
- * Usage: npx tsx scripts/load-json.ts <path-to-json-file>
+ * Usage: npx tsx scripts/db/load-json.ts <path-to-json-file>
  */
 import { createReadStream } from "node:fs";
 import { createRequire } from "node:module";
-import { prisma } from "../src/db/db.js";
+import { prisma } from "../../src/db/db.js";
 
 const require = createRequire(import.meta.url);
 const { parser } = require("stream-json");
@@ -119,7 +119,7 @@ async function flushBatch(batch: ReturnType<typeof toRow>[], retries = 3): Promi
 async function main() {
   const filePath = process.argv[2];
   if (!filePath) {
-    console.error("Usage: npx tsx scripts/load-json.ts <path-to-json-file>");
+    console.error("Usage: npx tsx scripts/db/load-json.ts <path-to-json-file>");
     process.exit(1);
   }
 

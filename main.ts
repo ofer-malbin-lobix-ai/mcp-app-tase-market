@@ -167,7 +167,7 @@ export async function startStreamableHTTPServer(
 
     // Ensure user exists in DB
     const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
-    const email = authInfo?.extra?.email ?? authInfo?.extra?.["https://tase-market.mcp-apps.lobix.ai/email"];
+    const email = authInfo?.extra?.email;
     if (typeof email === "string") {
       await ensureUser(userId, email);
     }

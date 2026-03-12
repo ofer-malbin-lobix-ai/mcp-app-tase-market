@@ -56,7 +56,8 @@
     "test:widget:dev": "node tests/widget-tests.mjs --mcp tase-market-dev",
     "test:all:dev": "node tests/widget-tests.mjs all --mcp tase-market-dev",
     "test:widget:claude": "node tests/widget-tests.mjs --platform claude-desktop",
-    "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop"
+    "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop",
+    "deploy:prod": "git checkout production && git merge main && git push origin production && git checkout main"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "^1.1.2",

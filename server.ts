@@ -233,8 +233,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   function getEmailFromExtra(extra: { authInfo?: { extra?: Record<string, unknown> } }): string | undefined {
     const authExtra = extra?.authInfo?.extra;
     if (!authExtra) return undefined;
-    // Auth0 JWT includes email in various claims
-    const email = authExtra.email ?? authExtra["https://tase-market.mcp-apps.lobix.ai/email"];
+    const email = authExtra.email;
     return typeof email === "string" ? email : undefined;
   }
 
