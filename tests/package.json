@@ -13,7 +13,6 @@
     "test:market-spirit": "node widget-tests.mjs market-spirit",
     "test:market-uptrend-symbols": "node widget-tests.mjs market-uptrend-symbols",
     "test:market-sector-heatmap": "node widget-tests.mjs market-sector-heatmap",
-    "test:market-dashboard": "node widget-tests.mjs market-dashboard",
     "test:my-position-table": "node widget-tests.mjs my-position-table",
     "test:my-position-candlestick": "node widget-tests.mjs my-position-candlestick",
     "test:my-position-end-of-day": "node widget-tests.mjs my-position-end-of-day",

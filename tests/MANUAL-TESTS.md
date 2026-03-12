@@ -4,7 +4,6 @@ Copy-paste these into Claude Desktop to test each widget.
 
 | # | Widget | Prompt |
 |---|--------|--------|
-| 1 | market-dashboard | `call show-market-dashboard-widget` |
 | 2 | market-spirit | `call show-market-spirit-widget` |
 | 3 | market-end-of-day | `call show-market-end-of-day-widget` |
 | 4 | market-uptrend-symbols | `call show-market-uptrend-symbols-widget` |
