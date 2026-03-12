@@ -116,7 +116,6 @@ model UserSubscription {
   manualSubscription   Boolean  @default(false)
   freeTrial            Boolean  @default(false)
   freeTrialUsed        Boolean  @default(false)
-  legacyClerkId        String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   user                 AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)

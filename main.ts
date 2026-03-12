@@ -165,7 +165,7 @@ export async function startStreamableHTTPServer(
       return;
     }
 
-    // Ensure user exists in DB (triggers Clerk→Auth0 ID migration if email matches)
+    // Ensure user exists in DB
     const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
     const email = authInfo?.extra?.email ?? authInfo?.extra?.["https://tase-market.mcp-apps.lobix.ai/email"];
     if (typeof email === "string") {

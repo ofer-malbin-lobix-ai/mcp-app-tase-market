@@ -1,21 +1,7 @@
-import { getUserSubscription, upsertSubscription, findUserByLegacyClerkId } from '../db/user-db.js';
+import { getUserSubscription, upsertSubscription } from '../db/user-db.js';
 import type { PayPalWebhookEvent } from './types.js';
 import { getSubscription, getPlanTypeFromPlanId, verifyWebhookSignature } from './paypal-service.js';
 import { clearSubscriptionCache } from './subscription-check.js';
-
-// Resolve userId: may be Auth0 sub or legacy Clerk ID (from old PayPal subscriptions)
-async function resolveWebhookUserId(customId: string): Promise<string | null> {
-  // First check if it's a direct Auth0 sub (new subscriptions)
-  const sub = await getUserSubscription(customId);
-  if (sub) return customId;
-
-  // Fall back to legacy Clerk ID lookup
-  const auth0Sub = await findUserByLegacyClerkId(customId);
-  if (auth0Sub) return auth0Sub;
-
-  // Not found — treat customId as-is (maybe it's valid but user hasn't been migrated)
-  return customId;
-}
 
 export async function handleWebhook(
   headers: Record<string, string>,
@@ -37,16 +23,10 @@ export async function handleWebhook(
   const event = JSON.parse(rawBody) as PayPalWebhookEvent;
   console.log(`Processing PayPal webhook: ${event.event_type}`);
 
-  const customId = event.resource.custom_id;
-  if (!customId) {
+  const userId = event.resource.custom_id;
+  if (!userId) {
     console.error('No custom_id (userId) in webhook payload');
     return { success: false, message: 'Missing user ID' };
-  }
-
-  const userId = await resolveWebhookUserId(customId);
-  if (!userId) {
-    console.error(`Could not resolve userId for custom_id: ${customId}`);
-    return { success: false, message: 'User not found' };
   }
 
   switch (event.event_type) {

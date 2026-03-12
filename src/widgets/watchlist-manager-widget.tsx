@@ -1,6 +1,6 @@
 /**
  * Watchlist Manager Widget
- * Allows users to add, edit, and delete watchlist items stored in Clerk privateMetadata.
+ * Allows users to add, edit, and delete watchlist items.
  * Columns: Symbol | Start Date | Note | Actions (Edit / Delete)
  */
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";

@@ -238,7 +238,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     return typeof email === "string" ? email : undefined;
   }
 
-  // Ensure user exists in DB (triggers Clerk→Auth0 ID migration if needed)
+  // Ensure user exists in DB
   async function ensureUserFromExtra(extra: any): Promise<string | null> {
     const userId = getUserIdFromExtra(extra);
     if (!userId) return null;
@@ -970,7 +970,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // Data tool: Get user positions from Clerk privateMetadata
+  // Data tool: Get user positions
   registerAppTool(server,
     "get-my-positions",
     {
@@ -1068,7 +1068,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // ─── Watchlist CRUD tools ──────────────────────────────────────────
 
-  // Data tool: Get user watchlist from Clerk privateMetadata
+  // Data tool: Get user watchlist
   registerAppTool(server,
     "get-watchlist",
     {

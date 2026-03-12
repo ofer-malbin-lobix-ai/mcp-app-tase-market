@@ -503,7 +503,7 @@
     const token = window.SUBSCRIBE_TOKEN || new URLSearchParams(window.location.search).get('token');
 
     async function loadStatus() {
-      // Use server-injected status if available (works without Clerk session)
+      // Use server-injected status if available
       if (window.INJECTED_STATUS) {
         currentStatus = window.INJECTED_STATUS;
         updateUI();

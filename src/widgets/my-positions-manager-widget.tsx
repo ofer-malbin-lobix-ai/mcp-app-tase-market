@@ -1,6 +1,6 @@
 /**
  * My Positions Manager Widget
- * Allows users to add, edit, and delete portfolio positions stored in Clerk privateMetadata.
+ * Allows users to add, edit, and delete portfolio positions.
  * Columns: Symbol | Start Date | Amount | Actions (Edit / Delete)
  */
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
