@@ -64,3 +64,60 @@ model TaseSymbol {
   updatedAt          DateTime @updatedAt
   tradingData        TaseSecuritiesEndOfDayTradingData[]
 }
+
+model AppUser {
+  id            String              @id // Auth0 sub claim
+  email         String?             @unique
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  positions     UserPosition[]
+  watchlist     UserWatchlistItem[]
+  subscription  UserSubscription?
+}
+
+model UserPosition {
+  id            String   @id @default(cuid())
+  userId        String
+  symbol        String
+  startDate     String
+  amount        Float
+  avgEntryPrice Float?
+  alloc         Float?
+  side          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
+}
+
+model UserWatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  startDate String
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId])
+}
+
+model UserSubscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  plan                 String?
+  paypalSubscriptionId String?
+  subscriptionStatus   String?
+  expiresAt            String?
+  manualSubscription   Boolean  @default(false)
+  freeTrial            Boolean  @default(false)
+  freeTrialUsed        Boolean  @default(false)
+  legacyClerkId        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

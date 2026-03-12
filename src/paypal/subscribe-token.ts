@@ -2,9 +2,9 @@ import crypto from 'node:crypto';
 
 const TOKEN_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
-// Get secret from env or generate a random one (will change on restart)
+// Get secret from env or use a fallback (will change on restart)
 const getSecret = (): string => {
-  return process.env.SUBSCRIBE_TOKEN_SECRET ?? process.env.CLERK_SECRET_KEY ?? 'fallback-secret';
+  return process.env.SUBSCRIBE_TOKEN_SECRET ?? 'fallback-secret';
 };
 
 interface TokenPayload {

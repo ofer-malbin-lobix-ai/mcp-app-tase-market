@@ -8,7 +8,6 @@ import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { clerkMiddleware, getAuth } from "@clerk/express";
 import { auth } from "express-oauth2-jwt-bearer";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -21,6 +20,8 @@ import type { TaseDataProviders } from "./src/types.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
 import { checkSubscription } from "./src/paypal/subscription-check.js";
 import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
+// @ts-ignore — imported from source at runtime (not compiled by tsc)
+import { ensureUser } from "./src/db/user-db.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { createFetchEndOfDayFromTaseDataHubRouter } from "./src/tase-data-hub/fetch-end-of-day-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -113,10 +114,7 @@ export async function startStreamableHTTPServer(
     });
   }
 
-  // Apply Clerk middleware for all requests
-  app.use(clerkMiddleware());
-
-  // Mount subscription routes (requires Clerk auth)
+  // Mount subscription routes
   app.use(createSubscriptionRouter());
 
   // Mount fetch-end-of-day-from-tase-data-hub route (backend API, no auth — callable by cron or direct URL)
@@ -131,24 +129,11 @@ export async function startStreamableHTTPServer(
   // Mount fetch-last-update-from-tase-data-hub route (backend API, no auth — pass-through to TASE Data Hub)
   app.use(createFetchLastUpdateFromTaseDataHubRouter());
 
-  // Namespace for Auth0 custom claims
-  const AUTH0_CLAIM_NAMESPACE = "https://tase-market.mcp-apps.lobix.ai";
-
-  // Helper to extract userId from request (Auth0 JWT or Clerk session)
+  // Helper to extract userId from request (Auth0 JWT sub claim)
   const resolveUserId = (req: Request): string | null => {
-    // Try Auth0 JWT (transformed to MCP AuthInfo) — Clerk userId is in extra (payload) custom claim
     const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
-    const clerkUserId = authInfo?.extra?.[`${AUTH0_CLAIM_NAMESPACE}/clerk_user_id`];
-    if (clerkUserId && typeof clerkUserId === "string") {
-      return clerkUserId;
-    }
-
-    // Fallback: Clerk session (for browser requests — subscribe page, etc.)
-    const clerkAuth = getAuth(req);
-    if (clerkAuth?.userId) {
-      return clerkAuth.userId;
-    }
-
+    const sub = authInfo?.extra?.sub;
+    if (sub && typeof sub === "string") return sub;
     return null;
   };
 
@@ -178,6 +163,13 @@ export async function startStreamableHTTPServer(
       // No user ID - let auth middleware handle 401
       next();
       return;
+    }
+
+    // Ensure user exists in DB (triggers Clerk→Auth0 ID migration if email matches)
+    const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
+    const email = authInfo?.extra?.email ?? authInfo?.extra?.["https://tase-market.mcp-apps.lobix.ai/email"];
+    if (typeof email === "string") {
+      await ensureUser(userId, email);
     }
 
     const hasSubscription = await checkSubscription(userId);

@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import { requireAuth, getAuth, clerkClient } from '@clerk/express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,21 +13,17 @@ import {
 import { handleWebhook } from './webhook-handler.js';
 import { clearSubscriptionCache } from './subscription-check.js';
 import { verifySubscribeToken } from './subscribe-token.js';
-import { APP_ID, getAppSubscription, setAppSubscription } from './types.js';
-import type { CreateSubscriptionRequest, SubscriptionMetadata } from './types.js';
+import { getUserSubscription, upsertSubscription } from '../db/user-db.js';
+import type { CreateSubscriptionRequest } from './types.js';
 
-// Helper to get userId from token or Clerk session
+// Helper to get userId from token
 function resolveUserId(req: Request): string | null {
-  // First try token from query or body
   const token = (req.query.token as string) || (req.body as { token?: string })?.token;
   if (token) {
     const userId = verifySubscribeToken(token);
     if (userId) return userId;
   }
-
-  // Fall back to Clerk session
-  const auth = getAuth(req);
-  return auth?.userId ?? null;
+  return null;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,7 +37,7 @@ const HTML_DIR = __filename.includes('/dist/')
 export function createSubscriptionRouter(): Router {
   const router = Router();
 
-  // Serve subscription page (accepts token or Clerk session)
+  // Serve subscription page (accepts token)
   router.get('/subscribe', async (req: Request, res: Response) => {
     const userId = resolveUserId(req);
 
@@ -51,7 +46,7 @@ export function createSubscriptionRouter(): Router {
       let html = await fs.readFile(htmlPath, 'utf-8');
 
       if (!userId) {
-        // No valid token or Clerk session — serve page without status
+        // No valid token — serve page without status
         res.setHeader('Content-Type', 'text/html');
         res.send(html);
         return;
@@ -65,18 +60,17 @@ export function createSubscriptionRouter(): Router {
 
       // Inject subscription status server-side so the page doesn't need a separate fetch
       try {
-        const user = await clerkClient.users.getUser(userId);
-        const metadata = getAppSubscription(user.publicMetadata as Record<string, unknown>, APP_ID);
-        const isManualActive = !!metadata.manual_subscription && !!metadata.expires_at && new Date(metadata.expires_at) > new Date();
-        const isFreeTrialActive = !!metadata.free_trial && !!metadata.expires_at && new Date(metadata.expires_at) > new Date();
+        const sub = await getUserSubscription(userId);
+        const isManualActive = !!sub?.manualSubscription && !!sub?.expiresAt && new Date(sub.expiresAt) > new Date();
+        const isFreeTrialActive = !!sub?.freeTrial && !!sub?.expiresAt && new Date(sub.expiresAt) > new Date();
         const status = {
-          hasSubscription: !!metadata.paypal_subscription_id || isManualActive || isFreeTrialActive,
-          plan: metadata.plan ?? (isManualActive ? 'manual' : isFreeTrialActive ? 'trial' : null),
-          status: (isManualActive || isFreeTrialActive) ? 'active' : (metadata.subscription_status ?? null),
-          expiresAt: metadata.expires_at ?? null,
+          hasSubscription: !!sub?.paypalSubscriptionId || isManualActive || isFreeTrialActive,
+          plan: sub?.plan ?? (isManualActive ? 'manual' : isFreeTrialActive ? 'trial' : null),
+          status: (isManualActive || isFreeTrialActive) ? 'active' : (sub?.subscriptionStatus ?? null),
+          expiresAt: sub?.expiresAt ?? null,
           isManual: isManualActive,
           isFreeTrial: isFreeTrialActive,
-          freeTrialUsed: !!metadata.free_trial_used,
+          freeTrialUsed: !!sub?.freeTrialUsed,
           plans: {
             monthly: { price: PLANS.monthly.price, name: PLANS.monthly.name },
             yearly: { price: PLANS.yearly.price, name: PLANS.yearly.name },
@@ -95,7 +89,7 @@ export function createSubscriptionRouter(): Router {
     }
   });
 
-  // Get subscription status (accepts token or Clerk session)
+  // Get subscription status (accepts token)
   router.get('/api/subscription/status', async (req: Request, res: Response) => {
     try {
       const userId = resolveUserId(req);
@@ -104,19 +98,18 @@ export function createSubscriptionRouter(): Router {
         return;
       }
 
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = getAppSubscription(user.publicMetadata as Record<string, unknown>, APP_ID);
-      const isManualActive = !!metadata.manual_subscription && !!metadata.expires_at && new Date(metadata.expires_at) > new Date();
-      const isFreeTrialActive = !!metadata.free_trial && !!metadata.expires_at && new Date(metadata.expires_at) > new Date();
+      const sub = await getUserSubscription(userId);
+      const isManualActive = !!sub?.manualSubscription && !!sub?.expiresAt && new Date(sub.expiresAt) > new Date();
+      const isFreeTrialActive = !!sub?.freeTrial && !!sub?.expiresAt && new Date(sub.expiresAt) > new Date();
 
       res.json({
-        hasSubscription: !!metadata.paypal_subscription_id || isManualActive || isFreeTrialActive,
-        plan: metadata.plan ?? (isManualActive ? 'manual' : isFreeTrialActive ? 'trial' : null),
-        status: (isManualActive || isFreeTrialActive) ? 'active' : (metadata.subscription_status ?? null),
-        expiresAt: metadata.expires_at ?? null,
+        hasSubscription: !!sub?.paypalSubscriptionId || isManualActive || isFreeTrialActive,
+        plan: sub?.plan ?? (isManualActive ? 'manual' : isFreeTrialActive ? 'trial' : null),
+        status: (isManualActive || isFreeTrialActive) ? 'active' : (sub?.subscriptionStatus ?? null),
+        expiresAt: sub?.expiresAt ?? null,
         isManual: isManualActive,
         isFreeTrial: isFreeTrialActive,
-        freeTrialUsed: !!metadata.free_trial_used,
+        freeTrialUsed: !!sub?.freeTrialUsed,
         plans: {
           monthly: { price: PLANS.monthly.price, name: PLANS.monthly.name },
           yearly: { price: PLANS.yearly.price, name: PLANS.yearly.name },
@@ -128,7 +121,7 @@ export function createSubscriptionRouter(): Router {
     }
   });
 
-  // Create subscription (accepts token or Clerk session)
+  // Create subscription (accepts token)
   router.post('/api/paypal/create-subscription', async (req: Request, res: Response) => {
     try {
       const userId = resolveUserId(req);
@@ -144,10 +137,9 @@ export function createSubscriptionRouter(): Router {
         return;
       }
 
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = getAppSubscription(user.publicMetadata as Record<string, unknown>, APP_ID);
+      const sub = await getUserSubscription(userId);
 
-      if (metadata.subscription_status === 'active') {
+      if (sub?.subscriptionStatus === 'active') {
         res.status(400).json({ error: 'User already has an active subscription' });
         return;
       }
@@ -160,7 +152,7 @@ export function createSubscriptionRouter(): Router {
     }
   });
 
-  // Start free trial (accepts token or Clerk session)
+  // Start free trial (accepts token)
   router.post('/api/paypal/start-free-trial', async (req: Request, res: Response) => {
     try {
       const userId = resolveUserId(req);
@@ -169,18 +161,17 @@ export function createSubscriptionRouter(): Router {
         return;
       }
 
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = getAppSubscription(user.publicMetadata as Record<string, unknown>, APP_ID);
+      const sub = await getUserSubscription(userId);
 
       // Check if free trial already used
-      if (metadata.free_trial_used) {
+      if (sub?.freeTrialUsed) {
         res.status(400).json({ error: 'Free trial has already been used' });
         return;
       }
 
       // Check if user already has an active subscription
-      const isManualActive = !!metadata.manual_subscription && !!metadata.expires_at && new Date(metadata.expires_at) > new Date();
-      const hasActiveSubscription = metadata.subscription_status === 'active' || isManualActive;
+      const isManualActive = !!sub?.manualSubscription && !!sub?.expiresAt && new Date(sub.expiresAt) > new Date();
+      const hasActiveSubscription = sub?.subscriptionStatus === 'active' || isManualActive;
       if (hasActiveSubscription) {
         res.status(400).json({ error: 'User already has an active subscription' });
         return;
@@ -191,12 +182,10 @@ export function createSubscriptionRouter(): Router {
       expiresAt.setDate(expiresAt.getDate() + 7);
       const expiresAtStr = expiresAt.toISOString().split('T')[0];
 
-      await clerkClient.users.updateUser(userId, {
-        publicMetadata: setAppSubscription(user.publicMetadata as Record<string, unknown>, {
-          free_trial: true,
-          free_trial_used: true,
-          expires_at: expiresAtStr,
-        }),
+      await upsertSubscription(userId, {
+        freeTrial: true,
+        freeTrialUsed: true,
+        expiresAt: expiresAtStr,
       });
 
       clearSubscriptionCache(userId);
@@ -244,16 +233,11 @@ export function createSubscriptionRouter(): Router {
         ? new Date(subscription.billing_info.next_billing_time).toISOString().split('T')[0]
         : calculateExpiryDate(planType);
 
-      const subData: SubscriptionMetadata = {
+      await upsertSubscription(userId, {
         plan: planType,
-        paypal_subscription_id: subscriptionId,
-        subscription_status: 'active',
-        expires_at: expiresAt,
-      };
-
-      const user = await clerkClient.users.getUser(userId);
-      await clerkClient.users.updateUser(userId, {
-        publicMetadata: setAppSubscription(user.publicMetadata as Record<string, unknown>, subData),
+        paypalSubscriptionId: subscriptionId,
+        subscriptionStatus: 'active',
+        expiresAt,
       });
 
       // Clear subscription cache so MCP requests get fresh status
@@ -284,32 +268,29 @@ export function createSubscriptionRouter(): Router {
     }
   });
 
-  // Cancel subscription
-  router.post('/api/paypal/cancel-subscription', requireAuth(), async (req: Request, res: Response) => {
+  // Cancel subscription (token-based auth)
+  router.post('/api/paypal/cancel-subscription', async (req: Request, res: Response) => {
     try {
-      const { userId } = getAuth(req);
+      const userId = resolveUserId(req);
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }
 
-      const user = await clerkClient.users.getUser(userId);
-      const metadata = getAppSubscription(user.publicMetadata as Record<string, unknown>, APP_ID);
+      const sub = await getUserSubscription(userId);
 
-      if (!metadata.paypal_subscription_id) {
+      if (!sub?.paypalSubscriptionId) {
         res.status(400).json({ error: 'No active subscription found' });
         return;
       }
 
-      await cancelSubscription(metadata.paypal_subscription_id);
+      await cancelSubscription(sub.paypalSubscriptionId);
 
-      await clerkClient.users.updateUser(userId, {
-        publicMetadata: setAppSubscription(user.publicMetadata as Record<string, unknown>, {
-          plan: metadata.plan ?? 'monthly',
-          paypal_subscription_id: metadata.paypal_subscription_id,
-          subscription_status: 'cancelled',
-          expires_at: metadata.expires_at ?? new Date().toISOString().split('T')[0],
-        }),
+      await upsertSubscription(userId, {
+        plan: sub.plan ?? 'monthly',
+        paypalSubscriptionId: sub.paypalSubscriptionId,
+        subscriptionStatus: 'cancelled',
+        expiresAt: sub.expiresAt ?? new Date().toISOString().split('T')[0],
       });
 
       res.json({ success: true, message: 'Subscription cancelled' });

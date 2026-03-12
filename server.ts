@@ -1,7 +1,6 @@
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { clerkClient } from "@clerk/express";
 import fs from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -19,8 +18,6 @@ import type {
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
-  UserPosition,
-  UserWatchlistItem,
   IntradayCandlestickResponse,
 } from "./src/types.js";
 
@@ -44,6 +41,8 @@ import { fetchIntraday } from "./src/tase-data-hub/fetch-intraday-from-tase-data
 import { fetchLastUpdate } from "./src/tase-data-hub/fetch-last-update-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { prisma } from "./src/db/db.js";
+// @ts-ignore — imported from source at runtime (not compiled by tsc)
+import { ensureUser, getUserPositions, getUserPositionSymbols as dbGetUserPositionSymbols, upsertPosition, deletePosition, getUserWatchlist, getUserWatchlistSymbols as dbGetUserWatchlistSymbols, upsertWatchlistItem, deleteWatchlistItem } from "./src/db/user-db.js";
 
 // Works both from source (server.ts) and compiled (dist/server.js)
 const __filename = fileURLToPath(import.meta.url);
@@ -224,28 +223,42 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     const authExtra = extra?.authInfo?.extra;
     if (!authExtra) return null;
 
-    // Auth0 token: Clerk userId is in custom claim
-    const clerkUserId = authExtra["https://tase-market.mcp-apps.lobix.ai/clerk_user_id"];
-    if (clerkUserId && typeof clerkUserId === "string") return clerkUserId;
+    // Auth0 token: use native sub claim as user ID
+    const sub = authExtra.sub;
+    if (sub && typeof sub === "string") return sub;
 
-    // Legacy: direct Clerk userId (stdio/backward compat)
-    return (authExtra.userId as string) ?? null;
+    return null;
   }
 
-  async function getUserPositionSymbols(extra: any): Promise<{ symbols: string[]; error?: string }> {
-    const userId = getUserIdFromExtra(extra);
-    if (!userId) return { symbols: [], error: "Not authenticated" };
-    const user = await clerkClient.users.getUser(userId);
-    const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
-    return { symbols: positions.map(p => p.symbol) };
+  function getEmailFromExtra(extra: { authInfo?: { extra?: Record<string, unknown> } }): string | undefined {
+    const authExtra = extra?.authInfo?.extra;
+    if (!authExtra) return undefined;
+    // Auth0 JWT includes email in various claims
+    const email = authExtra.email ?? authExtra["https://tase-market.mcp-apps.lobix.ai/email"];
+    return typeof email === "string" ? email : undefined;
   }
 
-  async function getUserWatchlistSymbols(extra: any): Promise<{ symbols: string[]; error?: string }> {
+  // Ensure user exists in DB (triggers Clerk→Auth0 ID migration if needed)
+  async function ensureUserFromExtra(extra: any): Promise<string | null> {
     const userId = getUserIdFromExtra(extra);
+    if (!userId) return null;
+    const email = getEmailFromExtra(extra);
+    await ensureUser(userId, email);
+    return userId;
+  }
+
+  async function getUserPositionSymbolsFromExtra(extra: any): Promise<{ symbols: string[]; error?: string }> {
+    const userId = await ensureUserFromExtra(extra);
     if (!userId) return { symbols: [], error: "Not authenticated" };
-    const user = await clerkClient.users.getUser(userId);
-    const watchlist = (user.privateMetadata?.watchlist as UserWatchlistItem[] | undefined) ?? [];
-    return { symbols: watchlist.map(w => w.symbol) };
+    const symbols = await dbGetUserPositionSymbols(userId);
+    return { symbols };
+  }
+
+  async function getUserWatchlistSymbolsFromExtra(extra: any): Promise<{ symbols: string[]; error?: string }> {
+    const userId = await ensureUserFromExtra(extra);
+    if (!userId) return { symbols: [], error: "Not authenticated" };
+    const symbols = await dbGetUserWatchlistSymbols(userId);
+    return { symbols };
   }
 
   const server = new McpServer({
@@ -407,7 +420,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserPositionSymbols(extra);
+      const { symbols, error } = await getUserPositionSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
@@ -433,7 +446,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: endOfDaySymbolsResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserPositionSymbols(extra);
+      const { symbols, error } = await getUserPositionSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
@@ -582,7 +595,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: symbolsCandlestickResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserPositionSymbols(extra);
+      const { symbols, error } = await getUserPositionSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       // Always fetch sidebar data using the last trade date (args.dateTo may be today or a non-trading day)
@@ -618,7 +631,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserPositionSymbols(extra);
+      const { symbols, error } = await getUserPositionSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, args.period as HeatmapPeriod | undefined);
@@ -695,14 +708,13 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) return { content: [{ type: "text", text: JSON.stringify({ error: "Not authenticated" }) }] };
-      const user = await clerkClient.users.getUser(userId);
-      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const positions = await getUserPositions(userId);
       if (positions.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       const symbols = positions.map(p => p.symbol);
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
-      const positionsMap: Record<string, { avgEntryPrice?: number; startDate: string; amount: number; side?: string }> = {};
+      const positionsMap: Record<string, { avgEntryPrice?: number | null; startDate: string; amount: number; side?: string | null }> = {};
       for (const p of positions) {
         positionsMap[p.symbol] = { avgEntryPrice: p.avgEntryPrice, startDate: p.startDate, amount: p.amount, side: p.side };
       }
@@ -728,14 +740,13 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: myPositionResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) return { content: [{ type: "text", text: JSON.stringify({ error: "Not authenticated" }) }] };
-      const user = await clerkClient.users.getUser(userId);
-      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const positions = await getUserPositions(userId);
       if (positions.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No positions found" }) }] };
       const symbols = positions.map(p => p.symbol);
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
-      const positionsMap: Record<string, { avgEntryPrice?: number; startDate: string; amount: number; side?: string }> = {};
+      const positionsMap: Record<string, { avgEntryPrice?: number | null; startDate: string; amount: number; side?: string | null }> = {};
       for (const p of positions) {
         positionsMap[p.symbol] = { avgEntryPrice: p.avgEntryPrice, startDate: p.startDate, amount: p.amount, side: p.side };
       }
@@ -970,12 +981,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (_args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ positions: [], count: 0, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const positions = await getUserPositions(userId);
       return { content: [{ type: "text", text: JSON.stringify({ positions, count: positions.length }) }] };
     },
   );
@@ -998,20 +1008,17 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const existing = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
-      const updated = existing.filter((p) => p.symbol !== args.symbol);
-      const pos: UserPosition = { symbol: args.symbol, startDate: args.startDate, amount: args.amount };
-      if (args.avgEntryPrice !== undefined) pos.avgEntryPrice = args.avgEntryPrice;
-      if (args.alloc !== undefined) pos.alloc = args.alloc;
-      if (args.side !== undefined) pos.side = args.side;
-      updated.push(pos);
-      await clerkClient.users.updateUser(userId, {
-        privateMetadata: { ...user.privateMetadata, positions: updated },
+      const updated = await upsertPosition(userId, {
+        symbol: args.symbol,
+        startDate: args.startDate,
+        amount: args.amount,
+        avgEntryPrice: args.avgEntryPrice,
+        alloc: args.alloc,
+        side: args.side,
       });
       return { content: [{ type: "text", text: JSON.stringify({ success: true, positions: updated, count: updated.length }) }] };
     },
@@ -1030,16 +1037,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const existing = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
-      const updated = existing.filter((p) => p.symbol !== args.symbol);
-      await clerkClient.users.updateUser(userId, {
-        privateMetadata: { ...user.privateMetadata, positions: updated },
-      });
+      const updated = await deletePosition(userId, args.symbol);
       return { content: [{ type: "text", text: JSON.stringify({ success: true, positions: updated, count: updated.length }) }] };
     },
   );
@@ -1055,12 +1057,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: myPositionsManagerResourceUri } },
     },
     async (_args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ positions: [], count: 0, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const positions = (user.privateMetadata?.positions as UserPosition[] | undefined) ?? [];
+      const positions = await getUserPositions(userId);
       return { content: [{ type: "text", text: JSON.stringify({ positions, count: positions.length }) }] };
     },
   );
@@ -1078,12 +1079,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (_args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ watchlist: [], count: 0, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const watchlist = (user.privateMetadata?.watchlist as UserWatchlistItem[] | undefined) ?? [];
+      const watchlist = await getUserWatchlist(userId);
       return { content: [{ type: "text", text: JSON.stringify({ watchlist, count: watchlist.length }) }] };
     },
   );
@@ -1103,18 +1103,14 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const existing = (user.privateMetadata?.watchlist as UserWatchlistItem[] | undefined) ?? [];
-      const updated = existing.filter((w) => w.symbol !== args.symbol);
-      const item: UserWatchlistItem = { symbol: args.symbol, startDate: args.startDate };
-      if (args.note !== undefined) item.note = args.note;
-      updated.push(item);
-      await clerkClient.users.updateUser(userId, {
-        privateMetadata: { ...user.privateMetadata, watchlist: updated },
+      const updated = await upsertWatchlistItem(userId, {
+        symbol: args.symbol,
+        startDate: args.startDate,
+        note: args.note,
       });
       return { content: [{ type: "text", text: JSON.stringify({ success: true, watchlist: updated, count: updated.length }) }] };
     },
@@ -1133,16 +1129,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const existing = (user.privateMetadata?.watchlist as UserWatchlistItem[] | undefined) ?? [];
-      const updated = existing.filter((w) => w.symbol !== args.symbol);
-      await clerkClient.users.updateUser(userId, {
-        privateMetadata: { ...user.privateMetadata, watchlist: updated },
-      });
+      const updated = await deleteWatchlistItem(userId, args.symbol);
       return { content: [{ type: "text", text: JSON.stringify({ success: true, watchlist: updated, count: updated.length }) }] };
     },
   );
@@ -1158,12 +1149,11 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: watchlistManagerResourceUri } },
     },
     async (_args, extra): Promise<CallToolResult> => {
-      const userId = getUserIdFromExtra(extra);
+      const userId = await ensureUserFromExtra(extra);
       if (!userId) {
         return { content: [{ type: "text", text: JSON.stringify({ watchlist: [], count: 0, error: "Not authenticated" }) }] };
       }
-      const user = await clerkClient.users.getUser(userId);
-      const watchlist = (user.privateMetadata?.watchlist as UserWatchlistItem[] | undefined) ?? [];
+      const watchlist = await getUserWatchlist(userId);
       return { content: [{ type: "text", text: JSON.stringify({ watchlist, count: watchlist.length }) }] };
     },
   );
@@ -1184,7 +1174,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, args.period as HeatmapPeriod | undefined);
@@ -1210,7 +1200,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: watchlistTableResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
@@ -1236,7 +1226,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
@@ -1262,7 +1252,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: watchlistEndOfDayResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, "1D");
@@ -1289,7 +1279,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, args.period as HeatmapPeriod | undefined);
@@ -1316,7 +1306,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: watchlistCandlestickResourceUri } },
     },
     async (args, extra): Promise<CallToolResult> => {
-      const { symbols, error } = await getUserWatchlistSymbols(extra);
+      const { symbols, error } = await getUserWatchlistSymbolsFromExtra(extra);
       if (error) return { content: [{ type: "text", text: JSON.stringify({ error }) }] };
       if (symbols.length === 0) return { content: [{ type: "text", text: JSON.stringify({ error: "No watchlist items found" }) }] };
       const data = await providers.fetchEndOfDaySymbolsByDate(symbols);

@@ -59,8 +59,6 @@
     "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop"
   },
   "dependencies": {
-    "@clerk/express": "^2.0.1",
-    "@clerk/mcp-tools": "^0.3.1",
     "@modelcontextprotocol/ext-apps": "^1.1.2",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@prisma/adapter-neon": "^7.4.2",

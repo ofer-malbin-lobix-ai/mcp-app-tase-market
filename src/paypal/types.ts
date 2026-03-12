@@ -1,48 +1,5 @@
 export const APP_ID = 'tase-market';
 
-export interface SubscriptionMetadata {
-  plan: 'monthly' | 'yearly';
-  paypal_subscription_id: string;
-  subscription_status: 'active' | 'cancelled' | 'suspended' | 'expired';
-  expires_at: string;
-  manual_subscription?: boolean;
-  free_trial?: boolean;
-  free_trial_used?: boolean;
-  [key: string]: unknown;
-}
-
-/**
- * Read subscription data from namespaced metadata: subscriptions[appId].
- */
-export function getAppSubscription(
-  publicMetadata: Record<string, unknown>,
-  appId: string = APP_ID,
-): Partial<SubscriptionMetadata> {
-  const subscriptions = publicMetadata.subscriptions as Record<string, unknown> | undefined;
-  return (subscriptions?.[appId] as Partial<SubscriptionMetadata> | undefined) ?? {};
-}
-
-/**
- * Write subscription data into the namespaced location.
- * Preserves other apps' subscriptions and non-subscription fields.
- */
-export function setAppSubscription(
-  publicMetadata: Record<string, unknown>,
-  data: Partial<SubscriptionMetadata>,
-  appId: string = APP_ID,
-): Record<string, unknown> {
-  const existing = (publicMetadata.subscriptions ?? {}) as Record<string, unknown>;
-  const currentAppData = (existing[appId] ?? {}) as Record<string, unknown>;
-
-  return {
-    ...publicMetadata,
-    subscriptions: {
-      ...existing,
-      [appId]: { ...currentAppData, ...data },
-    },
-  };
-}
-
 export interface PlanConfig {
   id: string;
   name: string;
