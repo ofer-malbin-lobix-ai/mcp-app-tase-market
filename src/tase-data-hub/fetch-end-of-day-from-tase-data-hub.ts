@@ -169,8 +169,8 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
     }
   });
 
-  // Cron: run EOD pipeline Mon-Fri at 20:30 Israel time (production only)
-  if (process.env.NODE_ENV === "production") {
+  // Cron: run EOD pipeline Mon-Fri at 20:30 Israel time
+  if (process.env.ENABLE_FETCH_TASE_DATA_CRON === "true") {
     cron.schedule("30 20 * * 1-5", async () => {
       const date = getTodayDateIL();
       console.error(`[end-of-day-pipeline-cron] Running EOD pipeline for ${date}`);
@@ -183,7 +183,7 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
     }, { timezone: "Asia/Jerusalem" });
     console.error("[end-of-day-pipeline-cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
   } else {
-    console.error("[end-of-day-pipeline-cron] Skipped (not production)");
+    console.error("[end-of-day-pipeline-cron] Skipped (ENABLE_FETCH_TASE_DATA_CRON is not 'true')");
   }
 
   return router;
