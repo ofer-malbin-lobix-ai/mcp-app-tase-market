@@ -169,9 +169,9 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
     }
   });
 
-  // Cron: run EOD pipeline Mon-Fri at 20:30 Israel time
+  // Cron: run EOD pipeline every 15 min during post-market hours (Israel time)
   if (process.env.ENABLE_FETCH_TASE_DATA_CRON === "true") {
-    cron.schedule("30 20 * * 1-5", async () => {
+    const cronCallback = async () => {
       const date = getTodayDateIL();
       console.error(`[end-of-day-pipeline-cron] Running EOD pipeline for ${date}`);
       try {
@@ -180,8 +180,13 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
       } catch (error) {
         console.error("[end-of-day-pipeline-cron] Error:", error);
       }
-    }, { timezone: "Asia/Jerusalem" });
-    console.error("[end-of-day-pipeline-cron] EOD pipeline scheduled: Mon-Fri at 20:30 Israel time");
+    };
+
+    // Mon-Thu 18:00–22:00 every 15 min
+    cron.schedule("*/15 18-21 * * 1-4", cronCallback, { timezone: "Asia/Jerusalem" });
+    // Friday 14:00–18:00 every 15 min
+    cron.schedule("*/15 14-17 * * 5", cronCallback, { timezone: "Asia/Jerusalem" });
+    console.error("[end-of-day-pipeline-cron] EOD pipeline scheduled: Mon-Thu 18:00-22:00, Fri 14:00-18:00 (every 15 min, Israel time)");
   } else {
     console.error("[end-of-day-pipeline-cron] Skipped (ENABLE_FETCH_TASE_DATA_CRON is not 'true')");
   }
