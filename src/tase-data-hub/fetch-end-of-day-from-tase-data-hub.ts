@@ -40,6 +40,29 @@ interface TaseDataHubEodResponse {
   };
 }
 
+function getIsraelTime(): string {
+  return new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+async function sendTelegramNotification(message: string): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return;
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML" }),
+    });
+    if (!res.ok) {
+      console.error(`[telegram] Failed to send: ${res.status} ${res.statusText}`);
+    }
+  } catch (error) {
+    console.error("[telegram] Error sending notification:", error);
+  }
+}
+
 /**
  * Fetch EOD data from TASE Data Hub and insert into the database.
  * Uses createMany with skipDuplicates to efficiently bulk-insert rows.
@@ -142,12 +165,20 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
   });
 
   router.get("/api/run-end-of-day-pipeline", async (req: Request, res: Response) => {
+    const date = (req.query.date as string) ?? getTodayDateIL();
     try {
-      const date = (req.query.date as string) ?? getTodayDateIL();
       const result = await runEndOfDayPipeline(date);
+      const env = process.env.ENVIRONMENT_NAME || "development";
+      await sendTelegramNotification(
+        `<b>📊 EOD Pipeline — ${date} [${env}]</b>\n⏰ ${getIsraelTime()} (Israel)\n✅ Fetched: ${result.fetched} | Created: ${result.created} | Updated: ${result.updated} | Symbols: ${result.symbolsUpserted}`
+      );
       res.json({ status: "ok", date, ...result });
     } catch (error) {
       console.error("[run-end-of-day-pipeline] Error:", error);
+      const env = process.env.ENVIRONMENT_NAME || "development";
+      await sendTelegramNotification(
+        `<b>📊 EOD Pipeline — ${date} [${env}]</b>\n⏰ ${getIsraelTime()} (Israel)\n❌ Error: ${error instanceof Error ? error.message : String(error)}`
+      );
       res.status(500).json({
         status: "error",
         message: error instanceof Error ? error.message : String(error),
@@ -172,11 +203,13 @@ export function createFetchEndOfDayFromTaseDataHubRouter(): Router {
   // Cron: run EOD pipeline every 15 min during post-market hours (Israel time)
   if (process.env.ENABLE_FETCH_TASE_DATA_CRON === "true") {
     const cronCallback = async () => {
+      const port = process.env.PORT || "3001";
       const date = getTodayDateIL();
-      console.error(`[end-of-day-pipeline-cron] Running EOD pipeline for ${date}`);
+      console.error(`[end-of-day-pipeline-cron] Calling /api/run-end-of-day-pipeline?date=${date}`);
       try {
-        const result = await runEndOfDayPipeline(date);
-        console.error(`[end-of-day-pipeline-cron] Done: fetched=${result.fetched}, created=${result.created}, updated=${result.updated}, symbolsUpserted=${result.symbolsUpserted}`);
+        const res = await fetch(`http://localhost:${port}/api/run-end-of-day-pipeline?date=${date}`);
+        const body = await res.json();
+        console.error(`[end-of-day-pipeline-cron] Response:`, body);
       } catch (error) {
         console.error("[end-of-day-pipeline-cron] Error:", error);
       }
