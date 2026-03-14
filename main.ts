@@ -58,6 +58,14 @@ export async function startStreamableHTTPServer(
   // JSON body parser for other routes
   app.use(express.json());
 
+  // Serve static files (favicon, etc.)
+  app.use(express.static(path.join(__main_dirname, "public")));
+
+  // Serve favicon.svg as favicon.ico fallback
+  app.get("/favicon.ico", (_req: Request, res: Response) => {
+    res.sendFile(path.join(__main_dirname, "public", "favicon.svg"));
+  });
+
   // Health check endpoint for Railway
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({ status: "ok" });
