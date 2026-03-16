@@ -114,11 +114,24 @@ export async function startStreamableHTTPServer(
       try {
         const response = await fetch(`https://${AUTH0_DOMAIN}/.well-known/openid-configuration`);
         const metadata = await response.json();
+        // Rewrite authorization_endpoint to our proxy so we can normalize the resource param
+        metadata.authorization_endpoint = `${baseUrl}/oauth/authorize`;
         res.json(metadata);
       } catch (error) {
         console.error("Failed to fetch Auth0 metadata:", error);
         res.status(502).json({ error: "Failed to fetch authorization server metadata" });
       }
+    });
+
+    // Authorize proxy: strip trailing slash from resource param before redirecting to Auth0
+    // Fixes: Claude sends resource=https://.../ (trailing slash) but Auth0 API identifier has no trailing slash
+    app.get("/oauth/authorize", (req: Request, res: Response) => {
+      const params = new URLSearchParams(req.query as Record<string, string>);
+      const resource = params.get("resource");
+      if (resource) {
+        params.set("resource", resource.replace(/\/+$/, ""));
+      }
+      res.redirect(`https://${AUTH0_DOMAIN}/authorize?${params.toString()}`);
     });
   }
 
