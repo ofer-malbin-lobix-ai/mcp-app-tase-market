@@ -100,7 +100,7 @@ export async function startStreamableHTTPServer(
   const protectedResourceHandler = (_req: Request, res: Response) => {
     res.json({
       resource: AUTH0_AUDIENCE,
-      authorization_servers: AUTH0_DOMAIN ? [`https://${AUTH0_DOMAIN}`] : [],
+      authorization_servers: AUTH0_DOMAIN ? [baseUrl] : [],
       scopes_supported: ["openid", "email", "profile"],
       service_documentation: baseUrl,
     });
