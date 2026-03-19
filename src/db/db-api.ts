@@ -521,8 +521,12 @@ async function fetchCandlestickAggregated(
   to: Date,
   timeframe: "3D" | "1W" | "1M" | "3M",
 ): Promise<AggRow[]> {
-  // Extra lookback: 200 periods × 3 days = 600 trading days ≈ ~2.5 years
-  const lookbackDays = 200 * 3;
+  const periodDays =
+    timeframe === "3D" ? 3 :
+    timeframe === "1W" ? 7 :
+    timeframe === "1M" ? 31 :
+    92; // 3M
+  const lookbackDays = 200 * periodDays;
   const extendedFrom = new Date(from);
   extendedFrom.setDate(extendedFrom.getDate() - lookbackDays);
 
