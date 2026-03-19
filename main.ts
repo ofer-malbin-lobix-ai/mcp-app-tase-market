@@ -124,13 +124,14 @@ export async function startStreamableHTTPServer(
     });
 
     // Authorize proxy: strip trailing slash from resource param before redirecting to Auth0
-    // Fixes: Claude sends resource=https://.../ (trailing slash) but Auth0 API identifier has no trailing slash
     app.get("/oauth/authorize", (req: Request, res: Response) => {
       const params = new URLSearchParams(req.query as Record<string, string>);
       const resource = params.get("resource");
       if (resource) {
         params.set("resource", resource.replace(/\/+$/, ""));
       }
+      // Force the correct audience for this API (prevents token reuse across APIs on same Auth0 tenant)
+      params.set("audience", AUTH0_AUDIENCE);
       res.redirect(`https://${AUTH0_DOMAIN}/authorize?${params.toString()}`);
     });
   }
