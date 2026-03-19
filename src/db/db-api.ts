@@ -562,12 +562,15 @@ async function fetchCandlestickAggregated(
         FROM ranked
         GROUP BY bucket
       )
-      SELECT
-        "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
-        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
-        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
-        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200"
-      FROM agg
+      SELECT * FROM (
+        SELECT
+          "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
+          AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
+          AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
+          AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200",
+          bucket
+        FROM agg
+      ) sub
       WHERE "tradeDate" >= ${from}
       ORDER BY bucket
     `;
@@ -600,12 +603,15 @@ async function fetchCandlestickAggregated(
       FROM d
       GROUP BY period
     )
-    SELECT
-      "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
-      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
-      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
-      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200"
-    FROM agg
+    SELECT * FROM (
+      SELECT
+        "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
+        AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
+        AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
+        AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200",
+        period
+      FROM agg
+    ) sub
     WHERE "tradeDate" >= ${from}
     ORDER BY period
   `;
