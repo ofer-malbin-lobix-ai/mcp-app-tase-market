@@ -30,6 +30,7 @@ export interface StockData {
   stddev20: number | null;
   upperBollingerBand20: number | null;
   lowerBollingerBand20: number | null;
+  bandWidth20: number | null;
   ez: number | null;
   companyName: string | null;
   sector: string | null;

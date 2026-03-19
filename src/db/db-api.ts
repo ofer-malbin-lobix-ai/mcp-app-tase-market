@@ -45,6 +45,7 @@ const EOD_SELECT = {
   stddev20: true,
   upperBollingerBand20: true,
   lowerBollingerBand20: true,
+  bandWidth20: true,
   ez: true,
 } as const;
 
@@ -78,6 +79,7 @@ type DbRow = {
   stddev20: number | null;
   upperBollingerBand20: number | null;
   lowerBollingerBand20: number | null;
+  bandWidth20: number | null;
   ez: number | null;
 };
 
@@ -116,6 +118,7 @@ function rowToStockData(row: DbRow): StockData {
     stddev20: row.stddev20,
     upperBollingerBand20: row.upperBollingerBand20,
     lowerBollingerBand20: row.lowerBollingerBand20,
+    bandWidth20: row.bandWidth20,
     ez: row.ez,
     companyName: null,
     sector: null,
@@ -436,6 +439,7 @@ export async function fetchEndOfDaySymbolsByDate(
     stddev20: null,
     upperBollingerBand20: null,
     lowerBollingerBand20: null,
+    bandWidth20: null,
     ez: null,
     companyName: null,
     sector: null,
@@ -504,6 +508,7 @@ function aggRowToStockData(row: AggRow, symbol: string): StockData {
     stddev20: null,
     upperBollingerBand20: null,
     lowerBollingerBand20: null,
+    bandWidth20: null,
     companyName: null,
     sector: null,
     subSector: null,

@@ -40,6 +40,7 @@ export interface StockData {
   stddev20: number | null;
   upperBollingerBand20: number | null;
   lowerBollingerBand20: number | null;
+  bandWidth20: number | null;
   ez: number | null;
   companyName: string | null;
   sector: string | null;
@@ -297,6 +298,10 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
       header: "BB Lower",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
+    columnHelper.accessor("bandWidth20", {
+      header: "BB Width",
+      cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
+    }),
     columnHelper.accessor("stddev20", {
       header: "StdDev20",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
@@ -334,6 +339,7 @@ export const INITIAL_COLUMN_VISIBILITY: Record<string, boolean> = {
   sma200: false,
   upperBollingerBand20: false,
   lowerBollingerBand20: false,
+  bandWidth20: false,
   stddev20: false,
   ez: false,
 };

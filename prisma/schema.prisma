@@ -47,6 +47,7 @@ model TaseSecuritiesEndOfDayTradingData {
   stddev20              Float?
   upperBollingerBand20  Float?
   lowerBollingerBand20  Float?
+  bandWidth20           Float?
 
   @@unique([symbol, tradeDate], name: "unique_symbol_tradeDate")
   @@index([symbol, tradeDate], name: "index_symbol_tradeDate")

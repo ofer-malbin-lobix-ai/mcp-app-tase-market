@@ -338,6 +338,13 @@ async function getTradingIndicators({
     return m - 2 * sd;
   });
 
+  const bandWidth20 = upperBB20.map((ub, i) => {
+    const lb = lowerBB20[i];
+    const m = sma20Arr[i];
+    if (ub === null || lb === null || m === null || m === 0) return null;
+    return (ub - lb) / m;
+  });
+
   const idx = rows.length - 1;
   return {
     rsi14: rsi14Arr[idx] ?? null,
@@ -354,6 +361,7 @@ async function getTradingIndicators({
     stddev20: stddev20Arr[idx] ?? null,
     upperBollingerBand20: upperBB20[idx] ?? null,
     lowerBollingerBand20: lowerBB20[idx] ?? null,
+    bandWidth20: bandWidth20[idx] ?? null,
   };
 }
 
