@@ -5,6 +5,8 @@ import type {
   EndOfDayResult,
   MarketSpiritResponse,
   UptrendSymbolsResponse,
+  MomentumResponse,
+  MomentumSymbolItem,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
   CandlestickTimeframe,
@@ -179,6 +181,31 @@ export async function fetchEndOfDay(
 }
 
 /**
+ * DailyScore for a single row (0-8):
+ *   +2 Close > SMA20
+ *   +2 SMA20 > SMA50
+ *   +1 MACD Histogram > 0
+ *   +1 RSI > 50 (or +2 if >60, or +3 if >70)
+ */
+function computeDailyScore(row: {
+  closingPrice: number | null;
+  sma20: number | null;
+  sma50: number | null;
+  macdHist: number | null;
+  rsi14: number | null;
+}): number {
+  let score = 0;
+  if (row.closingPrice != null && row.sma20 != null && row.closingPrice > row.sma20) score += 2;
+  if (row.sma20 != null && row.sma50 != null && row.sma20 > row.sma50) score += 2;
+  if (row.macdHist != null && row.macdHist > 0) score += 1;
+  const rsi = row.rsi14 ?? 0;
+  if (rsi > 70) score += 3;
+  else if (rsi > 60) score += 2;
+  else if (rsi > 50) score += 1;
+  return score;
+}
+
+/**
  * Market Spirit approximation from stored indicators.
  *
  * 6-point composite score (each = 1 point):
@@ -190,6 +217,12 @@ export async function fetchEndOfDay(
  *   6. >50% cci20 > 0    — majority with positive CCI
  *
  * Score → Defense (0-2) | Selective (3-4) | Attack (5-6)
+ *
+ * Also computes breadth metrics on the liquid universe (turnover10 >= 1,500,000):
+ *   momentumBreadth  = % with DailyScore >= 6
+ *   moneyFlowBreadth = % with MFI > 60
+ *   compressionBreadth = % with bandWidth20 < 0.06
+ *   regime: <15% weak, 15-30% early, 30-50% healthy, >50% overextended
  */
 export async function fetchMarketSpirit(
   marketType = "STOCK",
@@ -208,6 +241,12 @@ export async function fetchMarketSpirit(
       rsi14: true,
       macdHist: true,
       cci20: true,
+      closingPrice: true,
+      sma20: true,
+      sma50: true,
+      mfi14: true,
+      bandWidth20: true,
+      turnover10: true,
     },
   });
 
@@ -216,17 +255,21 @@ export async function fetchMarketSpirit(
     return {
       tradeDate: tradeDateStr,
       marketType,
+      momentumBreadth: 0,
+      moneyFlowBreadth: 0,
+      compressionBreadth: 0,
+      regime: "weak",
       score: null,
       adv: null,
       adLine: null,
     };
   }
 
+  // --- Legacy score computation ---
   const advancing = stocks.filter((s) => (s.change ?? 0) > 0).length;
   const declining = stocks.filter((s) => (s.change ?? 0) < 0).length;
   const adv = advancing - declining;
 
-  // Cumulative ADV over the last ~90 calendar days (≈ 20 trading days)
   const fromDate = new Date(date);
   fromDate.setDate(fromDate.getDate() - 90);
 
@@ -261,7 +304,206 @@ export async function fetchMarketSpirit(
   const score: "Defense" | "Selective" | "Attack" =
     scorePoints <= 2 ? "Defense" : scorePoints <= 4 ? "Selective" : "Attack";
 
-  return { tradeDate: tradeDateStr, marketType, score, adv, adLine };
+  // --- New breadth metrics (liquid universe only) ---
+  const liquid = stocks.filter((s) => s.turnover10 != null && s.turnover10 >= 1500000);
+  const liquidTotal = liquid.length;
+
+  let momentumBreadth = 0;
+  let moneyFlowBreadth = 0;
+  let compressionBreadth = 0;
+
+  if (liquidTotal > 0) {
+    const momentumCount = liquid.filter((s) => computeDailyScore(s) >= 6).length;
+    const mfiCount = liquid.filter((s) => (s.mfi14 ?? 0) > 60).length;
+    const compressionCount = liquid.filter((s) => s.bandWidth20 != null && s.bandWidth20 < 0.06).length;
+
+    momentumBreadth = Math.round((momentumCount / liquidTotal) * 100);
+    moneyFlowBreadth = Math.round((mfiCount / liquidTotal) * 100);
+    compressionBreadth = Math.round((compressionCount / liquidTotal) * 100);
+  }
+
+  const regime: MarketSpiritResponse["regime"] =
+    momentumBreadth > 50 ? "overextended" :
+    momentumBreadth >= 30 ? "healthy" :
+    momentumBreadth >= 15 ? "early" :
+    "weak";
+
+  return {
+    tradeDate: tradeDateStr,
+    marketType,
+    momentumBreadth,
+    moneyFlowBreadth,
+    compressionBreadth,
+    regime,
+    score,
+    adv,
+    adLine,
+  };
+}
+
+// Raw row type for momentum query
+type MomentumDbRow = {
+  symbol: string;
+  tradeDate: Date;
+  closingPrice: number | null;
+  sma20: number | null;
+  sma50: number | null;
+  sma200: number | null;
+  rsi14: number | null;
+  macdHist: number | null;
+  mfi14: number | null;
+  ez: number | null;
+  bandWidth20: number | null;
+  turnover: bigint | null;
+  turnover10: number | null;
+  companyName: string | null;
+};
+
+export async function fetchMomentumSymbols(
+  marketType = "STOCK",
+  tradeDate?: string,
+): Promise<MomentumResponse> {
+  const date = tradeDate
+    ? new Date(tradeDate)
+    : await getLastTradeDate(marketType);
+  const tradeDateStr = toDateStr(date);
+
+  // Fetch last 3 trading days of data for all liquid symbols
+  const rows = await prisma.$queryRaw<MomentumDbRow[]>`
+    WITH last3 AS (
+      SELECT DISTINCT "tradeDate"
+      FROM "TaseSecuritiesEndOfDayTradingData"
+      WHERE "tradeDate" <= ${date} AND "marketType" = ${marketType}
+      ORDER BY "tradeDate" DESC
+      LIMIT 3
+    )
+    SELECT
+      t.symbol,
+      t."tradeDate",
+      t."closingPrice",
+      t."sma20", t."sma50", t."sma200",
+      t."rsi14", t."macdHist", t."mfi14",
+      t."ez", t."bandWidth20",
+      t.turnover, t."turnover10",
+      s."companyName"
+    FROM "TaseSecuritiesEndOfDayTradingData" t
+    LEFT JOIN "TaseSymbol" s ON t.symbol = s.symbol
+    WHERE t."tradeDate" IN (SELECT "tradeDate" FROM last3)
+      AND t."marketType" = ${marketType}
+      AND t."turnover10" IS NOT NULL
+      AND t."turnover10" >= 1500000
+  `;
+
+  if (rows.length === 0) {
+    return { tradeDate: tradeDateStr, marketType, count: 0, items: [] };
+  }
+
+  // Group rows by symbol
+  const bySymbol = new Map<string, MomentumDbRow[]>();
+  for (const row of rows) {
+    const arr = bySymbol.get(row.symbol) ?? [];
+    arr.push(row);
+    bySymbol.set(row.symbol, arr);
+  }
+
+  // Sort dates descending to identify latest, previous
+  const allDates = [...new Set(rows.map((r) => toDateStr(r.tradeDate)))].sort().reverse();
+  const latestDateStr = allDates[0]!;
+
+  const items: MomentumSymbolItem[] = [];
+
+  for (const [symbol, symbolRows] of bySymbol) {
+    // Sort by date desc
+    symbolRows.sort((a, b) => b.tradeDate.getTime() - a.tradeDate.getTime());
+
+    // Compute DailyScore for each day
+    const dailyScores = symbolRows.map((r) => ({
+      date: toDateStr(r.tradeDate),
+      score: computeDailyScore(r),
+      row: r,
+    }));
+
+    // Persistence: count days with DailyScore >= 6
+    const daysAbove6 = dailyScores.filter((d) => d.score >= 6).length;
+    if (daysAbove6 === 0) continue; // Exclude symbols with 0 qualifying days
+
+    const persistence: MomentumSymbolItem["persistence"] =
+      daysAbove6 >= 3 ? "strong" : daysAbove6 >= 2 ? "confirmed" : "new";
+
+    // Latest day row
+    const latestEntry = dailyScores.find((d) => d.date === latestDateStr);
+    if (!latestEntry) continue;
+    const latest = latestEntry.row;
+    const latestScore = latestEntry.score;
+
+    // Previous day for MACD comparison
+    const prevEntry = dailyScores.length > 1 ? dailyScores[1] : null;
+    const macdRising = prevEntry != null &&
+      latest.macdHist != null && prevEntry.row.macdHist != null &&
+      latest.macdHist > prevEntry.row.macdHist;
+
+    // TrendQuality (0-10)
+    let trendQuality = 0;
+    if (latest.sma20 != null && latest.sma50 != null && latest.sma20 > latest.sma50) trendQuality += 2;
+    if (latest.sma50 != null && latest.sma200 != null && latest.sma50 > latest.sma200) trendQuality += 2;
+    const rsi = latest.rsi14 ?? 0;
+    if (rsi >= 65 && rsi <= 75) trendQuality += 2;
+    else if (rsi >= 55 && rsi < 65) trendQuality += 1;
+    if (latest.macdHist != null && latest.macdHist > 0) trendQuality += 1;
+    if (macdRising) trendQuality += 1;
+    const ez = latest.ez != null ? Number(latest.ez) : 0;
+    if (ez >= 0 && ez <= 3) trendQuality += 2;
+    else if (ez > 3 && ez <= 8) trendQuality += 1;
+    else if (ez > 15) trendQuality -= 1;
+    trendQuality = Math.max(0, Math.min(10, trendQuality));
+
+    // LeaderScore (0-9)
+    let leaderScore = 0;
+    if (rsi >= 60 && rsi <= 70) leaderScore += 2;
+    if (ez >= 3 && ez <= 8) leaderScore += 2;
+    if (macdRising) leaderScore += 2;
+    if ((latest.mfi14 ?? 0) > 65) leaderScore += 2;
+    const turnover = latest.turnover != null ? Number(latest.turnover) : 0;
+    const turnover10 = latest.turnover10 ?? 0;
+    if (turnover10 > 0 && turnover > turnover10) leaderScore += 1;
+    leaderScore = Math.min(9, leaderScore);
+
+    // Compression
+    const isCompression = latest.bandWidth20 != null && latest.bandWidth20 < 0.06;
+
+    // Phase
+    let phase: MomentumSymbolItem["phase"];
+    if (isCompression) {
+      phase = "compression";
+    } else if (daysAbove6 >= 3 && ez > 8) {
+      phase = "extended";
+    } else if (daysAbove6 >= 2 && leaderScore >= 5) {
+      phase = "expansion";
+    } else {
+      phase = "early";
+    }
+
+    items.push({
+      symbol,
+      companyName: latest.companyName,
+      dailyScore: latestScore,
+      trendQuality,
+      leaderScore,
+      persistence,
+      phase,
+      isLeader: leaderScore >= 7,
+      isCompression,
+      ez,
+      rsi14: latest.rsi14,
+      bandWidth20: latest.bandWidth20,
+      mfi14: latest.mfi14,
+    });
+  }
+
+  // Sort by leaderScore DESC, trendQuality DESC
+  items.sort((a, b) => b.leaderScore - a.leaderScore || b.trendQuality - a.trendQuality);
+
+  return { tradeDate: tradeDateStr, marketType, count: items.length, items };
 }
 
 export async function fetchUptrendSymbols(
@@ -803,6 +1045,7 @@ export const dbProviders: TaseDataProviders = {
   fetchEndOfDay,
   fetchMarketSpirit,
   fetchUptrendSymbols,
+  fetchMomentumSymbols,
   fetchEndOfDaySymbols,
   fetchEndOfDaySymbolsByDate,
   fetchCandlestick,

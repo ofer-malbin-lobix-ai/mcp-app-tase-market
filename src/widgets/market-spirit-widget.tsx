@@ -12,6 +12,8 @@ import styles from "./market-spirit-widget.module.css";
 
 type MarketScore = "Defense" | "Selective" | "Attack" | null;
 
+type RegimeType = "weak" | "early" | "healthy" | "overextended";
+
 interface MarketSpiritData {
   tradeDate: string;
   marketType: string;
@@ -19,6 +21,11 @@ interface MarketSpiritData {
   description: string;
   adv: number | null;
   adLine: number | null;
+  momentumBreadth?: number;
+  moneyFlowBreadth?: number;
+  compressionBreadth?: number;
+  regime?: RegimeType;
+  regimeDescription?: string;
 }
 
 function extractMarketSpiritData(callToolResult: CallToolResult | null | undefined): MarketSpiritData | null {
@@ -187,10 +194,78 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
     }
   };
 
+  const getRegimeColor = (regime?: RegimeType): string => {
+    switch (regime) {
+      case "weak": return "#ef4444";
+      case "early": return "#eab308";
+      case "healthy": return "#22c55e";
+      case "overextended": return "#f97316";
+      default: return "#6b7280";
+    }
+  };
+
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
     <WidgetLayout title="Market Spirit" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title}>
+
+      {data?.regime && (
+        <div className={styles.regimeSection}>
+          <div
+            className={styles.regimeBadge}
+            style={{ backgroundColor: getRegimeColor(data.regime) }}
+          >
+            {data.regime.toUpperCase()}
+          </div>
+          {data.regimeDescription && (
+            <p className={styles.regimeDescription}>{data.regimeDescription}</p>
+          )}
+        </div>
+      )}
+
+      {data && data.momentumBreadth != null && (
+        <div className={styles.breadthGauges}>
+          <div className={styles.gaugeItem}>
+            <span className={styles.gaugeLabel}>Momentum</span>
+            <div className={styles.gaugeBar}>
+              <div
+                className={styles.gaugeFill}
+                style={{
+                  width: `${Math.min(data.momentumBreadth, 100)}%`,
+                  background: getRegimeColor(data.regime),
+                }}
+              />
+            </div>
+            <span className={styles.gaugeValue}>{data.momentumBreadth}%</span>
+          </div>
+          <div className={styles.gaugeItem}>
+            <span className={styles.gaugeLabel}>Money Flow</span>
+            <div className={styles.gaugeBar}>
+              <div
+                className={styles.gaugeFill}
+                style={{
+                  width: `${Math.min(data.moneyFlowBreadth ?? 0, 100)}%`,
+                  background: "#3b82f6",
+                }}
+              />
+            </div>
+            <span className={styles.gaugeValue}>{data.moneyFlowBreadth ?? 0}%</span>
+          </div>
+          <div className={styles.gaugeItem}>
+            <span className={styles.gaugeLabel}>Compression</span>
+            <div className={styles.gaugeBar}>
+              <div
+                className={styles.gaugeFill}
+                style={{
+                  width: `${Math.min(data.compressionBreadth ?? 0, 100)}%`,
+                  background: "#8b5cf6",
+                }}
+              />
+            </div>
+            <span className={styles.gaugeValue}>{data.compressionBreadth ?? 0}%</span>
+          </div>
+        </div>
+      )}
 
       <div className={styles.trafficLight}>
         <div className={styles.lightContainer}>

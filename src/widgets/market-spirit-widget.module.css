@@ -221,6 +221,78 @@
   font-weight: var(--font-weight-semibold, 600);
 }
 
+.regimeSection {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.regimeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  font-size: var(--font-text-xs-size, 0.75rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: white;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.regimeDescription {
+  font-size: var(--font-text-xs-size, 0.75rem);
+  color: var(--t-text-secondary);
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.breadthGauges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.gaugeItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gaugeLabel {
+  font-size: var(--font-text-xs-size, 0.75rem);
+  color: var(--t-text-secondary);
+  min-width: 75px;
+  text-align: right;
+}
+
+.gaugeBar {
+  flex: 1;
+  height: 6px;
+  background: var(--t-bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gaugeFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.gaugeValue {
+  font-size: var(--font-text-xs-size, 0.75rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--t-text-primary);
+  min-width: 32px;
+  font-family: var(--font-mono, monospace);
+}
+
 .error {
   padding: 1rem;
   background: rgba(239, 68, 68, 0.1);

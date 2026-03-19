@@ -46,9 +46,41 @@ export interface EndOfDayResult {
 export interface MarketSpiritResponse {
   tradeDate: string;
   marketType: string;
+  // New breadth metrics
+  momentumBreadth: number;      // % of universe with DailyScore >= 6
+  moneyFlowBreadth: number;     // % with MFI > 60
+  compressionBreadth: number;   // % with bandWidth < 6%
+  regime: "weak" | "early" | "healthy" | "overextended";
+  // Legacy fields kept for backward compat
   score: "Defense" | "Selective" | "Attack" | null;
   adv: number | null;
   adLine: number | null;
+}
+
+export interface MomentumSymbolItem {
+  symbol: string;
+  companyName: string | null;
+  // Scores
+  dailyScore: number;          // 0-8
+  trendQuality: number;        // 0-10
+  leaderScore: number;         // 0-9
+  // Classification
+  persistence: "strong" | "confirmed" | "new";  // 3/3, 2/3, 1/3
+  phase: "compression" | "early" | "expansion" | "extended";
+  isLeader: boolean;           // leaderScore >= 7
+  isCompression: boolean;      // bandWidth < 6%
+  // Key indicators
+  ez: number;
+  rsi14: number | null;
+  bandWidth20: number | null;
+  mfi14: number | null;
+}
+
+export interface MomentumResponse {
+  tradeDate: string;
+  marketType: string;
+  count: number;
+  items: MomentumSymbolItem[];
 }
 
 export interface UptrendSymbolItem {
@@ -126,6 +158,7 @@ export interface TaseDataProviders {
   fetchEndOfDay(marketType?: string, tradeDate?: string): Promise<EndOfDayResult>;
   fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
   fetchUptrendSymbols(marketType?: string, tradeDate?: string): Promise<UptrendSymbolsResponse>;
+  fetchMomentumSymbols(marketType?: string, tradeDate?: string): Promise<MomentumResponse>;
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
   fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string, period?: HeatmapPeriod): Promise<EndOfDaySymbolsResponse>;
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe): Promise<CandlestickResponse>;
