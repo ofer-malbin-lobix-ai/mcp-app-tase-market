@@ -521,15 +521,20 @@ async function fetchCandlestickAggregated(
   to: Date,
   timeframe: "3D" | "1W" | "1M" | "3M",
 ): Promise<AggRow[]> {
+  // Extra lookback: 200 periods × 3 days = 600 trading days ≈ ~2.5 years
+  const lookbackDays = 200 * 3;
+  const extendedFrom = new Date(from);
+  extendedFrom.setDate(extendedFrom.getDate() - lookbackDays);
+
   if (timeframe === "3D") {
     return prisma.$queryRaw<AggRow[]>`
       WITH numbered AS (
         SELECT
           "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume",
-          "sma20", "sma50", "sma200", "ez",
+          "ez",
           (ROW_NUMBER() OVER (ORDER BY "tradeDate") - 1) AS row_idx
         FROM "TaseSecuritiesEndOfDayTradingData"
-        WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${from} AND ${to}
+        WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${extendedFrom} AND ${to}
       ),
       bucketed AS (
         SELECT *, row_idx / 3 AS bucket FROM numbered
@@ -539,20 +544,27 @@ async function fetchCandlestickAggregated(
           ROW_NUMBER() OVER (PARTITION BY bucket ORDER BY "tradeDate" ASC)  AS rn_asc,
           ROW_NUMBER() OVER (PARTITION BY bucket ORDER BY "tradeDate" DESC) AS rn_desc
         FROM bucketed
+      ),
+      agg AS (
+        SELECT
+          MAX("tradeDate")                                              AS "tradeDate",
+          MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
+          MAX("high")                                                   AS "high",
+          MIN("low")                                                    AS "low",
+          MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
+          SUM("volume")::bigint                                         AS "volume",
+          AVG("ez")                                                     AS "ez",
+          bucket
+        FROM ranked
+        GROUP BY bucket
       )
       SELECT
-        MAX("tradeDate")                                              AS "tradeDate",
-        MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
-        MAX("high")                                                   AS "high",
-        MIN("low")                                                    AS "low",
-        MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
-        SUM("volume")::bigint                                         AS "volume",
-        AVG("sma20")                                                  AS "sma20",
-        AVG("sma50")                                                  AS "sma50",
-        AVG("sma200")                                                 AS "sma200",
-        AVG("ez")                                                     AS "ez"
-      FROM ranked
-      GROUP BY bucket
+        "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
+        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
+        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
+        AVG("closingPrice") OVER (ORDER BY bucket ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200"
+      FROM agg
+      WHERE "tradeDate" >= ${from}
       ORDER BY bucket
     `;
   }
@@ -564,26 +576,33 @@ async function fetchCandlestickAggregated(
     WITH d AS (
       SELECT
         "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume",
-        "sma20", "sma50", "sma200", "ez",
+        "ez",
         DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) AS period,
         ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) ORDER BY "tradeDate" ASC)  AS rn_asc,
         ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC(${truncUnit}, "tradeDate"::timestamp) ORDER BY "tradeDate" DESC) AS rn_desc
       FROM "TaseSecuritiesEndOfDayTradingData"
-      WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${from} AND ${to}
+      WHERE symbol = ${symbol} AND "tradeDate" BETWEEN ${extendedFrom} AND ${to}
+    ),
+    agg AS (
+      SELECT
+        MAX("tradeDate")                                              AS "tradeDate",
+        MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
+        MAX("high")                                                   AS "high",
+        MIN("low")                                                    AS "low",
+        MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
+        SUM("volume")::bigint                                         AS "volume",
+        AVG("ez")                                                     AS "ez",
+        period
+      FROM d
+      GROUP BY period
     )
     SELECT
-      MAX("tradeDate")                                              AS "tradeDate",
-      MAX(CASE WHEN rn_asc  = 1 THEN "openingPrice" END)          AS "openingPrice",
-      MAX("high")                                                   AS "high",
-      MIN("low")                                                    AS "low",
-      MAX(CASE WHEN rn_desc = 1 THEN "closingPrice" END)           AS "closingPrice",
-      SUM("volume")::bigint                                         AS "volume",
-      AVG("sma20")                                                  AS "sma20",
-      AVG("sma50")                                                  AS "sma50",
-      AVG("sma200")                                                 AS "sma200",
-      AVG("ez")                                                     AS "ez"
-    FROM d
-    GROUP BY period
+      "tradeDate", "openingPrice", "high", "low", "closingPrice", "volume", "ez",
+      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS "sma20",
+      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 49 PRECEDING AND CURRENT ROW) AS "sma50",
+      AVG("closingPrice") OVER (ORDER BY period ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS "sma200"
+    FROM agg
+    WHERE "tradeDate" >= ${from}
     ORDER BY period
   `;
 }
