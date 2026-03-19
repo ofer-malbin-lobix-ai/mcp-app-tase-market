@@ -299,7 +299,7 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("bandWidth20", {
-      header: "BB Width",
+      header: "bw20",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("stddev20", {
