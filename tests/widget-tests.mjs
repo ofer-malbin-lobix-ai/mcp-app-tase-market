@@ -25,6 +25,7 @@
  *   market-end-of-day       — show-market-end-of-day-widget
  *   market-spirit           — show-market-spirit-widget
  *   market-sector-heatmap   — show-market-sector-heatmap-widget + drill-down + back
+ *   market-momentum         — show-market-momentum-widget
  *   my-position-table       — show-my-position-table-widget (auto-fetch symbols) P&L table + sort
  *   my-position-candlestick — show-my-position-candlestick-widget (auto-fetch symbols) + symbol switch + period
  *   my-position-end-of-day  — show-my-position-end-of-day-widget (auto-fetch symbols) + sort + filters
@@ -289,6 +290,16 @@ async function testMarketSectorHeatmap(page) {
     await screenshot(page, 'market-sector-heatmap-back');
   }
   console.log('  ✅ market-sector-heatmap passed');
+}
+
+async function testMarketMomentum(page) {
+  console.log('\n🧪 Test: market-momentum');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} call show-market-momentum-widget`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'market-momentum');
+  console.log('  ✅ market-momentum passed');
 }
 
 // ─── Shared symbols candlestick test (ChatGPT) ──────────────────────────────
@@ -820,6 +831,16 @@ async function testMarketSectorHeatmapDesktop() {
   console.log('  ✅ market-sector-heatmap (Claude Desktop) passed');
 }
 
+async function testMarketMomentumDesktop() {
+  console.log('\n🧪 Test: market-momentum (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('call show-market-momentum-widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-momentum');
+  console.log('  ✅ market-momentum (Claude Desktop) passed');
+}
+
 // ─── Shared symbols candlestick test (Claude Desktop) ───────────────────────
 
 async function testCandlestickSharedDesktop({ testName, message, prefix }) {
@@ -996,6 +1017,7 @@ const CHATGPT_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDay,
   'market-spirit':            testMarketSpirit,
   'market-sector-heatmap':    testMarketSectorHeatmap,
+  'market-momentum':          testMarketMomentum,
   'my-position-table':        testMyPositionTable,
   'my-position-candlestick':  testMyPositionCandlestick,
   'my-position-end-of-day':   testMyPositionEndOfDay,
@@ -1020,6 +1042,7 @@ const CLAUDE_DESKTOP_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDayDesktop,
   'market-spirit':            testMarketSpiritDesktop,
   'market-sector-heatmap':    testMarketSectorHeatmapDesktop,
+  'market-momentum':          testMarketMomentumDesktop,
   'my-position-table':        testMyPositionTableDesktop,
   'my-position-candlestick':  testMyPositionCandlestickDesktop,
   'my-position-end-of-day':   testMyPositionEndOfDayDesktop,
