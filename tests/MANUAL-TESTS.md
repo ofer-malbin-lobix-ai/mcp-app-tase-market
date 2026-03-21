@@ -6,8 +6,7 @@ Copy-paste these into Claude Desktop to test each widget.
 |---|--------|--------|
 | 2 | market-spirit | `call show-market-spirit-widget` |
 | 3 | market-end-of-day | `call show-market-end-of-day-widget` |
-| 4 | market-uptrend-symbols | `call show-market-uptrend-symbols-widget` |
-| 5 | market-sector-heatmap | `call show-market-sector-heatmap-widget` |
+| 4 | market-sector-heatmap | `call show-market-sector-heatmap-widget` |
 | 6 | market-last-update | `call show-market-last-update-widget` |
 | 7 | my-positions-manager | `call show-my-positions-manager-widget` |
 | 8 | my-position-table | `call show-my-position-table-widget` |

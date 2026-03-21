@@ -4,7 +4,6 @@ import type {
   StockData,
   EndOfDayResult,
   MarketSpiritResponse,
-  UptrendSymbolsResponse,
   MomentumResponse,
   MomentumSymbolItem,
   EndOfDaySymbolsResponse,
@@ -506,45 +505,6 @@ export async function fetchMomentumSymbols(
   return { tradeDate: tradeDateStr, marketType, count: items.length, items };
 }
 
-export async function fetchUptrendSymbols(
-  marketType = "STOCK",
-  tradeDate?: string,
-): Promise<UptrendSymbolsResponse> {
-  const date = tradeDate
-    ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
-
-  const rows = await prisma.$queryRaw<{ symbol: string; ez: number }[]>`
-    SELECT symbol, ez
-    FROM "TaseSecuritiesEndOfDayTradingData"
-    WHERE "tradeDate" = ${date}
-      AND "marketType" = ${marketType}
-      AND "turnover10" IS NOT NULL
-      AND "turnover10" >= 1500000
-      AND "rsi14" IS NOT NULL
-      AND "rsi14" BETWEEN 60 AND 70
-      AND "macdHist" IS NOT NULL
-      AND "macdHist" >= 0
-      AND "closingPrice" IS NOT NULL
-      AND "sma20" IS NOT NULL
-      AND "sma50" IS NOT NULL
-      AND "sma200" IS NOT NULL
-      AND "closingPrice" > "sma20"
-      AND "sma20" > "sma50"
-      AND "sma50" > "sma200"
-    ORDER BY ez ASC, symbol ASC
-  `;
-
-  const items = rows.map((r) => ({ symbol: r.symbol, ez: Number(r.ez) }));
-
-  return {
-    tradeDate: toDateStr(date),
-    marketType,
-    count: items.length,
-    items,
-  };
-}
-
 export async function fetchEndOfDaySymbols(
   symbols?: string[],
   dateFrom?: string,
@@ -1044,7 +1004,6 @@ export async function resolveSymbolAndSecurityId(
 export const dbProviders: TaseDataProviders = {
   fetchEndOfDay,
   fetchMarketSpirit,
-  fetchUptrendSymbols,
   fetchMomentumSymbols,
   fetchEndOfDaySymbols,
   fetchEndOfDaySymbolsByDate,

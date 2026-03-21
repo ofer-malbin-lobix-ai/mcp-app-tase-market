@@ -24,7 +24,6 @@
  * Available tests:
  *   market-end-of-day       — show-market-end-of-day-widget
  *   market-spirit           — show-market-spirit-widget
- *   market-uptrend-symbols  — show-market-uptrend-symbols-widget
  *   market-sector-heatmap   — show-market-sector-heatmap-widget + drill-down + back
  *   my-position-table       — show-my-position-table-widget (auto-fetch symbols) P&L table + sort
  *   my-position-candlestick — show-my-position-candlestick-widget (auto-fetch symbols) + symbol switch + period
@@ -379,16 +378,6 @@ async function testMarketSpirit(page) {
   await sleep(35000);
   await screenshot(page, 'market-spirit');
   console.log('  ✅ market-spirit passed');
-}
-
-async function testMarketUptrendSymbols(page) {
-  console.log('\n🧪 Test: market-uptrend-symbols');
-  await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} call show-market-uptrend-symbols-widget`);
-  console.log('  Waiting for widget...');
-  await sleep(35000);
-  await screenshot(page, 'market-uptrend-symbols');
-  console.log('  ✅ market-uptrend-symbols passed');
 }
 
 async function testSymbolsEndOfDaySingleDate(page) {
@@ -879,16 +868,6 @@ async function testMarketSpiritDesktop() {
   console.log('  ✅ market-spirit (Claude Desktop) passed');
 }
 
-async function testMarketUptrendSymbolsDesktop() {
-  console.log('\n🧪 Test: market-uptrend-symbols (Claude Desktop)');
-  await newChatDesktop();
-  await sendMessageDesktop('call show-market-uptrend-symbols-widget');
-  console.log('  Waiting for widget...');
-  await sleep(35000);
-  await screenshotDesktop('cd-market-uptrend-symbols');
-  console.log('  ✅ market-uptrend-symbols (Claude Desktop) passed');
-}
-
 async function testSymbolsEndOfDaySingleDateDesktop() {
   await testEndOfDayDesktop({
     testName: 'symbols-end-of-day',
@@ -1016,7 +995,6 @@ async function testLandingDesktop() {
 const CHATGPT_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDay,
   'market-spirit':            testMarketSpirit,
-  'market-uptrend-symbols':   testMarketUptrendSymbols,
   'market-sector-heatmap':    testMarketSectorHeatmap,
   'my-position-table':        testMyPositionTable,
   'my-position-candlestick':  testMyPositionCandlestick,
@@ -1041,7 +1019,6 @@ const CHATGPT_TEST_MAP = {
 const CLAUDE_DESKTOP_TEST_MAP = {
   'market-end-of-day':        testMarketEndOfDayDesktop,
   'market-spirit':            testMarketSpiritDesktop,
-  'market-uptrend-symbols':   testMarketUptrendSymbolsDesktop,
   'market-sector-heatmap':    testMarketSectorHeatmapDesktop,
   'my-position-table':        testMyPositionTableDesktop,
   'my-position-candlestick':  testMyPositionCandlestickDesktop,

@@ -10,7 +10,6 @@ import type {
   StockData,
   EndOfDayResult,
   MarketSpiritResponse,
-  UptrendSymbolsResponse,
   MomentumResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
@@ -27,7 +26,6 @@ export type {
   StockData,
   EndOfDayResult,
   MarketSpiritResponse,
-  UptrendSymbolsResponse,
   MomentumResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
@@ -96,7 +94,7 @@ const getMarketSpiritSchema = {
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
-const getUptrendSymbolsSchema = {
+const getMomentumSchema = {
   marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
@@ -173,22 +171,6 @@ function formatMarketSpiritResult(data: MarketSpiritResponse): CallToolResult {
 }
 
 function formatMomentumResult(data: MomentumResponse): CallToolResult {
-  return {
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify({
-          tradeDate: data.tradeDate,
-          marketType: data.marketType,
-          count: data.count,
-          items: data.items,
-        }, null, 2),
-      },
-    ],
-  };
-}
-
-function formatUptrendSymbolsResult(data: UptrendSymbolsResponse): CallToolResult {
   return {
     content: [
       {
@@ -301,7 +283,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const sectorHeatmapResourceUri = `ui://tase-end-of-day/market-sector-heatmap-widget-ver-${WIDGET_VERSION}.html`;
   const endOfDayResourceUri = `ui://tase-end-of-day/market-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const marketSpiritResourceUri = `ui://tase-end-of-day/market-spirit-widget-ver-${WIDGET_VERSION}.html`;
-  const uptrendSymbolsResourceUri = `ui://tase-end-of-day/market-uptrend-symbols-widget-ver-${WIDGET_VERSION}.html`;
   const momentumResourceUri = `ui://tase-end-of-day/market-momentum-widget-ver-${WIDGET_VERSION}.html`;
   const endOfDaySymbolsResourceUri = `ui://tase-end-of-day/my-position-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const candlestickResourceUri = `ui://tase-end-of-day/symbol-candlestick-widget-ver-${WIDGET_VERSION}.html`;
@@ -398,45 +379,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // Data-only tool: Get Uptrend Symbols
-  registerAppTool(server,
-    "get-market-uptrend-symbols-data",
-    {
-      title: "Get Market Uptrend Symbols Data",
-      description: "Returns TASE symbols currently in uptrend with EZ values (% distance from SMA20). Data only - use show-market-uptrend-symbols-widget for visualization.",
-      annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getUptrendSymbolsSchema,
-      _meta: { ui: { visibility: ["model", "app"] } },
-    },
-    async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchUptrendSymbols(args.marketType, args.tradeDate);
-      return formatUptrendSymbolsResult(data);
-    },
-  );
-
-  // UI tool: Show Uptrend Symbols list
-  registerAppTool(server,
-    "show-market-uptrend-symbols-widget",
-    {
-      title: "Show Market Uptrend Symbols",
-      description: "Displays TASE symbols currently in uptrend with EZ values (% distance from SMA20) as an interactive list.",
-      annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getUptrendSymbolsSchema,
-      _meta: { ui: { resourceUri: uptrendSymbolsResourceUri } },
-    },
-    async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchUptrendSymbols(args.marketType, args.tradeDate);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Uptrend Symbols: ${data.count} symbols for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
-          },
-        ],
-      };
-    },
-  );
-
   // Data-only tool: Get Momentum Symbols
   registerAppTool(server,
     "get-market-momentum-data",
@@ -444,7 +386,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       title: "Get Market Momentum Data",
       description: "Returns TASE momentum scanner: scored and classified symbols with persistence filtering, trend quality, leader identification, and compression detection. Data only - use show-market-momentum-widget for visualization.",
       annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getUptrendSymbolsSchema,
+      inputSchema: getMomentumSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
@@ -460,7 +402,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       title: "Show Market Momentum",
       description: "Displays TASE momentum scanner with scored symbols, persistence filtering, leader identification, and compression detection.",
       annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getUptrendSymbolsSchema,
+      inputSchema: getMomentumSchema,
       _meta: { ui: { resourceUri: momentumResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
@@ -1457,7 +1399,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, sectorHeatmapResourceUri, sectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(sectorHeatmapResourceUri, "market-sector-heatmap-widget.html"));
   registerAppResource(server, endOfDayResourceUri, endOfDayResourceUri, RESOURCE_CONFIG, readWidget(endOfDayResourceUri, "market-end-of-day-widget.html"));
   registerAppResource(server, marketSpiritResourceUri, marketSpiritResourceUri, RESOURCE_CONFIG, readWidget(marketSpiritResourceUri, "market-spirit-widget.html"));
-  registerAppResource(server, uptrendSymbolsResourceUri, uptrendSymbolsResourceUri, RESOURCE_CONFIG, readWidget(uptrendSymbolsResourceUri, "market-uptrend-symbols-widget.html"));
   registerAppResource(server, momentumResourceUri, momentumResourceUri, RESOURCE_CONFIG, readWidget(momentumResourceUri, "market-momentum-widget.html"));
   registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day-widget.html"));
   registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick-widget.html"));

@@ -83,18 +83,6 @@ export interface MomentumResponse {
   items: MomentumSymbolItem[];
 }
 
-export interface UptrendSymbolItem {
-  symbol: string;
-  ez: number;
-}
-
-export interface UptrendSymbolsResponse {
-  tradeDate: string;
-  marketType: string;
-  count: number;
-  items: UptrendSymbolItem[];
-}
-
 export type CandlestickTimeframe = "1D" | "3D" | "1W" | "1M" | "3M";
 
 export interface IntradayItem {
@@ -157,7 +145,6 @@ export interface SectorHeatmapResponse {
 export interface TaseDataProviders {
   fetchEndOfDay(marketType?: string, tradeDate?: string): Promise<EndOfDayResult>;
   fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
-  fetchUptrendSymbols(marketType?: string, tradeDate?: string): Promise<UptrendSymbolsResponse>;
   fetchMomentumSymbols(marketType?: string, tradeDate?: string): Promise<MomentumResponse>;
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
   fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string, period?: HeatmapPeriod): Promise<EndOfDaySymbolsResponse>;
