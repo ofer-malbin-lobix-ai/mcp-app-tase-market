@@ -157,9 +157,14 @@ interface MomentumWidgetInnerProps {
 
 function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidgetInnerProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
+
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
 
   useEffect(() => {
     if (data?.tradeDate && !selectedDate) {
@@ -313,10 +318,6 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
 
       {refreshError && (
         <div className={styles.waiting}>{refreshError}</div>
-      )}
-
-      {!data && !refreshError && (
-        <div className={styles.waiting}>Waiting for data...</div>
       )}
 
       <div className={styles.controls}>

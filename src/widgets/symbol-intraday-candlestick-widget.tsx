@@ -286,7 +286,7 @@ interface IntradayAppInnerProps {
 function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostContext }: IntradayAppInnerProps) {
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState<IntradayTimeframe>("5m");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [legendValues, setLegendValues] = useState<LegendValues | null>(null);
   const [showVolume, setShowVolume] = useState(true);
@@ -398,6 +398,11 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
     }
   }, [app, setData]);
 
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
+
   // Sync symbol input with data
   useEffect(() => {
     if (data?.symbol && !symbolInput) setSymbolInput(data.symbol);
@@ -491,9 +496,7 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
         <div className={styles.loading}>{refreshError}</div>
       )}
 
-      {!data && !refreshError ? (
-        <div className={styles.loading}>Waiting for data...</div>
-      ) : data && candleData.length === 0 ? (
+      {data && candleData.length === 0 ? (
         <div className={styles.loading}>No intraday data available</div>
       ) : data ? (
         <div className={styles.chartContainer} ref={chartContainerRef}>

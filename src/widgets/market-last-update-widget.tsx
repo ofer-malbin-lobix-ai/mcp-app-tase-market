@@ -194,8 +194,13 @@ function LastUpdateAppInner({
   setData,
   hostContext,
 }: LastUpdateAppInnerProps) {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -391,9 +396,7 @@ function LastUpdateAppInner({
         <div className={styles.loading}>{refreshError}</div>
       )}
 
-      {!data && !refreshError ? (
-        <div className={styles.loading}>Waiting for data...</div>
-      ) : data && rows.length === 0 ? (
+      {data && rows.length === 0 ? (
         <div className={styles.loading}>No data found</div>
       ) : data ? (
         <DataTable

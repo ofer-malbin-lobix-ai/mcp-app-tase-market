@@ -135,8 +135,13 @@ function EndOfDayInner({
 }) {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedMarketType, setSelectedMarketType] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
 
   // Sync date from data
   const dateValue = data?.tradeDate || data?.dateFrom || "";
@@ -266,9 +271,7 @@ function EndOfDayInner({
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}
 
-      {!data && !refreshError ? (
-        <div className={styles.loading}>Waiting for data...</div>
-      ) : data && rows.length === 0 ? (
+      {data && rows.length === 0 ? (
         <div className={styles.loading}>No rows found</div>
       ) : data ? (
         <DataTable

@@ -142,8 +142,13 @@ interface MarketSpiritInnerProps {
 
 function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInnerProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
+
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
 
   // Sync date picker with the trade date from data
   useEffect(() => {
@@ -316,10 +321,6 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
 
       {refreshError && (
         <div className={styles.waiting}>{refreshError}</div>
-      )}
-
-      {!data && !refreshError && (
-        <div className={styles.waiting}>Waiting for data...</div>
       )}
 
       <div className={styles.controls}>

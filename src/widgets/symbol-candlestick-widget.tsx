@@ -199,7 +199,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState<CandlestickTimeframe>("1D");
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [legendValues, setLegendValues] = useState<LegendValues | null>(null);
   const [showEz, setShowEz] = useState(false);
@@ -375,6 +375,11 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     if (data?.dateTo && !selectedDateTo) setSelectedDateTo(data.dateTo);
   }, [data?.dateTo, selectedDateTo]);
 
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
+
   // Sync timeframe from tool input (model may call with a specific timeframe)
   useEffect(() => {
     if (toolInput.timeframe) setSelectedTimeframe(toolInput.timeframe as CandlestickTimeframe);
@@ -516,9 +521,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
         <div className={styles.loading}>{refreshError}</div>
       )}
 
-      {!data && !refreshError ? (
-        <div className={styles.loading}>Waiting for data...</div>
-      ) : data && candleData.length === 0 ? (
+      {data && candleData.length === 0 ? (
         <div className={styles.loading}>No price data available</div>
       ) : data ? (
         <div className={styles.chartContainer} ref={chartContainerRef}>

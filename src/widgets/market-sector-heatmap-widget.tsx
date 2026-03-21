@@ -339,10 +339,16 @@ interface HeatmapInnerProps {
   hostContext?: McpUiHostContext;
 }
 
+const heatmapSpinnerStyle = `
+@keyframes heatmapRefreshSpin {
+  to { transform: rotate(360deg); }
+}
+`;
+
 function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const [drill, setDrill] = useState<DrillLevel>({ level: "sectors" });
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedPeriod, setSelectedPeriod] = useState<HeatmapPeriod>("1D");
@@ -365,6 +371,11 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   useEffect(() => {
     if (data?.period) setSelectedPeriod(data.period);
   }, [data?.period]);
+
+  // Clear initial loading state when data first arrives
+  useEffect(() => {
+    if (data) setIsRefreshing(false);
+  }, [data]);
 
   // Reset drill level when data changes
   useEffect(() => {
@@ -443,6 +454,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
 
   return (
     <WidgetLayout title="Sector Heatmap" subtitle={subtitle} app={app} hostContext={hostContext}>
+      <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
       <div
         style={{
           fontFamily: "'Inter', system-ui, sans-serif",
@@ -532,18 +544,35 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
             <button
               onClick={() => handleRefresh(selectedDate || undefined, selectedPeriod)}
               disabled={isRefreshing}
+              className="heatmap-refresh-btn"
               style={{
                 background: "var(--t-bg-secondary)",
                 color: "var(--t-text-secondary)",
                 border: "none",
                 borderRadius: 4,
                 padding: "4px 10px",
-                cursor: isRefreshing ? "default" : "pointer",
+                cursor: isRefreshing ? "not-allowed" : "pointer",
                 fontSize: 12,
-                opacity: isRefreshing ? 0.5 : 1,
+                opacity: isRefreshing ? 0.7 : 1,
                 lineHeight: 1,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: isRefreshing ? 4 : 0,
               }}
             >
+              {isRefreshing && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "0.85em",
+                    height: "0.85em",
+                    border: "2px solid rgba(255, 255, 255, 0.3)",
+                    borderTopColor: "var(--t-text-secondary)",
+                    borderRadius: "50%",
+                    animation: "heatmapRefreshSpin 0.6s linear infinite",
+                  }}
+                />
+              )}
               {isRefreshing ? "Loading…" : "Refresh"}
             </button>
           </div>
@@ -562,17 +591,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
               {refreshError}
             </div>
           )}
-          {!data ? (
-            <div
-              style={{
-                position: "absolute", inset: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--t-text-secondary)", fontSize: 14,
-              }}
-            >
-              Waiting for data…
-            </div>
-          ) : nodes.length === 0 ? (
+          {!data ? null : nodes.length === 0 ? (
             <div
               style={{
                 position: "absolute", inset: 0,

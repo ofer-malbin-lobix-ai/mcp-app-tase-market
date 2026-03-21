@@ -159,6 +159,28 @@
   transform: translateY(0);
 }
 
+.refreshButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refreshButton:disabled::before {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.4em;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: refreshSpin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes refreshSpin {
+  to { transform: rotate(360deg); }
+}
+
 .legend {
   display: flex;
   gap: 1.5rem;
