@@ -1,5 +1,4 @@
-import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
+import "./env.js";
 
 /**
  * Entry point for running the MCP server.
