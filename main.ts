@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 /**
  * Entry point for running the MCP server.
  * Run with: npm run serve
@@ -113,7 +116,7 @@ export async function startStreamableHTTPServer(
     app.get("/.well-known/oauth-authorization-server", async (_req: Request, res: Response) => {
       try {
         const response = await fetch(`https://${AUTH0_DOMAIN}/.well-known/openid-configuration`);
-        const metadata = await response.json();
+        const metadata = await response.json() as Record<string, unknown>;
         // Rewrite authorization_endpoint to our proxy so we can normalize the resource param
         metadata.authorization_endpoint = `${baseUrl}/oauth/authorize`;
         res.json(metadata);

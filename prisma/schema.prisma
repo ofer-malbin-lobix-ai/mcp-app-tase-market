@@ -51,6 +51,7 @@ model TaseSecuritiesEndOfDayTradingData {
 
   @@unique([symbol, tradeDate], name: "unique_symbol_tradeDate")
   @@index([symbol, tradeDate], name: "index_symbol_tradeDate")
+  @@index([marketType, tradeDate], name: "index_marketType_tradeDate")
 }
 
 model TaseSymbol {
