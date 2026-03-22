@@ -2,7 +2,10 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTheme } from "./useTheme";
+import { useLanguage, type Language, type TFunction } from "./useLanguage";
 import styles from "./WidgetLayout.module.css";
+
+export type { Language, TFunction } from "./useLanguage";
 
 /**
  * Check if a CallToolResult contains a subscription redirect.
@@ -35,8 +38,10 @@ export function handleSubscriptionRedirect(
  * Subscription required banner — shown inside any widget when user has no active subscription.
  * Opens the subscribe URL directly via app.openLink, with clipboard fallback.
  */
-export function SubscriptionBanner({ subscribeUrl, app }: { subscribeUrl: string; app: App }) {
+export function SubscriptionBanner({ subscribeUrl, app, t: externalT }: { subscribeUrl: string; app: App; t?: TFunction }) {
   const [copied, setCopied] = useState(false);
+  const fallback = useLanguage();
+  const t = externalT ?? fallback.t;
 
   const handleSubscribe = async () => {
     if (!subscribeUrl) return;
@@ -62,10 +67,10 @@ export function SubscriptionBanner({ subscribeUrl, app }: { subscribeUrl: string
       gap: "16px",
     }}>
       <div style={{ fontSize: "15px", fontWeight: 500, color: "var(--t-text-primary, #333)" }}>
-        Subscription Required
+        {t("layout.subscriptionRequired")}
       </div>
       <div style={{ fontSize: "13px", color: "var(--t-text-secondary, #666)", maxWidth: "280px" }}>
-        Subscribe to access all TASE Market tools and data.
+        {t("layout.subscriptionDescription")}
       </div>
       <button
         onClick={handleSubscribe}
@@ -80,7 +85,7 @@ export function SubscriptionBanner({ subscribeUrl, app }: { subscribeUrl: string
           cursor: "pointer",
         }}
       >
-        {copied ? "Link Copied!" : "Subscribe"}
+        {copied ? t("layout.linkCopied") : t("layout.subscribe")}
       </button>
     </div>
   );
@@ -94,6 +99,10 @@ interface WidgetLayoutProps {
   hostContext?: McpUiHostContext;
   /** Optional CSS class to add to the title element */
   titleClassName?: string;
+  /** Language props — if omitted, WidgetLayout creates its own language state */
+  language?: Language;
+  dir?: string;
+  onLanguageToggle?: () => void;
 }
 
 export function WidgetLayout({
@@ -103,9 +112,19 @@ export function WidgetLayout({
   app,
   hostContext,
   titleClassName,
+  language: externalLanguage,
+  dir: externalDir,
+  onLanguageToggle,
 }: WidgetLayoutProps) {
   const { theme, toggle } = useTheme();
+  const fallbackLang = useLanguage();
   const [displayMode, setDisplayMode] = useState<"inline" | "fullscreen">("inline");
+
+  // Use external language props if provided, otherwise fall back to own hook
+  const language = externalLanguage ?? fallbackLang.language;
+  const direction = externalDir ?? fallbackLang.dir;
+  const langToggle = onLanguageToggle ?? fallbackLang.toggle;
+  const t = fallbackLang.t;
 
   const isFullscreenAvailable =
     hostContext?.availableDisplayModes?.includes("fullscreen") ?? false;
@@ -129,6 +148,7 @@ export function WidgetLayout({
   return (
     <main
       className={`${styles.main} ${displayMode === "fullscreen" ? styles.fullscreen : ""}`}
+      dir={direction}
       style={{
         paddingTop: hostContext?.safeAreaInsets?.top,
         paddingRight: hostContext?.safeAreaInsets?.right,
@@ -143,9 +163,16 @@ export function WidgetLayout({
         </div>
         <div className={styles.headerActions}>
           <button
+            className={styles.langToggle}
+            onClick={langToggle}
+            title={language === "en" ? "עברית" : "English"}
+          >
+            {language === "en" ? "עב" : "EN"}
+          </button>
+          <button
             className={styles.themeToggle}
             onClick={toggle}
-            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={theme === "dark" ? t("layout.switchToLight") : t("layout.switchToDark")}
           >
             {theme === "dark" ? "\u2600\uFE0F" : "\uD83C\uDF19"}
           </button>
@@ -153,9 +180,9 @@ export function WidgetLayout({
             <button
               className={styles.fullscreenButton}
               onClick={toggleFullscreen}
-              title={displayMode === "fullscreen" ? "Exit fullscreen" : "Enter fullscreen"}
+              title={displayMode === "fullscreen" ? t("layout.exitFullscreen") : t("layout.fullscreen")}
             >
-              {displayMode === "fullscreen" ? "Exit Fullscreen" : "Fullscreen"}
+              {displayMode === "fullscreen" ? t("layout.exitFullscreen") : t("layout.fullscreen")}
             </button>
           )}
         </div>

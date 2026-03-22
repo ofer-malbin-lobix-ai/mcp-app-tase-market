@@ -7,6 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useEffect, useState } from "react";
 import { WidgetLayout } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import { createRoot } from "react-dom/client";
 import styles from "./tase-market-settings-widget.module.css";
 
@@ -111,11 +112,12 @@ interface SettingsInnerProps {
 
 function SettingsInner({ data, hostContext, app }: SettingsInnerProps) {
   const [copied, setCopied] = useState(false);
+  const { language, t, dir, toggle } = useLanguage();
 
   const connectedUrl = hasToken(data?.subscribeUrl) ? data!.subscribeUrl : null;
 
   return (
-    <WidgetLayout title="TASE Market Settings" app={app} hostContext={hostContext}>
+    <WidgetLayout title={t("settings.title")} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <div className={styles.content}>
       {connectedUrl ? (
         <div className={styles.cta}>
@@ -147,12 +149,12 @@ function SettingsInner({ data, hostContext, app }: SettingsInnerProps) {
               }
             }}
           >
-            {copied ? "Copied!" : data?.needsSubscription ? "Subscribe Now" : "Subscription"}
+            {copied ? t("settings.copied") : data?.needsSubscription ? t("settings.subscribeNow") : t("settings.subscription")}
           </button>
         </div>
       ) : (
         <div className={styles.notConnected}>
-          <p>Go to the server to subscribe and access all tools.</p>
+          <p>{t("settings.notConnected")}</p>
         </div>
       )}
 

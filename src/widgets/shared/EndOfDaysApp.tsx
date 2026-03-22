@@ -8,6 +8,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { useLanguage } from "../../components/useLanguage";
 import styles from "./end-of-day-widget.module.css";
 
 import type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
@@ -138,6 +139,7 @@ function EndOfDaysInner({
   config: EndOfDaysAppConfig;
   toolInput: Record<string, unknown>;
 }) {
+  const { language, dir, toggle } = useLanguage();
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -227,7 +229,7 @@ function EndOfDaysInner({
   }, [data, rows]);
 
   return (
-    <WidgetLayout title={deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext}>
+    <WidgetLayout title={deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       {data && (
         <>
           <div className={styles.summary}>

@@ -8,6 +8,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
+import { useLanguage } from "../components/useLanguage";
 import styles from "./market-spirit-widget.module.css";
 
 type MarketScore = "Defense" | "Selective" | "Attack" | null;
@@ -141,6 +142,7 @@ interface MarketSpiritInnerProps {
 }
 
 function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInnerProps) {
+  const { language, dir, toggle } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -212,7 +214,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title="Market Spirit" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title}>
+    <WidgetLayout title="Market Spirit" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data?.regime && (
         <div className={styles.regimeSection}>

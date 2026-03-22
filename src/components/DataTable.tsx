@@ -14,6 +14,7 @@ import {
   type FilterFn,
 } from "@tanstack/react-table";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useLanguage } from "./useLanguage";
 import styles from "./DataTable.module.css";
 
 // Range filter for numeric columns
@@ -29,7 +30,7 @@ const numberRangeFilter: FilterFn<any> = (row, columnId, filterValue: [number | 
 };
 
 // Component for range filter input
-function RangeFilter<T>({ column }: { column: Column<T, unknown> }) {
+function RangeFilter<T>({ column, minLabel, maxLabel }: { column: Column<T, unknown>; minLabel: string; maxLabel: string }) {
   const filterValue = (column.getFilterValue() as [number | "", number | ""]) ?? ["", ""];
 
   return (
@@ -41,7 +42,7 @@ function RangeFilter<T>({ column }: { column: Column<T, unknown> }) {
           const val = e.target.value === "" ? "" : Number(e.target.value);
           column.setFilterValue([val, filterValue[1]]);
         }}
-        placeholder="Min"
+        placeholder={minLabel}
         className={styles.rangeInput}
         onClick={(e) => e.stopPropagation()}
       />
@@ -52,7 +53,7 @@ function RangeFilter<T>({ column }: { column: Column<T, unknown> }) {
           const val = e.target.value === "" ? "" : Number(e.target.value);
           column.setFilterValue([filterValue[0], val]);
         }}
-        placeholder="Max"
+        placeholder={maxLabel}
         className={styles.rangeInput}
         onClick={(e) => e.stopPropagation()}
       />
@@ -78,6 +79,7 @@ export function DataTable<T>({
   initialColumnVisibility,
   onFilteredRowsChange,
 }: DataTableProps<T>) {
+  const { t, dir } = useLanguage();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -211,12 +213,12 @@ export function DataTable<T>({
   };
 
   return (
-    <div className={styles.tableWrapper}>
+    <div className={styles.tableWrapper} dir={dir}>
       <div className={styles.toolbar}>
         <div className={styles.searchBox}>
           <input
             type="text"
-            placeholder="Search all columns..."
+            placeholder={t("dataTable.searchPlaceholder")}
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
             className={styles.searchInput}
@@ -235,12 +237,12 @@ export function DataTable<T>({
           className={`${styles.filterToggle} ${showFilters ? styles.active : ""}`}
           onClick={() => setShowFilters(!showFilters)}
         >
-          Filters {hasActiveFilters && `(${columnFilters.length})`}
+          {t("dataTable.filters")} {hasActiveFilters && `(${columnFilters.length})`}
         </button>
 
         {hasActiveFilters && (
           <button className={styles.clearFiltersButton} onClick={clearAllFilters}>
-            Clear All
+            {t("dataTable.clearAll")}
           </button>
         )}
 
@@ -249,7 +251,7 @@ export function DataTable<T>({
             className={styles.columnSelectorButton}
             onClick={() => setShowColumnSelector(!showColumnSelector)}
           >
-            Columns ({visibleCount}/{totalCount})
+            {t("dataTable.columns")} ({visibleCount}/{totalCount})
           </button>
           {showColumnSelector && (
             <div className={styles.columnSelectorDropdown} onMouseMove={resetColumnSelectorTimeout} onMouseLeave={() => setShowColumnSelector(false)}>
@@ -260,7 +262,7 @@ export function DataTable<T>({
                     checked={table.getIsAllColumnsVisible()}
                     onChange={table.getToggleAllColumnsVisibilityHandler()}
                   />
-                  <span>Toggle All</span>
+                  <span>{t("dataTable.toggleAll")}</span>
                 </label>
               </div>
               <div className={styles.columnSelectorList}>
@@ -313,13 +315,13 @@ export function DataTable<T>({
                     <th key={header.id} className={styles.filterCell}>
                       {header.column.getCanFilter() ? (
                         isNumeric ? (
-                          <RangeFilter column={header.column} />
+                          <RangeFilter column={header.column} minLabel={t("dataTable.min")} maxLabel={t("dataTable.max")} />
                         ) : (
                           <input
                             type="text"
                             value={(header.column.getFilterValue() as string) ?? ""}
                             onChange={(e) => header.column.setFilterValue(e.target.value)}
-                            placeholder={`Filter...`}
+                            placeholder={t("dataTable.filterPlaceholder")}
                             className={styles.filterInput}
                             onClick={(e) => e.stopPropagation()}
                           />
@@ -347,9 +349,9 @@ export function DataTable<T>({
 
       {pageCount > 1 && <div className={styles.pagination}>
         <div className={styles.pageInfo}>
-          Showing {table.getRowModel().rows.length} of {filteredRowCount}
-          {filteredRowCount !== data.length && ` (${data.length} total)`} rows
-          {pageCount > 1 && ` · Page ${currentPage} of ${pageCount}`}
+          {t("dataTable.showing")} {table.getRowModel().rows.length} {t("dataTable.of")} {filteredRowCount}
+          {filteredRowCount !== data.length && ` (${data.length} ${t("dataTable.total")})`} {t("dataTable.rows")}
+          {pageCount > 1 && ` · ${t("dataTable.page")} ${currentPage} ${t("dataTable.of")} ${pageCount}`}
         </div>
 
         <div className={styles.pageControls}>
@@ -360,7 +362,7 @@ export function DataTable<T>({
           >
             {[10, 25, 50, 100, 200].map((size) => (
               <option key={size} value={size}>
-                {size} rows
+                {size} {t("dataTable.rows")}
               </option>
             ))}
           </select>

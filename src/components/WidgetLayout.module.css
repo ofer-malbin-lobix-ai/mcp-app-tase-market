@@ -71,3 +71,20 @@
 .fullscreenButton:hover {
   background: var(--t-bg-tertiary);
 }
+
+.langToggle {
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--t-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--t-bg-secondary);
+  color: var(--t-text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.langToggle:hover {
+  background: var(--t-bg-tertiary);
+}

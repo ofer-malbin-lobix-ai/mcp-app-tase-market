@@ -7,6 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import { createRoot } from "react-dom/client";
 import styles from "./market-momentum-widget.module.css";
 
@@ -156,6 +157,7 @@ interface MomentumWidgetInnerProps {
 }
 
 function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidgetInnerProps) {
+  const { language, dir, toggle } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -222,7 +224,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title="Momentum Scanner" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title}>
+    <WidgetLayout title="Momentum Scanner" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.stats}>

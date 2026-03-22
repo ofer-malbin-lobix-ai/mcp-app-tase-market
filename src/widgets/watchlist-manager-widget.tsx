@@ -9,6 +9,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import styles from "./watchlist-manager-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ function validateForm(form: FormState, isEdit: boolean): FormErrors {
 // ─── Main App ────────────────────────────────────────────────────────
 
 function WatchlistManagerApp() {
+  const { language, dir, toggle } = useLanguage();
   const [data, setData] = useState<UserWatchlistData | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
@@ -253,7 +255,7 @@ function WatchlistManagerApp() {
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
   if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
     </WidgetLayout>
   );
@@ -267,6 +269,9 @@ function WatchlistManagerApp() {
       subtitle={data ? `${watchlist.length} item${watchlist.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}
+      language={language}
+      dir={dir}
+      onLanguageToggle={toggle}
     >
       {!showForm && (
         <div className={styles.addBtnWrapper}>

@@ -6,6 +6,8 @@ import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import { StrictMode, useEffect, useState } from "react";
 import { WidgetLayout } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
+import type { TranslationKey } from "../components/translations";
 import { createRoot } from "react-dom/client";
 import styles from "./tase-market-landing-widget.module.css";
 
@@ -61,49 +63,61 @@ const DATA_TOOL_REFERENCE = [
   { n: 25, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
 ];
 
-const TOOL_GROUPS = [
+interface ToolItem {
+  icon: string;
+  nameKey: TranslationKey;
+  descKey: TranslationKey;
+  prompt: string;
+}
+
+interface ToolGroup {
+  titleKey: TranslationKey;
+  tools: ToolItem[];
+}
+
+const TOOL_GROUPS: ToolGroup[] = [
   {
-    title: "Market",
+    titleKey: "landing.group.market",
     tools: [
-      { icon: "\u{1F6A6}", name: "Market Spirit", description: "Traffic light indicator for market conditions", prompt: "call show-market-spirit-widget" },
-      { icon: "\u{1F4C8}", name: "Market End of Day", description: "Full market data with prices, volume, and technical indicators", prompt: "call show-market-end-of-day-widget" },
-      { icon: "\u{1F5FA}\u{FE0F}", name: "Market Sector Heatmap", description: "Treemap heatmap by sector, sub-sector, and symbol", prompt: "call show-market-sector-heatmap-widget" },
-      { icon: "🔬", name: "Market Momentum", description: "Scored momentum scanner with persistence filtering and leader detection", prompt: "call show-market-momentum-widget" },
-      { icon: "\u{1F4E1}", name: "Market Last Update", description: "Real-time last-update trading data for all securities", prompt: "call show-market-last-update-widget" },
+      { icon: "\u{1F6A6}", nameKey: "landing.tool.marketSpirit", descKey: "landing.desc.marketSpirit", prompt: "call show-market-spirit-widget" },
+      { icon: "\u{1F4C8}", nameKey: "landing.tool.marketEndOfDay", descKey: "landing.desc.marketEndOfDay", prompt: "call show-market-end-of-day-widget" },
+      { icon: "\u{1F5FA}\u{FE0F}", nameKey: "landing.tool.marketSectorHeatmap", descKey: "landing.desc.marketSectorHeatmap", prompt: "call show-market-sector-heatmap-widget" },
+      { icon: "\u{1F52C}", nameKey: "landing.tool.marketMomentum", descKey: "landing.desc.marketMomentum", prompt: "call show-market-momentum-widget" },
+      { icon: "\u{1F4E1}", nameKey: "landing.tool.marketLastUpdate", descKey: "landing.desc.marketLastUpdate", prompt: "call show-market-last-update-widget" },
     ],
   },
   {
-    title: "My Position",
+    titleKey: "landing.group.myPosition",
     tools: [
-      { icon: "\u{1F4CB}", name: "My Positions Manager", description: "Add, edit, and delete portfolio positions", prompt: "call show-my-positions-manager-widget" },
-      { icon: "\u{1F4CA}", name: "My Position Table", description: "Portfolio EOD table with period selector", prompt: "call show-my-position-table-widget" },
-      { icon: "\u{1F4C8}", name: "My Position End of Day", description: "Full DataTable for portfolio on a single date", prompt: "call show-my-position-end-of-day-widget" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "My Position Candlestick", description: "Candlestick chart with sidebar", prompt: "call show-my-position-candlestick-widget" },
+      { icon: "\u{1F4CB}", nameKey: "landing.tool.myPositionsManager", descKey: "landing.desc.myPositionsManager", prompt: "call show-my-positions-manager-widget" },
+      { icon: "\u{1F4CA}", nameKey: "landing.tool.myPositionTable", descKey: "landing.desc.myPositionTable", prompt: "call show-my-position-table-widget" },
+      { icon: "\u{1F4C8}", nameKey: "landing.tool.myPositionEndOfDay", descKey: "landing.desc.myPositionEndOfDay", prompt: "call show-my-position-end-of-day-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", nameKey: "landing.tool.myPositionCandlestick", descKey: "landing.desc.myPositionCandlestick", prompt: "call show-my-position-candlestick-widget" },
     ],
   },
   {
-    title: "Watchlist",
+    titleKey: "landing.group.watchlist",
     tools: [
-      { icon: "\u{1F4CB}", name: "Watchlist Manager", description: "Add, edit, and delete watchlist items", prompt: "call show-watchlist-manager-widget" },
-      { icon: "\u{1F4CA}", name: "Watchlist Table", description: "Watchlist EOD table with period selector", prompt: "call show-watchlist-table-widget" },
-      { icon: "\u{1F4C8}", name: "Watchlist End of Day", description: "Full DataTable for watchlist on a single date", prompt: "call show-watchlist-end-of-day-widget" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "Watchlist Candlestick", description: "Candlestick chart with sidebar", prompt: "call show-watchlist-candlestick-widget" },
+      { icon: "\u{1F4CB}", nameKey: "landing.tool.watchlistManager", descKey: "landing.desc.watchlistManager", prompt: "call show-watchlist-manager-widget" },
+      { icon: "\u{1F4CA}", nameKey: "landing.tool.watchlistTable", descKey: "landing.desc.watchlistTable", prompt: "call show-watchlist-table-widget" },
+      { icon: "\u{1F4C8}", nameKey: "landing.tool.watchlistEndOfDay", descKey: "landing.desc.watchlistEndOfDay", prompt: "call show-watchlist-end-of-day-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", nameKey: "landing.tool.watchlistCandlestick", descKey: "landing.desc.watchlistCandlestick", prompt: "call show-watchlist-candlestick-widget" },
     ],
   },
   {
-    title: "Symbols",
+    titleKey: "landing.group.symbols",
     tools: [
-      { icon: "\u{1F4CA}", name: "Symbols Table", description: "EOD table for any symbols with period selector", prompt: "call show-symbols-table-widget" },
-      { icon: "\u{1F4CB}", name: "Symbols End of Day", description: "Full DataTable for symbols on a single date", prompt: "call show-symbols-end-of-day-widget" },
-      { icon: "\u{1F4C8}", name: "Symbol End of Days", description: "Single-symbol EOD data across a date range", prompt: "call show-symbol-end-of-days-widget" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "Symbols Candlestick", description: "Candlestick chart for any symbols", prompt: "call show-symbols-candlestick-widget" },
-      { icon: "\u{1F56F}\u{FE0F}", name: "Symbol Candlestick", description: "Single-symbol candlestick chart", prompt: "call show-symbol-candlestick-widget" },
-      { icon: "\u{23F1}\u{FE0F}", name: "Symbol Intraday Candlestick", description: "Intraday candlestick chart with configurable timeframes", prompt: "call show-symbol-intraday-candlestick-widget" },
+      { icon: "\u{1F4CA}", nameKey: "landing.tool.symbolsTable", descKey: "landing.desc.symbolsTable", prompt: "call show-symbols-table-widget" },
+      { icon: "\u{1F4CB}", nameKey: "landing.tool.symbolsEndOfDay", descKey: "landing.desc.symbolsEndOfDay", prompt: "call show-symbols-end-of-day-widget" },
+      { icon: "\u{1F4C8}", nameKey: "landing.tool.symbolEndOfDays", descKey: "landing.desc.symbolEndOfDays", prompt: "call show-symbol-end-of-days-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", nameKey: "landing.tool.symbolsCandlestick", descKey: "landing.desc.symbolsCandlestick", prompt: "call show-symbols-candlestick-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", nameKey: "landing.tool.symbolCandlestick", descKey: "landing.desc.symbolCandlestick", prompt: "call show-symbol-candlestick-widget" },
+      { icon: "\u{23F1}\u{FE0F}", nameKey: "landing.tool.symbolIntradayCandlestick", descKey: "landing.desc.symbolIntradayCandlestick", prompt: "call show-symbol-intraday-candlestick-widget" },
     ],
   },
 ];
 
-function ReferencePanel() {
+function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
   const [subTab, setSubTab] = useState<"widgets" | "data">("widgets");
 
   return (
@@ -113,13 +127,13 @@ function ReferencePanel() {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          Widgets (21)
+          {t("landing.widgets")} (21)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("data")}
         >
-          Data Tools (25)
+          {t("landing.dataTools")} (25)
         </button>
       </div>
 
@@ -228,26 +242,27 @@ interface LandingInnerProps {
 function LandingInner({ hostContext, app }: LandingInnerProps) {
   const [activeTab, setActiveTab] = useState(0);
   const [refOpen, setRefOpen] = useState(false);
+  const { language, t, dir, toggle } = useLanguage();
 
   return (
-    <WidgetLayout title="TASE Market Tools" app={app} hostContext={hostContext} titleClassName={styles.title}>
+    <WidgetLayout title={t("landing.title")} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
       <div className={styles.content}>
       <div className={styles.tabsContainer}>
         <div className={styles.tabBar}>
           {TOOL_GROUPS.map((group, i) => (
             <button
-              key={group.title}
+              key={group.titleKey}
               className={`${styles.tab} ${i === activeTab ? styles.tabActive : ""}`}
               onClick={() => setActiveTab(i)}
             >
-              {group.title}
+              {t(group.titleKey)}
             </button>
           ))}
         </div>
         <div className={styles.tabPanel}>
           {TOOL_GROUPS[activeTab].tools.map((tool) => (
             <button
-              key={tool.name}
+              key={tool.nameKey}
               className={styles.featureCard}
               onClick={async () => {
                 try {
@@ -261,8 +276,8 @@ function LandingInner({ hostContext, app }: LandingInnerProps) {
               }}
             >
               <span className={styles.featureIcon}>{tool.icon}</span>
-              <span className={styles.featureName}>{tool.name}</span>
-              <span className={styles.featureDescription}>{tool.description}</span>
+              <span className={styles.featureName}>{t(tool.nameKey)}</span>
+              <span className={styles.featureDescription}>{t(tool.descKey)}</span>
             </button>
           ))}
         </div>
@@ -271,11 +286,11 @@ function LandingInner({ hostContext, app }: LandingInnerProps) {
       <div className={styles.metaRow}>
         <button className={styles.referenceToggle} onClick={() => setRefOpen(!refOpen)}>
           <span className={`${styles.referenceArrow} ${refOpen ? styles.referenceArrowOpen : ""}`}>&#9654;</span>
-          Reference
+          {t("landing.reference")}
         </button>
         <button
           className={styles.settingsBtn}
-          title="Settings"
+          title={t("landing.settings")}
           onClick={async () => {
             try {
               await app.sendMessage({
@@ -290,10 +305,10 @@ function LandingInner({ hostContext, app }: LandingInnerProps) {
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.5 1L6.2 2.6C5.8 2.8 5.4 3 5.1 3.3L3.5 2.7L2 5.3L3.4 6.4C3.4 6.6 3.3 6.8 3.3 7C3.3 7.2 3.4 7.4 3.4 7.6L2 8.7L3.5 11.3L5.1 10.7C5.4 11 5.8 11.2 6.2 11.4L6.5 13H9.5L9.8 11.4C10.2 11.2 10.6 11 10.9 10.7L12.5 11.3L14 8.7L12.6 7.6C12.6 7.4 12.7 7.2 12.7 7C12.7 6.8 12.6 6.6 12.6 6.4L14 5.3L12.5 2.7L10.9 3.3C10.6 3 10.2 2.8 9.8 2.6L9.5 1H6.5ZM8 5C9.1 5 10 5.9 10 7C10 8.1 9.1 9 8 9C6.9 9 6 8.1 6 7C6 5.9 6.9 5 8 5Z" fill="currentColor"/>
           </svg>
-          Settings
+          {t("landing.settings")}
         </button>
       </div>
-      {refOpen && <div className={styles.referenceContent}><ReferencePanel /></div>}
+      {refOpen && <div className={styles.referenceContent}><ReferencePanel t={t} /></div>}
 
       </div>
     </WidgetLayout>

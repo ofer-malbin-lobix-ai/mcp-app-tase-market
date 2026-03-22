@@ -9,6 +9,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -346,6 +347,7 @@ const heatmapSpinnerStyle = `
 `;
 
 function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
+  const { language, dir, toggle } = useLanguage();
   const [drill, setDrill] = useState<DrillLevel>({ level: "sectors" });
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -453,7 +455,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const subtitle = data ? `${data.marketType} · ${data.count} stocks` : undefined;
 
   return (
-    <WidgetLayout title="Sector Heatmap" subtitle={subtitle} app={app} hostContext={hostContext}>
+    <WidgetLayout title="Sector Heatmap" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
       <div
         style={{

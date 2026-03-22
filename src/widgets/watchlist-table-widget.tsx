@@ -12,6 +12,7 @@ import { createRoot } from "react-dom/client";
 import { NavRow } from "../components/NavRow";
 import { SymbolActions } from "../components/SymbolActions";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import styles from "./watchlist-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -122,6 +123,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 // ─── Main App ────────────────────────────────────────────────────────
 
 function WatchlistTableApp() {
+  const { language, dir, toggle } = useLanguage();
   const [baseData, setBaseData] = useState<EndOfDaySymbolsData | null>(null);
   const [period, setPeriod] = useState<HeatmapPeriod>("1D");
   const [periodOverlay, setPeriodOverlay] = useState<Map<
@@ -297,7 +299,7 @@ function WatchlistTableApp() {
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
   if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
     </WidgetLayout>
   );
@@ -313,6 +315,9 @@ function WatchlistTableApp() {
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}
+      language={language}
+      dir={dir}
+      onLanguageToggle={toggle}
     >
       <NavRow
         app={app}

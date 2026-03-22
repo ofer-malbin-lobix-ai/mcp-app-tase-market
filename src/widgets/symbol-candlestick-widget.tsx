@@ -7,6 +7,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import type { CandlestickData, HistogramData, LineData, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
@@ -195,6 +196,7 @@ interface CandlestickAppInnerProps {
 }
 
 function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: CandlestickAppInnerProps) {
+  const { language, dir, toggle } = useLanguage();
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
@@ -403,7 +405,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     : undefined;
 
   return (
-    <WidgetLayout title="Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext}>
+    <WidgetLayout title="Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

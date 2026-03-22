@@ -8,6 +8,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import type { CandlestickData, HistogramData, MouseEventParams, Time } from "lightweight-charts";
 import {
   CandlestickSeries,
@@ -284,6 +285,7 @@ interface IntradayAppInnerProps {
 }
 
 function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostContext }: IntradayAppInnerProps) {
+  const { language, dir, toggle } = useLanguage();
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState<IntradayTimeframe>("5m");
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -428,7 +430,7 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
     : undefined;
 
   return (
-    <WidgetLayout title="Symbol Intraday Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext}>
+    <WidgetLayout title="Symbol Intraday Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

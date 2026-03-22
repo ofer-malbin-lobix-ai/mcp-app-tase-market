@@ -10,6 +10,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import { useLanguage } from "../components/useLanguage";
 import styles from "./symbols-table-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -120,6 +121,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 // ─── Main App ────────────────────────────────────────────────────────
 
 function SymbolsTableApp() {
+  const { language, dir, toggle } = useLanguage();
   const [baseData, setBaseData] = useState<EndOfDaySymbolsData | null>(null);
   const [period, setPeriod] = useState<HeatmapPeriod>("1D");
   const [periodOverlay, setPeriodOverlay] = useState<Map<
@@ -255,7 +257,7 @@ function SymbolsTableApp() {
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>Connecting...</div>;
   if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
+    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
     </WidgetLayout>
   );
@@ -270,7 +272,7 @@ function SymbolsTableApp() {
     : undefined;
 
   return (
-    <WidgetLayout title="Symbols Table" subtitle={subtitle} app={app} hostContext={hostContext}>
+    <WidgetLayout title="Symbols Table" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <div className={styles.headerRow}>
         <div className={styles.periodBar}>
           {PERIODS.map((p) => (

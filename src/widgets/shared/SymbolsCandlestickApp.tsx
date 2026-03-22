@@ -19,6 +19,7 @@ import { createRoot } from "react-dom/client";
 import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { useLanguage } from "../../components/useLanguage";
 import styles from "./symbols-candlestick-widget.module.css";
 
 // --- Config ---
@@ -499,6 +500,7 @@ function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, show
 function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig }) {
   const title = deriveTitle(config.toolName);
   const periodToolName = derivePeriodToolName(config.toolName);
+  const { language, dir, toggle } = useLanguage();
 
   const [eodData, setEodData] = useState<EndOfDaySymbolsData | null>(null);
   const [chartData, setChartData] = useState<CandlestickWidgetData | null>(null);
@@ -750,6 +752,9 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       subtitle={eodData ? eodData.symbols.join(", ") : undefined}
       app={app}
       hostContext={hostContext}
+      language={language}
+      dir={dir}
+      onLanguageToggle={toggle}
     >
       {config.navButtons && config.navButtons.length > 0 && (
         <NavRow app={app} items={config.navButtons} />
