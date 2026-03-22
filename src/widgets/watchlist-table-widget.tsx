@@ -297,7 +297,7 @@ function WatchlistTableApp() {
   }, [baseData, period, periodOverlay, sortKey, sortDir]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -322,9 +322,9 @@ function WatchlistTableApp() {
       <NavRow
         app={app}
         items={[
-          { label: "Manager", prompt: "call show-watchlist-manager-widget" },
-          { label: "Candlestick", prompt: "call show-watchlist-candlestick-widget" },
-          { label: "End of Day", prompt: "call show-watchlist-end-of-day-widget" },
+          { label: t("nav.manager"), prompt: "call show-watchlist-manager-widget" },
+          { label: t("nav.candlestick"), prompt: "call show-watchlist-candlestick-widget" },
+          { label: t("nav.endOfDay"), prompt: "call show-watchlist-end-of-day-widget" },
         ]}
       />
 
@@ -344,7 +344,7 @@ function WatchlistTableApp() {
       </div>
 
       {!baseData ? (
-        <div className={styles.loading}>Loading watchlist...</div>
+        <div className={styles.loading}>{t("common.loadingWatchlist")}</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>

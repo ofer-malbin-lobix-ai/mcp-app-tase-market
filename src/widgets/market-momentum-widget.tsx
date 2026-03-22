@@ -61,6 +61,7 @@ const PHASE_COLORS: Record<string, { bg: string; color: string }> = {
 };
 
 function MomentumWidget() {
+  const { t } = useLanguage();
   const [data, setData] = useState<MomentumData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
@@ -132,7 +133,7 @@ function MomentumWidget() {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -189,11 +190,11 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       if (momentumData) {
         setData(momentumData);
       } else {
-        setRefreshError("No data found for this date");
+        setRefreshError(t("spirit.noData"));
       }
     } catch (e) {
       console.error("Failed to refresh data:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -230,23 +231,23 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
         <div className={styles.stats}>
           <div className={styles.statBadge}>
             <span className={styles.statNumber} style={{ color: "#22c55e" }}>{counts.strong}</span>
-            <span className={styles.statLabel}>Strong</span>
+            <span className={styles.statLabel}>{t("momentum.strong")}</span>
           </div>
           <div className={styles.statBadge}>
             <span className={styles.statNumber} style={{ color: "#3b82f6" }}>{counts.confirmed}</span>
-            <span className={styles.statLabel}>Confirmed</span>
+            <span className={styles.statLabel}>{t("momentum.confirmed")}</span>
           </div>
           <div className={styles.statBadge}>
             <span className={styles.statNumber} style={{ color: "#f59e0b" }}>{counts.new}</span>
-            <span className={styles.statLabel}>New</span>
+            <span className={styles.statLabel}>{t("momentum.new")}</span>
           </div>
           <div className={styles.statBadge}>
             <span className={styles.statNumber} style={{ color: "#ef4444" }}>{counts.leaders}</span>
-            <span className={styles.statLabel}>Leaders</span>
+            <span className={styles.statLabel}>{t("momentum.leaders")}</span>
           </div>
           <div className={styles.statBadge}>
             <span className={styles.statNumber} style={{ color: "#8b5cf6" }}>{counts.compression}</span>
-            <span className={styles.statLabel}>Compression</span>
+            <span className={styles.statLabel}>{t("momentum.compression")}</span>
           </div>
         </div>
       )}
@@ -254,11 +255,11 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       {data && (
         <div className={styles.tabs}>
           {([
-            ["all", `All (${data.count})`],
-            ["strong", `Strong (${counts.strong})`],
-            ["confirmed", `Confirmed (${counts.confirmed})`],
-            ["new", `New (${counts.new})`],
-            ["compression", `Compression (${counts.compression})`],
+            ["all", `${t("momentum.all")} (${data.count})`],
+            ["strong", `${t("momentum.strong")} (${counts.strong})`],
+            ["confirmed", `${t("momentum.confirmed")} (${counts.confirmed})`],
+            ["new", `${t("momentum.new")} (${counts.new})`],
+            ["compression", `${t("momentum.compression")} (${counts.compression})`],
           ] as [TabKey, string][]).map(([key, label]) => (
             <button
               key={key}
@@ -315,7 +316,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       )}
 
       {data && filteredItems.length === 0 && (
-        <div className={styles.empty}>No symbols in this category.</div>
+        <div className={styles.empty}>{t("momentum.noSymbols")}</div>
       )}
 
       {refreshError && (
@@ -324,7 +325,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
 
       <div className={styles.controls}>
         <label className={styles.label}>
-          Trade Date:
+          {t("eod.tradeDate")}
           <input
             type="date"
             className={styles.select}
@@ -337,7 +338,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
           onClick={() => handleRefresh(selectedDate || undefined)}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
     </WidgetLayout>

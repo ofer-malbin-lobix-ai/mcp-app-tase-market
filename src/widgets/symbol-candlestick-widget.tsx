@@ -116,6 +116,8 @@ function CandlestickApp() {
   const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
+  const { t } = useLanguage();
+
   const { app, error } = useApp({
     appInfo: { name: "Candlestick Chart", version: "1.0.0" },
     capabilities: {},
@@ -177,7 +179,7 @@ function CandlestickApp() {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -354,11 +356,11 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
         setData(fetched);
         setLegendValues(null); // Reset legend so it picks up last bar of new data
       } else {
-        setRefreshError("No data found");
+        setRefreshError(t("eod.noDataFound"));
       }
     } catch (e) {
       console.error("Failed to refresh:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -409,19 +411,19 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>
-          Symbol:
+          {t("candlestick.symbol")}
           <input
             type="text"
             className={styles.dateInput}
             value={symbolInput}
             onChange={(e) => setSymbolInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleRefreshClick(); }}
-            placeholder="e.g. TEVA"
+            placeholder={t("common.eg") + " TEVA"}
             style={{ minWidth: "100px" }}
           />
         </label>
         <label className={styles.dateLabel}>
-          From:
+          {t("candlestick.from")}
           <input
             type="date"
             className={styles.dateInput}
@@ -430,7 +432,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
           />
         </label>
         <label className={styles.dateLabel}>
-          To:
+          {t("candlestick.to")}
           <input
             type="date"
             className={styles.dateInput}
@@ -443,7 +445,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
           onClick={handleRefreshClick}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
 
@@ -524,7 +526,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
       )}
 
       {data && candleData.length === 0 ? (
-        <div className={styles.loading}>No price data available</div>
+        <div className={styles.loading}>{t("candlestick.noData")}</div>
       ) : data ? (
         <div className={styles.chartContainer} ref={chartContainerRef}>
           {legendValues && (

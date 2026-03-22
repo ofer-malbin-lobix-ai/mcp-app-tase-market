@@ -43,6 +43,7 @@ function hasToken(url: string | undefined): boolean {
 }
 
 function SettingsApp() {
+  const { t } = useLanguage();
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
@@ -99,7 +100,7 @@ function SettingsApp() {
   }, [needsAutoFetch, app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
 
   return <SettingsInner data={data} hostContext={hostContext} app={app} />;
 }

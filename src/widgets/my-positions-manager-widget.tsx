@@ -9,6 +9,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
+import type { TFunction } from "../components/useLanguage";
 import { useLanguage } from "../components/useLanguage";
 import styles from "./my-positions-manager-widget.module.css";
 
@@ -84,28 +85,28 @@ function fmtPrice(v: number | undefined): string {
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-function validateForm(form: FormState, isEdit: boolean): FormErrors {
+function validateForm(form: FormState, isEdit: boolean, t: TFunction): FormErrors {
   const errors: FormErrors = {};
   if (!isEdit && !form.symbol.trim()) {
-    errors.symbol = "Symbol is required";
+    errors.symbol = t("positions.symbolRequired");
   }
   if (!DATE_RE.test(form.startDate)) {
-    errors.startDate = "Date must be YYYY-MM-DD";
+    errors.startDate = t("positions.dateFormat");
   }
   const amount = parseFloat(form.amount);
   if (isNaN(amount) || amount <= 0) {
-    errors.amount = "Amount must be a positive number";
+    errors.amount = t("positions.amountPositive");
   }
   if (form.avgEntryPrice.trim()) {
     const price = parseFloat(form.avgEntryPrice);
     if (isNaN(price) || price <= 0) {
-      errors.avgEntryPrice = "Price must be a positive number";
+      errors.avgEntryPrice = t("positions.pricePositive");
     }
   }
   if (form.alloc.trim()) {
     const alloc = parseFloat(form.alloc);
     if (isNaN(alloc) || alloc < 0 || alloc > 100) {
-      errors.alloc = "Must be 0–100";
+      errors.alloc = t("positions.stopLossRange");
     }
   }
   return errors;
@@ -239,7 +240,7 @@ function MyPositionsManagerApp() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    const errors = validateForm(form, isEditing);
+    const errors = validateForm(form, isEditing, t);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -297,7 +298,7 @@ function MyPositionsManagerApp() {
   // ─── Render ──────────────────────────────────────────────────────
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -320,16 +321,16 @@ function MyPositionsManagerApp() {
       {!showForm && (
         <div className={styles.addBtnWrapper}>
           <button className={styles.addBtn} onClick={handleAddClick} disabled={isBusy}>
-            + Add Position
+            {t("positions.addBtn")}
           </button>
         </div>
       )}
 
       <div className={styles.navRow}>
         {[
-          { label: "Table", prompt: "call show-my-position-table-widget" },
-          { label: "Candlestick", prompt: "call show-my-position-candlestick-widget" },
-          { label: "End of Day", prompt: "call show-my-position-end-of-day-widget" },
+          { label: t("nav.table"), prompt: "call show-my-position-table-widget" },
+          { label: t("nav.candlestick"), prompt: "call show-my-position-candlestick-widget" },
+          { label: t("nav.endOfDay"), prompt: "call show-my-position-end-of-day-widget" },
         ].map((nav) => (
           <button
             key={nav.label}
@@ -358,22 +359,22 @@ function MyPositionsManagerApp() {
 
       {!authError && showForm && (
         <div className={styles.formPanel}>
-          <div className={styles.formTitle}>{isEditing ? "Edit Position" : "Add Position"}</div>
+          <div className={styles.formTitle}>{isEditing ? t("positions.editPosition") : t("positions.addPosition")}</div>
           <div className={styles.formRow}>
             <label className={styles.label}>
-              Symbol
+              {t("eod.col.symbol")}
               <input
                 className={`${styles.input} ${formErrors.symbol ? styles.inputError : ""}`}
                 value={form.symbol}
                 onChange={(e) => handleFieldChange("symbol", e.target.value)}
                 disabled={isEditing}
-                placeholder="e.g. TEVA"
+                placeholder={t("common.eg") + " TEVA"}
                 maxLength={20}
               />
               {formErrors.symbol && <span className={styles.fieldError}>{formErrors.symbol}</span>}
             </label>
             <label className={styles.label}>
-              Start Date
+              {t("positions.startDate")}
               <input
                 className={`${styles.input} ${formErrors.startDate ? styles.inputError : ""}`}
                 value={form.startDate}
@@ -384,7 +385,7 @@ function MyPositionsManagerApp() {
               {formErrors.startDate && <span className={styles.fieldError}>{formErrors.startDate}</span>}
             </label>
             <label className={styles.label}>
-              Amount
+              {t("positions.amount")}
               <input
                 className={`${styles.input} ${formErrors.amount ? styles.inputError : ""}`}
                 type="number"
@@ -397,7 +398,7 @@ function MyPositionsManagerApp() {
               {formErrors.amount && <span className={styles.fieldError}>{formErrors.amount}</span>}
             </label>
             <label className={styles.label}>
-              Avg Entry Price
+              {t("positions.avgEntryPrice")}
               <input
                 className={`${styles.input} ${formErrors.avgEntryPrice ? styles.inputError : ""}`}
                 type="number"
@@ -410,7 +411,7 @@ function MyPositionsManagerApp() {
               {formErrors.avgEntryPrice && <span className={styles.fieldError}>{formErrors.avgEntryPrice}</span>}
             </label>
             <label className={styles.label}>
-              Alloc %
+              {t("positions.allocPct")}
               <input
                 className={`${styles.input} ${formErrors.alloc ? styles.inputError : ""}`}
                 type="number"
@@ -424,52 +425,52 @@ function MyPositionsManagerApp() {
               {formErrors.alloc && <span className={styles.fieldError}>{formErrors.alloc}</span>}
             </label>
             <label className={styles.label}>
-              Side
+              {t("positions.side")}
               <div className={styles.sideToggle}>
                 <button
                   type="button"
                   className={`${styles.sideBtn} ${form.side === "long" ? styles.sideBtnActive : ""}`}
                   onClick={() => setForm((prev) => ({ ...prev, side: "long" }))}
                 >
-                  Long
+                  {t("positions.long")}
                 </button>
                 <button
                   type="button"
                   className={`${styles.sideBtn} ${form.side === "short" ? styles.sideBtnActiveShort : ""}`}
                   onClick={() => setForm((prev) => ({ ...prev, side: "short" }))}
                 >
-                  Short
+                  {t("positions.short")}
                 </button>
               </div>
             </label>
           </div>
           <div className={styles.formActions}>
             <button className={styles.saveBtn} onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? t("common.saving") : t("common.save")}
             </button>
             <button className={styles.cancelBtn} onClick={handleCancel} disabled={isSaving}>
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         </div>
       )}
 
       {!authError && !data ? (
-        <div className={styles.loading}>Loading positions...</div>
+        <div className={styles.loading}>{t("common.loadingPositions")}</div>
       ) : !authError && positions.length === 0 ? (
-        <div className={styles.empty}>No positions yet. Click "+ Add Position" to get started.</div>
+        <div className={styles.empty}>{t("positions.noPositions")}</div>
       ) : !authError ? (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th className={`${styles.th} ${styles.thLeft}`}>Symbol</th>
-                <th className={`${styles.th} ${styles.thLeft}`}>Side</th>
-                <th className={`${styles.th} ${styles.thLeft}`}>Start Date</th>
-                <th className={styles.th}>Amount</th>
-                <th className={styles.th}>Avg Price</th>
-                <th className={styles.th}>Alloc%</th>
-                <th className={`${styles.th} ${styles.thActions}`}>Actions</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("eod.col.symbol")}</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("positions.side")}</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("positions.startDate")}</th>
+                <th className={styles.th}>{t("positions.amount")}</th>
+                <th className={styles.th}>{t("positions.avgEntryPrice")}</th>
+                <th className={styles.th}>{t("positions.allocPct")}</th>
+                <th className={`${styles.th} ${styles.thActions}`}>{t("positions.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -492,14 +493,14 @@ function MyPositionsManagerApp() {
                       onClick={() => handleEditClick(pos)}
                       disabled={isBusy}
                     >
-                      Edit
+                      {t("common.edit")}
                     </button>
                     <button
                       className={styles.deleteBtn}
                       onClick={() => handleDelete(pos.symbol)}
                       disabled={isBusy}
                     >
-                      {isDeleting === pos.symbol ? "..." : "Delete"}
+                      {isDeleting === pos.symbol ? "..." : t("common.delete")}
                     </button>
                   </td>
                 </tr>

@@ -90,6 +90,7 @@ function formatVolume(volume: number): string {
 const columnHelper = createColumnHelper<LastUpdateItem>();
 
 function LastUpdateApp() {
+  const { t } = useLanguage();
   const [data, setData] = useState<LastUpdateData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
@@ -165,7 +166,7 @@ function LastUpdateApp() {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -217,11 +218,11 @@ function LastUpdateAppInner({
       if (data) {
         setData(data);
       } else {
-        setRefreshError("No data found");
+        setRefreshError(t("eod.noDataFound"));
       }
     } catch (e) {
       console.error("Failed to refresh data:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -230,17 +231,17 @@ function LastUpdateAppInner({
   const columns = useMemo(
     () => [
       columnHelper.accessor("symbol", {
-        header: "Symbol",
+        header: t("eod.col.symbol"),
         cell: (info) => (
           <span className={styles.symbolCell}>{info.getValue() ?? "—"}</span>
         ),
       }),
       columnHelper.accessor("securityId", {
-        header: "Security ID",
+        header: t("eod.col.securityId"),
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor("securityLastPrice", {
-        header: "Last Price",
+        header: t("lastUpdate.col.lastPrice"),
         cell: (info) => {
           const value = info.getValue();
           return (
@@ -251,7 +252,7 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("securityPercentageChange", {
-        header: "Chg%",
+        header: t("eod.col.chgPct"),
         cell: (info) => {
           const value = info.getValue();
           if (value == null) return <span className={styles.numericCell}>—</span>;
@@ -264,12 +265,12 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("lastSaleTime", {
-        header: "Last Sale Time",
+        header: t("lastUpdate.col.lastSaleTime"),
         cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "—"}</span>,
         enableColumnFilter: false,
       }),
       columnHelper.accessor("lastSaleVolume", {
-        header: "Last Sale Vol",
+        header: t("lastUpdate.col.lastSaleVol"),
         cell: (info) => {
           const value = info.getValue();
           return (
@@ -280,7 +281,7 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("securityDailyAggVolume", {
-        header: "Daily Volume",
+        header: t("lastUpdate.col.dailyVolume"),
         cell: (info) => {
           const value = info.getValue();
           return (
@@ -291,7 +292,7 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("securityDailyAggValue", {
-        header: "Daily Value",
+        header: t("lastUpdate.col.dailyValue"),
         cell: (info) => {
           const value = info.getValue();
           return (
@@ -302,7 +303,7 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("securityDailyNumTrades", {
-        header: "Num Trades",
+        header: t("lastUpdate.col.numTrades"),
         cell: (info) => {
           const value = info.getValue();
           return (
@@ -313,12 +314,12 @@ function LastUpdateAppInner({
         },
       }),
       columnHelper.accessor("tradingPhaseId", {
-        header: "Trading Phase",
+        header: t("lastUpdate.col.tradingPhase"),
         cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "—"}</span>,
         enableColumnFilter: false,
       }),
       columnHelper.accessor("date", {
-        header: "Date",
+        header: t("eod.col.date"),
         cell: (info) => {
           const value = info.getValue();
           const dateOnly = value ? value.split("T")[0] : "—";
@@ -327,7 +328,7 @@ function LastUpdateAppInner({
         enableColumnFilter: false,
       }),
     ],
-    []
+    [t]
   );
 
   const rows = useMemo(() => data?.items ?? [], [data?.items]);
@@ -364,19 +365,19 @@ function LastUpdateAppInner({
       {data && (
         <div className={styles.summary}>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Total Stocks</div>
+            <div className={styles.summaryLabel}>{t("eod.totalStocks")}</div>
             <div className={styles.summaryValue}>
               {marketSummary.totalStocks}
             </div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Gainers</div>
+            <div className={styles.summaryLabel}>{t("eod.gainers")}</div>
             <div className={`${styles.summaryValue} ${styles.gainers}`}>
               {marketSummary.gainers}
             </div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Losers</div>
+            <div className={styles.summaryLabel}>{t("eod.losers")}</div>
             <div className={`${styles.summaryValue} ${styles.losers}`}>
               {marketSummary.losers}
             </div>
@@ -390,7 +391,7 @@ function LastUpdateAppInner({
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
 
@@ -399,7 +400,7 @@ function LastUpdateAppInner({
       )}
 
       {data && rows.length === 0 ? (
-        <div className={styles.loading}>No data found</div>
+        <div className={styles.loading}>{t("eod.noDataFound")}</div>
       ) : data ? (
         <DataTable
           data={rows}

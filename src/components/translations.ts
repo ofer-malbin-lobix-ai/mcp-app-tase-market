@@ -127,6 +127,123 @@ const t = {
   "settings.subscription": { en: "Subscription", he: "מנוי" },
   "settings.copied": { en: "Copied!", he: "הועתק!" },
   "settings.notConnected": { en: "Go to the server to subscribe and access all tools.", he: "עבור לשרת כדי להירשם ולגשת לכל הכלים." },
+
+  // ── Common UI ──────────────────────────────────────────────
+  "common.symbol": { en: "Symbol:", he: ":סימול" },
+  "common.save": { en: "Save", he: "שמירה" },
+  "common.saving": { en: "Saving...", he: "...שומר" },
+  "common.cancel": { en: "Cancel", he: "ביטול" },
+  "common.delete": { en: "Delete", he: "מחיקה" },
+  "common.back": { en: "← Back", he: "חזרה ←" },
+  "common.eg": { en: "e.g.", he: "לדוג׳" },
+  "common.edit": { en: "Edit", he: "עריכה" },
+  "common.noData": { en: "No data found", he: "לא נמצאו נתונים" },
+  "common.loadingPositions": { en: "Loading positions...", he: "...טוען פוזיציות" },
+  "common.loadingWatchlist": { en: "Loading watchlist...", he: "...טוען רשימת מעקב" },
+  "common.loadingSymbols": { en: "Loading symbols...", he: "...טוען מניות" },
+
+  // ── Market Spirit ──────────────────────────────────────────
+  "spirit.momentum": { en: "Momentum", he: "מומנטום" },
+  "spirit.moneyFlow": { en: "Money Flow", he: "זרימת כסף" },
+  "spirit.compression": { en: "Compression", he: "דחיסה" },
+  "spirit.adv": { en: "ADV", he: "ADV" },
+  "spirit.adLine": { en: "AD Line", he: "קו AD" },
+  "spirit.noData": { en: "No data found for this date", he: "לא נמצאו נתונים לתאריך זה" },
+  "spirit.defenseBearish": { en: "Defense - Bearish", he: "הגנה - דובי" },
+  "spirit.selectiveNeutral": { en: "Selective - Neutral", he: "סלקטיבי - ניטרלי" },
+  "spirit.attackBullish": { en: "Attack - Bullish", he: "התקפה - שורי" },
+
+  // ── Market Momentum ────────────────────────────────────────
+  "momentum.strong": { en: "Strong", he: "חזק" },
+  "momentum.confirmed": { en: "Confirmed", he: "מאושר" },
+  "momentum.new": { en: "New", he: "חדש" },
+  "momentum.leaders": { en: "Leaders", he: "מובילים" },
+  "momentum.compression": { en: "Compression", he: "דחיסה" },
+  "momentum.all": { en: "All", he: "הכל" },
+  "momentum.noSymbols": { en: "No symbols in this category.", he: "אין מניות בקטגוריה זו." },
+
+  // ── Market Last Update ─────────────────────────────────────
+  "lastUpdate.col.lastPrice": { en: "Last Price", he: "מחיר אחרון" },
+  "lastUpdate.col.lastSaleTime": { en: "Last Sale Time", he: "זמן עסקה אחרונה" },
+  "lastUpdate.col.lastSaleVol": { en: "Last Sale Vol", he: "נפח עסקה אחרונה" },
+  "lastUpdate.col.dailyVolume": { en: "Daily Volume", he: "מחזור יומי" },
+  "lastUpdate.col.dailyValue": { en: "Daily Value", he: "ערך יומי" },
+  "lastUpdate.col.numTrades": { en: "Num Trades", he: "מס׳ עסקאות" },
+  "lastUpdate.col.tradingPhase": { en: "Trading Phase", he: "שלב מסחר" },
+
+  // ── Sector Heatmap ─────────────────────────────────────────
+  "heatmap.allSectors": { en: "All Sectors", he: "כל המגזרים" },
+  "heatmap.noDataForView": { en: "No data for this view", he: "אין נתונים לתצוגה זו" },
+  "heatmap.change": { en: "Change:", he: ":שינוי" },
+  "heatmap.mktCap": { en: "Mkt Cap:", he: ":שווי שוק" },
+  "heatmap.stocks": { en: "Stocks:", he: ":מניות" },
+  "heatmap.clickToDrill": { en: "Click to drill down", he: "לחץ לפירוט" },
+  "heatmap.na": { en: "N/A", he: "N/A" },
+
+  // ── Positions Manager ──────────────────────────────────────
+  "positions.editPosition": { en: "Edit Position", he: "עריכת פוזיציה" },
+  "positions.addPosition": { en: "Add Position", he: "הוספת פוזיציה" },
+  "positions.addBtn": { en: "+ Add Position", he: "+ הוסף פוזיציה" },
+  "positions.symbolRequired": { en: "Symbol is required", he: "סימול נדרש" },
+  "positions.dateFormat": { en: "Date must be YYYY-MM-DD", he: "תאריך בפורמט YYYY-MM-DD" },
+  "positions.amountPositive": { en: "Amount must be a positive number", he: "כמות חייבת להיות מספר חיובי" },
+  "positions.pricePositive": { en: "Price must be a positive number", he: "מחיר חייב להיות מספר חיובי" },
+  "positions.stopLossRange": { en: "Must be 0–100", he: "חייב להיות 0–100" },
+  "positions.noPositions": { en: "No positions yet. Click \"+ Add Position\" to get started.", he: "אין פוזיציות עדיין. לחץ \"+ הוסף פוזיציה\" כדי להתחיל." },
+  "positions.startDate": { en: "Start Date", he: "תאריך התחלה" },
+  "positions.amount": { en: "Amount", he: "כמות" },
+  "positions.avgEntryPrice": { en: "Avg Entry Price", he: "מחיר כניסה ממוצע" },
+  "positions.allocPct": { en: "Alloc %", he: "% הקצאה" },
+  "positions.side": { en: "Side", he: "צד" },
+  "positions.long": { en: "Long", he: "לונג" },
+  "positions.short": { en: "Short", he: "שורט" },
+  "positions.actions": { en: "Actions", he: "פעולות" },
+
+  // ── Watchlist Manager ──────────────────────────────────────
+  "watchlist.addToWatchlist": { en: "+ Add to Watchlist", he: "+ הוסף לרשימת מעקב" },
+  "watchlist.editItem": { en: "Edit Watchlist Item", he: "עריכת פריט מעקב" },
+  "watchlist.addItem": { en: "Add to Watchlist", he: "הוסף לרשימת מעקב" },
+  "watchlist.symbolRequired": { en: "Symbol is required", he: "סימול נדרש" },
+  "watchlist.dateFormat": { en: "Date must be YYYY-MM-DD", he: "תאריך בפורמט YYYY-MM-DD" },
+  "watchlist.noItems": { en: "No watchlist items yet. Click \"+ Add to Watchlist\" to get started.", he: "אין פריטי מעקב עדיין. לחץ \"+ הוסף לרשימת מעקב\" כדי להתחיל." },
+  "watchlist.startDate": { en: "Start Date", he: "תאריך התחלה" },
+  "watchlist.note": { en: "Note", he: "הערה" },
+  "watchlist.actions": { en: "Actions", he: "פעולות" },
+
+  // ── Navigation labels ──────────────────────────────────────
+  "nav.table": { en: "Table", he: "טבלה" },
+  "nav.candlestick": { en: "Candlestick", he: "גרף נרות" },
+  "nav.endOfDay": { en: "End of Day", he: "סוף יום" },
+  "nav.manager": { en: "Manager", he: "ניהול" },
+
+  // ── Candlestick widgets ────────────────────────────────────
+  "candlestick.symbol": { en: "Symbol:", he: ":סימול" },
+  "candlestick.from": { en: "From:", he: ":מתאריך" },
+  "candlestick.to": { en: "To:", he: ":עד" },
+  "candlestick.autoRefresh": { en: "Auto-refresh (30 sec)", he: "רענון אוטומטי (30 שנ׳)" },
+  "candlestick.noData": { en: "No price data available", he: "אין נתוני מחיר" },
+  "candlestick.noIntraday": { en: "No intraday data available", he: "אין נתונים תוך-יומיים" },
+
+  // ── EndOfDay shared (tooltips) ─────────────────────────────
+  "eod.company": { en: "Company:", he: ":חברה" },
+  "eod.sector": { en: "Sector:", he: ":מגזר" },
+  "eod.subSector": { en: "Sub-Sector:", he: ":תת-מגזר" },
+  "eod.allSymbols": { en: "All symbols", he: "כל המניות" },
+  "eod.marketTypeStock": { en: "Stock", he: "מניה" },
+  "eod.marketTypeBond": { en: "Bond", he: "אג״ח" },
+  "eod.marketTypeTaseUp": { en: "TASE UP Stock", he: "מניית TASE UP" },
+  "eod.marketTypeLoan": { en: "Loan", he: "הלוואה" },
+
+  // ── Landing page table headers ─────────────────────────────
+  "landing.col.widget": { en: "Widget", he: "ווידג׳ט" },
+  "landing.col.showTool": { en: "Show Tool", he: "הצג כלי" },
+  "landing.col.showParams": { en: "Show Params", he: "הצג פרמטרים" },
+  "landing.col.dataTools": { en: "Data Tools", he: "כלי נתונים" },
+  "landing.col.dataParams": { en: "Data Params", he: "פרמטרי נתונים" },
+  "landing.col.dataTool": { en: "Data Tool", he: "כלי נתונים" },
+  "landing.col.inputParams": { en: "Input Params", he: "פרמטרי קלט" },
+  "landing.col.visibility": { en: "Visibility", he: "נראות" },
+  "landing.col.usedByWidgets": { en: "Used By Widgets", he: "בשימוש ווידג׳טים" },
 } as const;
 
 export type TranslationKey = keyof typeof t;

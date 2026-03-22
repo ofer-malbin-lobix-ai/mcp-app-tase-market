@@ -51,6 +51,7 @@ function MarketSpiritApp() {
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
   const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
+  const { t } = useLanguage();
 
   const { app, error } = useApp({
     appInfo: { name: "Market Spirit", version: "1.0.0" },
@@ -118,7 +119,7 @@ function MarketSpiritApp() {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -173,11 +174,11 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
       if (spiritData) {
         setData(spiritData);
       } else {
-        setRefreshError("No data found for this date");
+        setRefreshError(t("spirit.noData"));
       }
     } catch (e) {
       console.error("Failed to refresh data:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -233,7 +234,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
       {data && data.momentumBreadth != null && (
         <div className={styles.breadthGauges}>
           <div className={styles.gaugeItem}>
-            <span className={styles.gaugeLabel}>Momentum</span>
+            <span className={styles.gaugeLabel}>{t("spirit.momentum")}</span>
             <div className={styles.gaugeBar}>
               <div
                 className={styles.gaugeFill}
@@ -246,7 +247,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
             <span className={styles.gaugeValue}>{data.momentumBreadth}%</span>
           </div>
           <div className={styles.gaugeItem}>
-            <span className={styles.gaugeLabel}>Money Flow</span>
+            <span className={styles.gaugeLabel}>{t("spirit.moneyFlow")}</span>
             <div className={styles.gaugeBar}>
               <div
                 className={styles.gaugeFill}
@@ -259,7 +260,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
             <span className={styles.gaugeValue}>{data.moneyFlowBreadth ?? 0}%</span>
           </div>
           <div className={styles.gaugeItem}>
-            <span className={styles.gaugeLabel}>Compression</span>
+            <span className={styles.gaugeLabel}>{t("spirit.compression")}</span>
             <div className={styles.gaugeBar}>
               <div
                 className={styles.gaugeFill}
@@ -303,13 +304,13 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
       {data && (data.adv != null || data.adLine != null) && (
         <div className={styles.breadth}>
           <div className={styles.breadthItem}>
-            <span className={styles.breadthLabel}>ADV</span>
+            <span className={styles.breadthLabel}>{t("spirit.adv")}</span>
             <span className={styles.breadthValue} style={{ color: "#22c55e" }}>
               {data.adv != null ? data.adv.toLocaleString() : "—"}
             </span>
           </div>
           <div className={styles.breadthItem}>
-            <span className={styles.breadthLabel}>AD Line</span>
+            <span className={styles.breadthLabel}>{t("spirit.adLine")}</span>
             <span className={styles.breadthValue} style={{ color: "#3b82f6" }}>
               {data.adLine != null ? data.adLine.toLocaleString() : "—"}
             </span>
@@ -318,7 +319,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
       )}
 
       {data && !data.score && (
-        <div className={styles.waiting}>No data found for this date</div>
+        <div className={styles.waiting}>{t("spirit.noData")}</div>
       )}
 
       {refreshError && (
@@ -327,7 +328,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
 
       <div className={styles.controls}>
         <label className={styles.label}>
-          Trade Date:
+          {t("eod.tradeDate")}
           <input
             type="date"
             className={styles.select}
@@ -340,22 +341,22 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
           onClick={() => handleRefresh(selectedDate || undefined)}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
 
       <div className={styles.legend}>
         <div className={styles.legendItem}>
           <span className={`${styles.legendDot} ${styles.red}`} />
-          <span>Defense - Bearish</span>
+          <span>{t("spirit.defenseBearish")}</span>
         </div>
         <div className={styles.legendItem}>
           <span className={`${styles.legendDot} ${styles.yellow}`} />
-          <span>Selective - Neutral</span>
+          <span>{t("spirit.selectiveNeutral")}</span>
         </div>
         <div className={styles.legendItem}>
           <span className={`${styles.legendDot} ${styles.green}`} />
-          <span>Attack - Bullish</span>
+          <span>{t("spirit.attackBullish")}</span>
         </div>
       </div>
     </WidgetLayout>

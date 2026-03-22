@@ -36,6 +36,7 @@ export interface EndOfDayAppConfig {
 // --- App component ---
 
 function EndOfDayApp({ config }: { config: EndOfDayAppConfig }) {
+  const { t } = useLanguage();
   const [data, setData] = useState<EndOfDayWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
@@ -102,7 +103,7 @@ function EndOfDayApp({ config }: { config: EndOfDayAppConfig }) {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -208,7 +209,7 @@ function EndOfDayInner({
   const subtitle = data
     ? config.isMarketView
       ? `${data.tradeDate}${data.marketType ? ` \u00b7 ${data.marketType}` : ""}`
-      : `${data.symbols?.length ? data.symbols.join(", ") : "All symbols"} \u00b7 ${data.dateFrom ?? ""}`
+      : `${data.symbols?.length ? data.symbols.join(", ") : t("eod.allSymbols")} \u00b7 ${data.dateFrom ?? ""}`
     : undefined;
 
   return (
@@ -256,10 +257,10 @@ function EndOfDayInner({
               onChange={(e) => setSelectedMarketType(e.target.value)}
             >
               <option value="">{"\u2014"}</option>
-              <option value="STOCK">Stock</option>
-              <option value="BOND">Bond</option>
-              <option value="TASE UP STOCK">TASE UP Stock</option>
-              <option value="LOAN">Loan</option>
+              <option value="STOCK">{t("eod.marketTypeStock")}</option>
+              <option value="BOND">{t("eod.marketTypeBond")}</option>
+              <option value="TASE UP STOCK">{t("eod.marketTypeTaseUp")}</option>
+              <option value="LOAN">{t("eod.marketTypeLoan")}</option>
             </select>
           </label>
         )}

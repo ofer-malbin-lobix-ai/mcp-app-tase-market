@@ -143,11 +143,11 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
             <thead>
               <tr>
                 <th className={styles.refNum}>#</th>
-                <th>Widget</th>
-                <th>Show Tool</th>
-                <th>Show Params</th>
-                <th>Data Tools</th>
-                <th>Data Params</th>
+                <th>{t("landing.col.widget")}</th>
+                <th>{t("landing.col.showTool")}</th>
+                <th>{t("landing.col.showParams")}</th>
+                <th>{t("landing.col.dataTools")}</th>
+                <th>{t("landing.col.dataParams")}</th>
               </tr>
             </thead>
             <tbody>
@@ -178,10 +178,10 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
             <thead>
               <tr>
                 <th className={styles.refNum}>#</th>
-                <th>Data Tool</th>
-                <th>Input Params</th>
-                <th>Visibility</th>
-                <th>Used By Widgets</th>
+                <th>{t("landing.col.dataTool")}</th>
+                <th>{t("landing.col.inputParams")}</th>
+                <th>{t("landing.col.visibility")}</th>
+                <th>{t("landing.col.usedByWidgets")}</th>
               </tr>
             </thead>
             <tbody>
@@ -204,6 +204,7 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
 
 function LandingApp() {
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
+  const { t } = useLanguage();
 
   const { app, error } = useApp({
     appInfo: { name: "TASE Data Hub", version: "1.0.0" },
@@ -229,7 +230,7 @@ function LandingApp() {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
 
   return <LandingInner hostContext={hostContext} app={app} />;
 }

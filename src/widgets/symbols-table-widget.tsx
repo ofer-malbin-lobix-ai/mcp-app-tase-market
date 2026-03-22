@@ -255,7 +255,7 @@ function SymbolsTableApp() {
   }, [baseData, period, periodOverlay, sortKey, sortDir]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -289,7 +289,7 @@ function SymbolsTableApp() {
       </div>
 
       {!baseData ? (
-        <div className={styles.loading}>Loading symbols...</div>
+        <div className={styles.loading}>{t("common.loadingSymbols")}</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>

@@ -263,6 +263,7 @@ interface TooltipData {
 // ── Main App ───────────────────────────────────────────────────────────────────
 
 function HeatmapApp() {
+  const { t } = useLanguage();
   const [data, setData] = useState<SectorHeatmapResponse | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
@@ -321,7 +322,7 @@ function HeatmapApp() {
     );
   }
   if (!app) {
-    return <div style={{ color: "var(--t-text-secondary)", padding: 16 }}>Connecting...</div>;
+    return <div style={{ color: "var(--t-text-secondary)", padding: 16 }}>{t("layout.connecting")}</div>;
   }
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
@@ -401,7 +402,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   }, [nodes]);
 
   const breadcrumb = useMemo(() => {
-    if (drill.level === "sectors") return "All Sectors";
+    if (drill.level === "sectors") return t("heatmap.allSectors");
     if (drill.level === "subsectors") return drill.sector;
     return `${drill.sector} › ${drill.subSector}`;
   }, [drill]);
@@ -436,10 +437,10 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
       if (handleSubscriptionRedirect(result, app)) return;
       const d = extractHeatmapData(result);
       if (d) setData(d);
-      else setRefreshError("No data found for this date");
+      else setRefreshError(t("spirit.noData"));
     } catch (e) {
       console.error("Refresh failed:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -496,7 +497,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
                   flexShrink: 0,
                 }}
               >
-                ← Back
+                {t("common.back")}
               </button>
             )}
             <span style={{ color: "var(--t-text-secondary)", fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -575,7 +576,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
                   }}
                 />
               )}
-              {isRefreshing ? "Loading…" : "Refresh"}
+              {isRefreshing ? t("eod.loading") : t("eod.refresh")}
             </button>
           </div>
         </div>
@@ -601,7 +602,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
                 color: "var(--t-text-secondary)", fontSize: 14,
               }}
             >
-              No data for this view
+              {t("heatmap.noDataForView")}
             </div>
           ) : (
             <svg
@@ -702,21 +703,21 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
                 <div style={{ color: "var(--t-text-secondary)", fontSize: 11, marginBottom: 2 }}>{tooltip.node.label}</div>
               )}
               <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>
-                Change:{" "}
+                {t("heatmap.change")}{" "}
                 <span style={{ color: (tooltip.node.change ?? 0) >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
                   {fmtChange(tooltip.node.change)}
                 </span>
               </div>
               {tooltip.node.marketCap != null && (
                 <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>
-                  Mkt Cap: {fmtMarketCap(tooltip.node.marketCap)}
+                  {t("heatmap.mktCap")} {fmtMarketCap(tooltip.node.marketCap)}
                 </div>
               )}
               {tooltip.node.count > 1 && (
-                <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>Stocks: {tooltip.node.count}</div>
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 11 }}>{t("heatmap.stocks")} {tooltip.node.count}</div>
               )}
               {isClickable && (
-                <div style={{ color: "var(--t-text-secondary)", fontSize: 10, marginTop: 4 }}>Click to drill down</div>
+                <div style={{ color: "var(--t-text-secondary)", fontSize: 10, marginTop: 4 }}>{t("heatmap.clickToDrill")}</div>
               )}
             </div>
           )}
@@ -750,7 +751,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4a4a4a", display: "inline-block" }} />
-            N/A
+            {t("heatmap.na")}
           </span>
         </div>
       </div>

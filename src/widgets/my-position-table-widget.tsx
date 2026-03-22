@@ -245,7 +245,7 @@ function MyPositionApp() {
   }, [baseData, sortKey, sortDir]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -270,14 +270,14 @@ function MyPositionApp() {
       <NavRow
         app={app}
         items={[
-          { label: "Manager", prompt: "call show-my-positions-manager-widget" },
-          { label: "Candlestick", prompt: "call show-my-position-candlestick-widget" },
-          { label: "End of Day", prompt: "call show-my-position-end-of-day-widget" },
+          { label: t("nav.manager"), prompt: "call show-my-positions-manager-widget" },
+          { label: t("nav.candlestick"), prompt: "call show-my-position-candlestick-widget" },
+          { label: t("nav.endOfDay"), prompt: "call show-my-position-end-of-day-widget" },
         ]}
       />
 
       {!baseData ? (
-        <div className={styles.loading}>Loading positions...</div>
+        <div className={styles.loading}>{t("common.loadingPositions")}</div>
       ) : (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>

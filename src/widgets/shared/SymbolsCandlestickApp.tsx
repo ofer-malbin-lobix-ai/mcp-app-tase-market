@@ -746,7 +746,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   }, [sidebarSymbols, selectedSymbol, handleSelectSymbol, config.symbolDatesToolName, symbolDates]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />

@@ -9,7 +9,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
-import { useLanguage } from "../components/useLanguage";
+import { useLanguage, type TFunction } from "../components/useLanguage";
 import styles from "./watchlist-manager-widget.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -64,13 +64,13 @@ function extractWatchlistData(result: CallToolResult | null | undefined): UserWa
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-function validateForm(form: FormState, isEdit: boolean): FormErrors {
+function validateForm(form: FormState, isEdit: boolean, t: TFunction): FormErrors {
   const errors: FormErrors = {};
   if (!isEdit && !form.symbol.trim()) {
-    errors.symbol = "Symbol is required";
+    errors.symbol = t("watchlist.symbolRequired");
   }
   if (!DATE_RE.test(form.startDate)) {
-    errors.startDate = "Date must be YYYY-MM-DD";
+    errors.startDate = t("watchlist.dateFormat");
   }
   return errors;
 }
@@ -200,7 +200,7 @@ function WatchlistManagerApp() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    const errors = validateForm(form, isEditing);
+    const errors = validateForm(form, isEditing, t);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -253,7 +253,7 @@ function WatchlistManagerApp() {
   // ─── Render ──────────────────────────────────────────────────────
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -276,16 +276,16 @@ function WatchlistManagerApp() {
       {!showForm && (
         <div className={styles.addBtnWrapper}>
           <button className={styles.addBtn} onClick={handleAddClick} disabled={isBusy}>
-            + Add to Watchlist
+            {t("watchlist.addToWatchlist")}
           </button>
         </div>
       )}
 
       <div className={styles.navRow}>
         {[
-          { label: "Table", prompt: "call show-watchlist-table-widget" },
-          { label: "Candlestick", prompt: "call show-watchlist-candlestick-widget" },
-          { label: "End of Day", prompt: "call show-watchlist-end-of-day-widget" },
+          { label: t("nav.table"), prompt: "call show-watchlist-table-widget" },
+          { label: t("nav.candlestick"), prompt: "call show-watchlist-candlestick-widget" },
+          { label: t("nav.endOfDay"), prompt: "call show-watchlist-end-of-day-widget" },
         ].map((nav) => (
           <button
             key={nav.label}
@@ -314,22 +314,22 @@ function WatchlistManagerApp() {
 
       {!authError && showForm && (
         <div className={styles.formPanel}>
-          <div className={styles.formTitle}>{isEditing ? "Edit Watchlist Item" : "Add to Watchlist"}</div>
+          <div className={styles.formTitle}>{isEditing ? t("watchlist.editItem") : t("watchlist.addItem")}</div>
           <div className={styles.formRow}>
             <label className={styles.label}>
-              Symbol
+              {t("eod.col.symbol")}
               <input
                 className={`${styles.input} ${formErrors.symbol ? styles.inputError : ""}`}
                 value={form.symbol}
                 onChange={(e) => handleFieldChange("symbol", e.target.value)}
                 disabled={isEditing}
-                placeholder="e.g. TEVA"
+                placeholder={t("common.eg") + " TEVA"}
                 maxLength={20}
               />
               {formErrors.symbol && <span className={styles.fieldError}>{formErrors.symbol}</span>}
             </label>
             <label className={styles.label}>
-              Start Date
+              {t("watchlist.startDate")}
               <input
                 className={`${styles.input} ${formErrors.startDate ? styles.inputError : ""}`}
                 value={form.startDate}
@@ -341,7 +341,7 @@ function WatchlistManagerApp() {
             </label>
           </div>
           <label className={styles.label} style={{ marginTop: "0.5rem" }}>
-            Note
+            {t("watchlist.note")}
             <textarea
               className={styles.textarea}
               value={form.note}
@@ -353,28 +353,28 @@ function WatchlistManagerApp() {
           </label>
           <div className={styles.formActions}>
             <button className={styles.saveBtn} onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? t("common.saving") : t("common.save")}
             </button>
             <button className={styles.cancelBtn} onClick={handleCancel} disabled={isSaving}>
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         </div>
       )}
 
       {!authError && !data ? (
-        <div className={styles.loading}>Loading watchlist...</div>
+        <div className={styles.loading}>{t("common.loadingWatchlist")}</div>
       ) : !authError && watchlist.length === 0 ? (
-        <div className={styles.empty}>No watchlist items yet. Click "+ Add to Watchlist" to get started.</div>
+        <div className={styles.empty}>{t("watchlist.noItems")}</div>
       ) : !authError ? (
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead>
               <tr>
-                <th className={`${styles.th} ${styles.thLeft}`}>Symbol</th>
-                <th className={`${styles.th} ${styles.thLeft}`}>Start Date</th>
-                <th className={`${styles.th} ${styles.thLeft}`}>Note</th>
-                <th className={`${styles.th} ${styles.thActions}`}>Actions</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("eod.col.symbol")}</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("watchlist.startDate")}</th>
+                <th className={`${styles.th} ${styles.thLeft}`}>{t("watchlist.note")}</th>
+                <th className={`${styles.th} ${styles.thActions}`}>{t("watchlist.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -392,14 +392,14 @@ function WatchlistManagerApp() {
                       onClick={() => handleEditClick(item)}
                       disabled={isBusy}
                     >
-                      Edit
+                      {t("common.edit")}
                     </button>
                     <button
                       className={styles.deleteBtn}
                       onClick={() => handleDelete(item.symbol)}
                       disabled={isBusy}
                     >
-                      {isDeleting === item.symbol ? "..." : "Delete"}
+                      {isDeleting === item.symbol ? "..." : t("common.delete")}
                     </button>
                   </td>
                 </tr>

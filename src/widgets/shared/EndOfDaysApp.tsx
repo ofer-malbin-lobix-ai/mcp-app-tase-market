@@ -38,6 +38,7 @@ const DAYS_COLUMN_VISIBILITY: Record<string, boolean> = {
 // --- App component ---
 
 function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
+  const { t } = useLanguage();
   const [data, setData] = useState<EndOfDayWidgetData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
@@ -104,7 +105,7 @@ function EndOfDaysApp({ config }: { config: EndOfDaysAppConfig }) {
   }, [app]);
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
-  if (!app) return <div className={styles.loading}>Connecting...</div>;
+  if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
   if (subscribeUrl !== null) return (
     <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
       <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
@@ -215,9 +216,9 @@ function EndOfDaysInner({
     const symbol = data.symbols?.[0] ?? "";
     const first = rows[0];
     const tooltipParts: string[] = [];
-    if (first?.companyName) tooltipParts.push(`Company: ${first.companyName}`);
-    if (first?.sector) tooltipParts.push(`Sector: ${first.sector}`);
-    if (first?.subSector) tooltipParts.push(`Sub-Sector: ${first.subSector}`);
+    if (first?.companyName) tooltipParts.push(`${t("eod.company")} ${first.companyName}`);
+    if (first?.sector) tooltipParts.push(`${t("eod.sector")} ${first.sector}`);
+    if (first?.subSector) tooltipParts.push(`${t("eod.subSector")} ${first.subSector}`);
     const tooltip = tooltipParts.join("\n");
     const dateRange = `${data.dateFrom ?? ""} \u2192 ${data.dateTo ?? ""}`;
     if (!symbol) return dateRange;
