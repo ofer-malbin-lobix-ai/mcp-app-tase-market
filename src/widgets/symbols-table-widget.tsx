@@ -121,7 +121,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 // ─── Main App ────────────────────────────────────────────────────────
 
 function SymbolsTableApp() {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [baseData, setBaseData] = useState<EndOfDaySymbolsData | null>(null);
   const [period, setPeriod] = useState<HeatmapPeriod>("1D");
   const [periodOverlay, setPeriodOverlay] = useState<Map<
@@ -272,7 +272,7 @@ function SymbolsTableApp() {
     : undefined;
 
   return (
-    <WidgetLayout title="Symbols Table" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.symbolsTable")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <div className={styles.headerRow}>
         <div className={styles.periodBar}>
           {PERIODS.map((p) => (

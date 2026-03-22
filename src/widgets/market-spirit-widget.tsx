@@ -142,7 +142,7 @@ interface MarketSpiritInnerProps {
 }
 
 function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInnerProps) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -214,7 +214,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title="Market Spirit" subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.marketSpirit")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data?.regime && (
         <div className={styles.regimeSection}>

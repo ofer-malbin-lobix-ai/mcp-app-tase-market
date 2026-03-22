@@ -347,7 +347,7 @@ const heatmapSpinnerStyle = `
 `;
 
 function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [drill, setDrill] = useState<DrillLevel>({ level: "sectors" });
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -455,7 +455,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const subtitle = data ? `${data.marketType} · ${data.count} stocks` : undefined;
 
   return (
-    <WidgetLayout title="Sector Heatmap" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.marketSectorHeatmap")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
       <div
         style={{

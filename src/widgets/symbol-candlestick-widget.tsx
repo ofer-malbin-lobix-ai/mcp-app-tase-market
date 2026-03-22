@@ -196,7 +196,7 @@ interface CandlestickAppInnerProps {
 }
 
 function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: CandlestickAppInnerProps) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
@@ -405,7 +405,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     : undefined;
 
   return (
-    <WidgetLayout title="Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.symbolCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

@@ -14,6 +14,7 @@ import styles from "./end-of-day-widget.module.css";
 import type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
 import {
   INITIAL_COLUMN_VISIBILITY,
+  TOOL_TITLE_KEYS,
   createEndOfDayColumns,
   deriveTitle,
   extractEndOfDayData,
@@ -229,7 +230,7 @@ function EndOfDaysInner({
   }, [data, rows]);
 
   return (
-    <WidgetLayout title={deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={(TOOL_TITLE_KEYS[config.toolName] ? t(TOOL_TITLE_KEYS[config.toolName] as any) : "") || deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       {data && (
         <>
           <div className={styles.summary}>

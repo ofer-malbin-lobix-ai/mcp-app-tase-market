@@ -78,7 +78,7 @@ function validateForm(form: FormState, isEdit: boolean): FormErrors {
 // ─── Main App ────────────────────────────────────────────────────────
 
 function WatchlistManagerApp() {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [data, setData] = useState<UserWatchlistData | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
@@ -265,7 +265,7 @@ function WatchlistManagerApp() {
 
   return (
     <WidgetLayout
-      title="Watchlist Manager"
+      title={t("landing.tool.watchlistManager")}
       subtitle={data ? `${watchlist.length} item${watchlist.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

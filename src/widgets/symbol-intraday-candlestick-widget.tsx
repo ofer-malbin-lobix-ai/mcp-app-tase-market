@@ -285,7 +285,7 @@ interface IntradayAppInnerProps {
 }
 
 function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostContext }: IntradayAppInnerProps) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [symbolInput, setSymbolInput] = useState("");
   const [selectedTimeframe, setSelectedTimeframe] = useState<IntradayTimeframe>("5m");
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -430,7 +430,7 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
     : undefined;
 
   return (
-    <WidgetLayout title="Symbol Intraday Candlestick Chart" subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.symbolIntradayCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

@@ -114,7 +114,7 @@ function validateForm(form: FormState, isEdit: boolean): FormErrors {
 // ─── Main App ────────────────────────────────────────────────────────
 
 function MyPositionsManagerApp() {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [data, setData] = useState<UserPositionsData | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
@@ -309,7 +309,7 @@ function MyPositionsManagerApp() {
 
   return (
     <WidgetLayout
-      title="Positions Manager"
+      title={t("landing.tool.myPositionsManager")}
       subtitle={data ? `${positions.length} position${positions.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

@@ -498,9 +498,16 @@ function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, show
 // ─── Main App ───────────────────────────────────────────────────────
 
 function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig }) {
-  const title = deriveTitle(config.toolName);
   const periodToolName = derivePeriodToolName(config.toolName);
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
+
+  const CANDLESTICK_TITLE_KEYS: Record<string, string> = {
+    "get-symbols-end-of-days-data": "landing.tool.symbolsCandlestick",
+    "get-my-position-end-of-day-data": "landing.tool.myPositionCandlestick",
+    "get-watchlist-end-of-day-data": "landing.tool.watchlistCandlestick",
+  };
+  const titleKey = CANDLESTICK_TITLE_KEYS[config.toolName];
+  const title = (titleKey ? t(titleKey as any) : "") || deriveTitle(config.toolName);
 
   const [eodData, setEodData] = useState<EndOfDaySymbolsData | null>(null);
   const [chartData, setChartData] = useState<CandlestickWidgetData | null>(null);

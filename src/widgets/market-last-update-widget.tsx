@@ -195,7 +195,7 @@ function LastUpdateAppInner({
   setData,
   hostContext,
 }: LastUpdateAppInnerProps) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -359,7 +359,7 @@ function LastUpdateAppInner({
   }, [summaryRows]);
 
   return (
-    <WidgetLayout title="Market Last Update" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.marketLastUpdate")} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.summary}>

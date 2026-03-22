@@ -121,7 +121,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 // ─── Main App ────────────────────────────────────────────────────────
 
 function MyPositionApp() {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [baseData, setBaseData] = useState<PositionTableData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("symbol");
@@ -259,7 +259,7 @@ function MyPositionApp() {
 
   return (
     <WidgetLayout
-      title="My Position Table"
+      title={t("landing.tool.myPositionTable")}
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

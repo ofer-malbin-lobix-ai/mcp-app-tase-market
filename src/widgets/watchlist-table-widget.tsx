@@ -123,7 +123,7 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
 // ─── Main App ────────────────────────────────────────────────────────
 
 function WatchlistTableApp() {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [baseData, setBaseData] = useState<EndOfDaySymbolsData | null>(null);
   const [period, setPeriod] = useState<HeatmapPeriod>("1D");
   const [periodOverlay, setPeriodOverlay] = useState<Map<
@@ -311,7 +311,7 @@ function WatchlistTableApp() {
 
   return (
     <WidgetLayout
-      title="Watchlist Table"
+      title={t("landing.tool.watchlistTable")}
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}
