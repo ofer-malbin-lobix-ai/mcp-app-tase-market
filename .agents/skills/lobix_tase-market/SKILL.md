@@ -20,15 +20,14 @@ Use this skill when the user wants to:
 - View candlestick charts or end-of-day trading data
 - Compare multiple symbols or analyze a single stock
 
-## Available Tools (25 data + 22 widgets)
+## Available Tools (24 data + 22 widgets)
 
 ### Market Overview
 | Goal | Data Tool | Widget Tool |
 |------|-----------|-------------|
-| Dashboard (spirit + EOD + uptrend combined) | — | `show-market-dashboard-widget` |
+| Dashboard (spirit + EOD combined) | — | `show-market-dashboard-widget` |
 | Market breadth & sentiment | `get-market-spirit-data` | `show-market-spirit-widget` |
 | End-of-day for all symbols | `get-market-end-of-day-data` | `show-market-end-of-day-widget` |
-| Uptrend symbols | `get-market-uptrend-symbols-data` | `show-market-uptrend-symbols-widget` |
 | Sector heatmap | `get-market-sector-heatmap-data` | `show-market-sector-heatmap-widget` |
 | Live last-update prices | `get-market-last-update-data` | `show-market-last-update-widget` |
 | Momentum expert system | `get-market-momentum-data` | `show-market-momentum-widget` |
@@ -72,7 +71,7 @@ Use this skill when the user wants to:
 ```
 show-market-dashboard-widget
 ```
-Combines market spirit, end-of-day summary, and uptrend symbols in one view.
+Combines market spirit and end-of-day summary in one view.
 
 ### "How is sector X doing?" → Sector heatmap
 ```
@@ -94,11 +93,11 @@ Visual heatmap of all sectors with color-coded performance.
 2. **Manage:** `show-my-positions-manager-widget` (add/edit/remove)
 3. **Chart:** `show-my-position-candlestick-widget`
 
-### "What's trending up?" → Uptrend analysis
+### "What's trending up?" → Anticipation scanner
 ```
-show-market-uptrend-symbols-widget
+show-market-anticipation-widget
 ```
-Shows symbols in technical uptrend based on indicators.
+Stage 0 anticipation scanner identifying symbols with early momentum signals.
 
 ### "Show momentum leaders" / "Which stocks have strong momentum?" → Momentum expert system
 ```
