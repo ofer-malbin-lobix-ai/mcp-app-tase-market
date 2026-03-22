@@ -167,7 +167,7 @@ export function WidgetLayout({
             onClick={langToggle}
             title={language === "en" ? "Switch to עברית" : "Switch to English"}
           >
-            {language === "en" ? "EN" : "עב"}
+            {language === "en" ? "עב" : "EN"}
           </button>
           <button
             className={styles.themeToggle}
