@@ -302,6 +302,16 @@ async function testMarketMomentum(page) {
   console.log('  ✅ market-momentum passed');
 }
 
+async function testMarketAnticipation(page) {
+  console.log('\n🧪 Test: market-anticipation');
+  await newChat(page);
+  await sendMessage(page, `@${MCP_NAME} call show-market-anticipation-widget`);
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshot(page, 'market-anticipation');
+  console.log('  ✅ market-anticipation passed');
+}
+
 // ─── Shared symbols candlestick test (ChatGPT) ──────────────────────────────
 
 async function testCandlestickShared(page, { testName, message, prefix }) {
@@ -879,6 +889,16 @@ async function testMyPositionsManagerDesktop() {
   console.log('  ✅ my-positions-manager (Claude Desktop) passed');
 }
 
+async function testMarketAnticipationDesktop() {
+  console.log('\n🧪 Test: market-anticipation (Claude Desktop)');
+  await newChatDesktop();
+  await sendMessageDesktop('call show-market-anticipation-widget');
+  console.log('  Waiting for widget...');
+  await sleep(35000);
+  await screenshotDesktop('cd-market-anticipation');
+  console.log('  ✅ market-anticipation (Claude Desktop) passed');
+}
+
 async function testMarketSpiritDesktop() {
   console.log('\n🧪 Test: market-spirit (Claude Desktop)');
   await newChatDesktop();
@@ -1018,6 +1038,7 @@ const CHATGPT_TEST_MAP = {
   'market-spirit':            testMarketSpirit,
   'market-sector-heatmap':    testMarketSectorHeatmap,
   'market-momentum':          testMarketMomentum,
+  'market-anticipation':      testMarketAnticipation,
   'my-position-table':        testMyPositionTable,
   'my-position-candlestick':  testMyPositionCandlestick,
   'my-position-end-of-day':   testMyPositionEndOfDay,
@@ -1043,6 +1064,7 @@ const CLAUDE_DESKTOP_TEST_MAP = {
   'market-spirit':            testMarketSpiritDesktop,
   'market-sector-heatmap':    testMarketSectorHeatmapDesktop,
   'market-momentum':          testMarketMomentumDesktop,
+  'market-anticipation':      testMarketAnticipationDesktop,
   'my-position-table':        testMyPositionTableDesktop,
   'my-position-candlestick':  testMyPositionCandlestickDesktop,
   'my-position-end-of-day':   testMyPositionEndOfDayDesktop,
