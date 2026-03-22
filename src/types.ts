@@ -69,6 +69,8 @@ export interface MomentumSymbolItem {
   phase: "compression" | "early" | "expansion" | "extended";
   isLeader: boolean;           // leaderScore >= 7
   isCompression: boolean;      // bandWidth < 6%
+  isStrongCompression: boolean; // bandWidth < 4%
+  isEarlyBreakout: boolean;    // compression + rising RSI + rising MFI
   // Key indicators
   ez: number;
   rsi14: number | null;

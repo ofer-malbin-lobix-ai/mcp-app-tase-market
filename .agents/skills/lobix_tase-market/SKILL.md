@@ -31,6 +31,7 @@ Use this skill when the user wants to:
 | Uptrend symbols | `get-market-uptrend-symbols-data` | `show-market-uptrend-symbols-widget` |
 | Sector heatmap | `get-market-sector-heatmap-data` | `show-market-sector-heatmap-widget` |
 | Live last-update prices | `get-market-last-update-data` | `show-market-last-update-widget` |
+| Momentum expert system | `get-market-momentum-data` | `show-market-momentum-widget` |
 
 ### Symbol Analysis
 | Goal | Data Tool | Widget Tool |
@@ -97,6 +98,12 @@ Visual heatmap of all sectors with color-coded performance.
 show-market-uptrend-symbols-widget
 ```
 Shows symbols in technical uptrend based on indicators.
+
+### "Show momentum leaders" / "Which stocks have strong momentum?" → Momentum expert system
+```
+show-market-momentum-widget
+```
+Expert system scoring: DailyScore, TrendQuality, LeaderScore with persistence filters and phase classification. See `momentum-expert-system` skill for full algorithm spec.
 
 ## Key Parameters
 

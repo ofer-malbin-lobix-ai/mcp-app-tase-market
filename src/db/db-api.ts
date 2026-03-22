@@ -440,6 +440,12 @@ export async function fetchMomentumSymbols(
     const macdRising = prevEntry != null &&
       latest.macdHist != null && prevEntry.row.macdHist != null &&
       latest.macdHist > prevEntry.row.macdHist;
+    const rsiRising = prevEntry != null &&
+      latest.rsi14 != null && prevEntry.row.rsi14 != null &&
+      latest.rsi14 > prevEntry.row.rsi14;
+    const mfiRising = prevEntry != null &&
+      latest.mfi14 != null && prevEntry.row.mfi14 != null &&
+      latest.mfi14 > prevEntry.row.mfi14;
 
     // TrendQuality (0-10)
     let trendQuality = 0;
@@ -469,6 +475,8 @@ export async function fetchMomentumSymbols(
 
     // Compression
     const isCompression = latest.bandWidth20 != null && latest.bandWidth20 < 0.06;
+    const isStrongCompression = latest.bandWidth20 != null && latest.bandWidth20 < 0.04;
+    const isEarlyBreakout = isCompression && rsiRising && mfiRising;
 
     // Phase
     let phase: MomentumSymbolItem["phase"];
@@ -492,6 +500,8 @@ export async function fetchMomentumSymbols(
       phase,
       isLeader: leaderScore >= 7,
       isCompression,
+      isStrongCompression,
+      isEarlyBreakout,
       ez,
       rsi14: latest.rsi14,
       bandWidth20: latest.bandWidth20,
