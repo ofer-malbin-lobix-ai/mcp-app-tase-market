@@ -134,7 +134,7 @@ function EndOfDayInner({
   hostContext?: McpUiHostContext;
   config: EndOfDayAppConfig;
 }) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedMarketType, setSelectedMarketType] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -170,11 +170,11 @@ function EndOfDayInner({
       if (extracted) {
         setData(extracted);
       } else {
-        setRefreshError("No data found");
+        setRefreshError(t("eod.noDataFound"));
       }
     } catch (e) {
       console.error("Failed to refresh data:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -182,8 +182,8 @@ function EndOfDayInner({
 
   // CRITICAL: Memoize columns to prevent infinite re-renders
   const columns = useMemo(
-    () => createEndOfDayColumns(app, config.isMarketView),
-    [app, config.isMarketView]
+    () => createEndOfDayColumns(app, config.isMarketView, t),
+    [app, config.isMarketView, t]
   );
 
   // CRITICAL: Memoize rows to prevent infinite re-renders
@@ -218,19 +218,19 @@ function EndOfDayInner({
       {data && (
         <div className={styles.summary}>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Total Stocks</div>
+            <div className={styles.summaryLabel}>{t("eod.totalStocks")}</div>
             <div className={styles.summaryValue}>{marketSummary.totalStocks}</div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Gainers</div>
+            <div className={styles.summaryLabel}>{t("eod.gainers")}</div>
             <div className={`${styles.summaryValue} ${styles.gainers}`}>{marketSummary.gainers}</div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Losers</div>
+            <div className={styles.summaryLabel}>{t("eod.losers")}</div>
             <div className={`${styles.summaryValue} ${styles.losers}`}>{marketSummary.losers}</div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>Total Volume</div>
+            <div className={styles.summaryLabel}>{t("eod.totalVolume")}</div>
             <div className={styles.summaryValue}>{formatVolume(marketSummary.totalVolume)}</div>
           </div>
         </div>
@@ -238,7 +238,7 @@ function EndOfDayInner({
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>
-          {config.isMarketView ? "Trade Date:" : "Date:"}
+          {config.isMarketView ? t("eod.tradeDate") : t("eod.date")}
           <input
             type="date"
             className={styles.dateInput}
@@ -248,7 +248,7 @@ function EndOfDayInner({
         </label>
         {config.isMarketView && (
           <label className={styles.dateLabel}>
-            Market Type:
+            {t("eod.marketType")}
             <select
               className={styles.dateInput}
               value={selectedMarketType}
@@ -267,14 +267,14 @@ function EndOfDayInner({
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}
 
       {data && rows.length === 0 ? (
-        <div className={styles.loading}>No rows found</div>
+        <div className={styles.loading}>{t("eod.noRowsFound")}</div>
       ) : data ? (
         <DataTable
           data={rows}

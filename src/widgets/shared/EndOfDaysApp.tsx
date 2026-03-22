@@ -139,7 +139,7 @@ function EndOfDaysInner({
   config: EndOfDaysAppConfig;
   toolInput: Record<string, unknown>;
 }) {
-  const { language, dir, toggle } = useLanguage();
+  const { language, dir, toggle, t } = useLanguage();
   const [selectedDateFrom, setSelectedDateFrom] = useState("");
   const [selectedDateTo, setSelectedDateTo] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -174,11 +174,11 @@ function EndOfDaysInner({
       if (extracted) {
         setData(extracted);
       } else {
-        setRefreshError("No data found");
+        setRefreshError(t("eod.noDataFound"));
       }
     } catch (e) {
       console.error("Failed to refresh data:", e);
-      setRefreshError("Failed to fetch data");
+      setRefreshError(t("eod.failedToFetch"));
     } finally {
       setIsRefreshing(false);
     }
@@ -186,8 +186,8 @@ function EndOfDaysInner({
 
   // Always show date column for date-range widgets
   const columns = useMemo(
-    () => createEndOfDayColumns(app, true),
-    [app]
+    () => createEndOfDayColumns(app, true, t),
+    [app, t]
   );
 
   // CRITICAL: Memoize rows to prevent infinite re-renders
@@ -234,19 +234,19 @@ function EndOfDaysInner({
         <>
           <div className={styles.summary}>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Trading Days</div>
+              <div className={styles.summaryLabel}>{t("eod.tradingDays")}</div>
               <div className={styles.summaryValue}>{marketSummary.totalStocks}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Up Days</div>
+              <div className={styles.summaryLabel}>{t("eod.upDays")}</div>
               <div className={`${styles.summaryValue} ${styles.gainers}`}>{marketSummary.gainers}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Down Days</div>
+              <div className={styles.summaryLabel}>{t("eod.downDays")}</div>
               <div className={`${styles.summaryValue} ${styles.losers}`}>{marketSummary.losers}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>Total Volume</div>
+              <div className={styles.summaryLabel}>{t("eod.totalVolume")}</div>
               <div className={styles.summaryValue}>{formatVolume(marketSummary.totalVolume)}</div>
             </div>
           </div>
@@ -255,7 +255,7 @@ function EndOfDaysInner({
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>
-          From:
+          {t("eod.from")}
           <input
             type="date"
             className={styles.dateInput}
@@ -264,7 +264,7 @@ function EndOfDaysInner({
           />
         </label>
         <label className={styles.dateLabel}>
-          To:
+          {t("eod.to")}
           <input
             type="date"
             className={styles.dateInput}
@@ -277,14 +277,14 @@ function EndOfDaysInner({
           onClick={handleRefresh}
           disabled={isRefreshing}
         >
-          {isRefreshing ? "Loading..." : "Refresh"}
+          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
         </button>
       </div>
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}
 
       {data && rows.length === 0 ? (
-        <div className={styles.loading}>No rows found</div>
+        <div className={styles.loading}>{t("eod.noRowsFound")}</div>
       ) : data ? (
         <DataTable
           data={rows}

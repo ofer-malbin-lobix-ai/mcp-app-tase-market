@@ -6,6 +6,7 @@ import type { App } from "@modelcontextprotocol/ext-apps";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { createColumnHelper } from "@tanstack/react-table";
 import { SymbolActions } from "../../components/SymbolActions";
+import type { TFunction } from "../../components/useLanguage";
 import styles from "./end-of-day-widget.module.css";
 
 // --- Types ---
@@ -122,13 +123,13 @@ export function extractEndOfDayData(
 
 export const columnHelper = createColumnHelper<StockData>();
 
-export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
+export function createEndOfDayColumns(app: App, showDateColumn?: boolean, t?: TFunction) {
   const cols = [];
 
   if (showDateColumn) {
     cols.push(
       columnHelper.accessor("tradeDate", {
-        header: "Date",
+        header: t ? t("eod.col.date") : "Date",
         cell: (info) => {
           const value = info.getValue();
           const dateOnly = value ? value.split("T")[0] : "\u2014";
@@ -141,7 +142,7 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
 
   cols.push(
     columnHelper.accessor("symbol", {
-      header: "Symbol",
+      header: t ? t("eod.col.symbol") : "Symbol",
       cell: (info) => <span className={styles.symbolCell}>{info.getValue()}</span>,
     }),
     columnHelper.display({
@@ -152,53 +153,53 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
       cell: (info) => <SymbolActions symbol={info.row.original.symbol} app={app} />,
     }),
     columnHelper.accessor("securityId", {
-      header: "Security ID",
+      header: t ? t("eod.col.securityId") : "Security ID",
       cell: (info) => info.getValue(),
     }),
     columnHelper.accessor("companyName", {
-      header: "Company",
+      header: t ? t("eod.col.company") : "Company",
       cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "\u2014"}</span>,
       filterFn: "includesString",
     }),
     columnHelper.accessor("sector", {
-      header: "Sector",
+      header: t ? t("eod.col.sector") : "Sector",
       cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "\u2014"}</span>,
       filterFn: "includesString",
     }),
     columnHelper.accessor("subSector", {
-      header: "Sub-Sector",
+      header: t ? t("eod.col.subSector") : "Sub-Sector",
       cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "\u2014"}</span>,
       filterFn: "includesString",
     }),
     columnHelper.accessor("marketType", {
-      header: "Type",
+      header: t ? t("eod.col.type") : "Type",
       cell: (info) => <span className={styles.textCell}>{info.getValue() ?? "\u2014"}</span>,
       enableColumnFilter: false,
     }),
     // Price data
     columnHelper.accessor("closingPrice", {
-      header: "Close",
+      header: t ? t("eod.col.close") : "Close",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("openingPrice", {
-      header: "Open",
+      header: t ? t("eod.col.open") : "Open",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("high", {
-      header: "High",
+      header: t ? t("eod.col.high") : "High",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("low", {
-      header: "Low",
+      header: t ? t("eod.col.low") : "Low",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     columnHelper.accessor("basePrice", {
-      header: "Base",
+      header: t ? t("eod.col.base") : "Base",
       cell: (info) => <span className={styles.numericCell}>{formatNumber(info.getValue())}</span>,
     }),
     // Change
     columnHelper.accessor("changeValue", {
-      header: "Chg",
+      header: t ? t("eod.col.chg") : "Chg",
       cell: (info) => {
         const value = info.getValue() ?? 0;
         const className = value > 0 ? styles.positive : value < 0 ? styles.negative : "";
@@ -210,7 +211,7 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
       },
     }),
     columnHelper.accessor("change", {
-      header: "Chg%",
+      header: t ? t("eod.col.chgPct") : "Chg%",
       cell: (info) => {
         const value = info.getValue() ?? 0;
         const className = value > 0 ? styles.positive : value < 0 ? styles.negative : "";
@@ -223,28 +224,28 @@ export function createEndOfDayColumns(app: App, showDateColumn?: boolean) {
     }),
     // Volume & Turnover
     columnHelper.accessor("volume", {
-      header: "Volume",
+      header: t ? t("eod.col.volume") : "Volume",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     columnHelper.accessor("turnover", {
-      header: "Turnover",
+      header: t ? t("eod.col.turnover") : "Turnover",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     columnHelper.accessor("turnover10", {
-      header: "Turn10",
+      header: t ? t("eod.col.turn10") : "Turn10",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     // Market data
     columnHelper.accessor("marketCap", {
-      header: "Mkt Cap",
+      header: t ? t("eod.col.mktCap") : "Mkt Cap",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     columnHelper.accessor("listedCapital", {
-      header: "Listed Cap",
+      header: t ? t("eod.col.listedCap") : "Listed Cap",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     columnHelper.accessor("minContPhaseAmount", {
-      header: "Min Cont",
+      header: t ? t("eod.col.minCont") : "Min Cont",
       cell: (info) => <span className={styles.numericCell}>{formatVolume(Number(info.getValue() ?? 0))}</span>,
     }),
     // Technical indicators
