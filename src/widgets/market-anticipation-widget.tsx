@@ -1,6 +1,6 @@
 /**
- * Market Momentum Scanner Widget
- * Displays scored and classified momentum symbols with persistence filtering.
+ * Market Anticipation Scanner Widget (Stage 0)
+ * Displays pre-uptrend setups identified via Stochastic %K/%D signals.
  */
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
@@ -9,38 +9,38 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../components/WidgetLayout";
 import { useLanguage } from "../components/useLanguage";
 import { createRoot } from "react-dom/client";
-import styles from "./market-momentum-widget.module.css";
+import styles from "./market-anticipation-widget.module.css";
 
-interface MomentumSymbolItem {
-  symbol: string;
-  companyName: string | null;
-  dailyScore: number;
-  trendQuality: number;
-  leaderScore: number;
-  persistence: "strong" | "confirmed" | "new";
-  phase: "compression" | "early" | "expansion" | "extended";
-  isLeader: boolean;
-  isCompression: boolean;
-  ez: number;
-  rsi14: number | null;
-  bandWidth20: number | null;
-  mfi14: number | null;
-  macdDeclining?: boolean;
-  leaderSubTier?: "A" | "B" | "C" | null;
-  bandWidthZone?: string;
-  sma200Rising?: boolean;
+interface AnticipationSignal {
+  type: "A" | "B" | "C";
+  label: string;
 }
 
-interface MomentumData {
+interface AnticipationSymbolItem {
+  symbol: string;
+  companyName: string | null;
+  stage0Score: number;
+  priority: "HIGH" | "WATCH" | "RADAR";
+  signals: AnticipationSignal[];
+  stochK14: number | null;
+  stochD14: number | null;
+  rsi14: number | null;
+  macdHist: number | null;
+  bandWidth20: number | null;
+  sma20AboveSma50: boolean;
+  closeAboveSma200: boolean;
+}
+
+interface AnticipationData {
   tradeDate: string;
   marketType: string;
   count: number;
-  items: MomentumSymbolItem[];
+  items: AnticipationSymbolItem[];
 }
 
-type TabKey = "all" | "strong" | "confirmed" | "new" | "compression";
+type TabKey = "all" | "HIGH" | "WATCH" | "RADAR";
 
-function extractMomentumData(callToolResult: CallToolResult | null | undefined): MomentumData | null {
+function extractAnticipationData(callToolResult: CallToolResult | null | undefined): AnticipationData | null {
   try {
     if (!callToolResult) return null;
     const textContent = callToolResult.content?.find((c) => c.type === "text");
@@ -49,7 +49,7 @@ function extractMomentumData(callToolResult: CallToolResult | null | undefined):
     if (parsed && typeof parsed.text === "string" && !parsed.items) {
       parsed = JSON.parse(parsed.text);
     }
-    const data = parsed as MomentumData;
+    const data = parsed as AnticipationData;
     if (!Array.isArray(data.items)) return null;
     return data;
   } catch {
@@ -57,23 +57,28 @@ function extractMomentumData(callToolResult: CallToolResult | null | undefined):
   }
 }
 
-const PHASE_COLORS: Record<string, { bg: string; color: string }> = {
-  compression: { bg: "rgba(139, 92, 246, 0.2)", color: "#a78bfa" },
-  early: { bg: "rgba(59, 130, 246, 0.2)", color: "#60a5fa" },
-  expansion: { bg: "rgba(34, 197, 94, 0.2)", color: "#4ade80" },
-  extended: { bg: "rgba(239, 68, 68, 0.2)", color: "#f87171" },
+const PRIORITY_COLORS: Record<string, string> = {
+  HIGH: "#ef4444",
+  WATCH: "#eab308",
+  RADAR: "#6b7280",
 };
 
-function MomentumWidget() {
+const SIGNAL_COLORS: Record<string, { bg: string; color: string }> = {
+  A: { bg: "rgba(239, 68, 68, 0.2)", color: "#f87171" },
+  B: { bg: "rgba(234, 179, 8, 0.2)", color: "#facc15" },
+  C: { bg: "rgba(139, 92, 246, 0.2)", color: "#a78bfa" },
+};
+
+function AnticipationWidget() {
   const { t } = useLanguage();
-  const [data, setData] = useState<MomentumData | null>(null);
+  const [data, setData] = useState<AnticipationData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
   const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
-    appInfo: { name: "Market Momentum", version: "1.0.0" },
+    appInfo: { name: "Market Anticipation", version: "1.0.0" },
     capabilities: {},
     onAppCreated: (app) => {
       app.onteardown = async () => ({});
@@ -87,9 +92,9 @@ function MomentumWidget() {
       app.ontoolresult = async (result) => {
         try {
           if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
-          const momentumData = extractMomentumData(result);
-          if (momentumData) {
-            setData(momentumData);
+          const anticipationData = extractAnticipationData(result);
+          if (anticipationData) {
+            setData(anticipationData);
           } else {
             setNeedsAutoFetch(true);
           }
@@ -112,10 +117,10 @@ function MomentumWidget() {
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
     try {
-      app.callServerTool({ name: "get-market-momentum-data", arguments: toolInput })
+      app.callServerTool({ name: "get-market-anticipation-data", arguments: toolInput })
         .then((result) => {
           if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
-          const fetchedData = extractMomentumData(result);
+          const fetchedData = extractAnticipationData(result);
           if (fetchedData) {
             setData(fetchedData);
           }
@@ -145,7 +150,7 @@ function MomentumWidget() {
   );
 
   return (
-    <MomentumWidgetInner
+    <AnticipationWidgetInner
       app={app}
       data={data}
       setData={setData}
@@ -154,21 +159,20 @@ function MomentumWidget() {
   );
 }
 
-interface MomentumWidgetInnerProps {
+interface AnticipationWidgetInnerProps {
   app: App;
-  data: MomentumData | null;
-  setData: React.Dispatch<React.SetStateAction<MomentumData | null>>;
+  data: AnticipationData | null;
+  setData: React.Dispatch<React.SetStateAction<AnticipationData | null>>;
   hostContext?: McpUiHostContext;
 }
 
-function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidgetInnerProps) {
+function AnticipationWidgetInner({ app, data, setData, hostContext }: AnticipationWidgetInnerProps) {
   const { language, dir, toggle, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
 
-  // Clear initial loading state when data first arrives
   useEffect(() => {
     if (data) setIsRefreshing(false);
   }, [data]);
@@ -186,13 +190,13 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       const args: Record<string, string> = {};
       if (tradeDate) args.tradeDate = tradeDate;
       const result = await app.callServerTool({
-        name: "get-market-momentum-data",
+        name: "get-market-anticipation-data",
         arguments: args,
       });
       if (handleSubscriptionRedirect(result, app)) return;
-      const momentumData = extractMomentumData(result);
-      if (momentumData) {
-        setData(momentumData);
+      const anticipationData = extractAnticipationData(result);
+      if (anticipationData) {
+        setData(anticipationData);
       } else {
         setRefreshError(t("spirit.noData"));
       }
@@ -205,53 +209,38 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
   }, [app, setData]);
 
   const counts = useMemo(() => {
-    if (!data) return { strong: 0, confirmed: 0, new: 0, leaders: 0, compression: 0 };
+    if (!data) return { HIGH: 0, WATCH: 0, RADAR: 0 };
     return {
-      strong: data.items.filter((i) => i.persistence === "strong").length,
-      confirmed: data.items.filter((i) => i.persistence === "confirmed").length,
-      new: data.items.filter((i) => i.persistence === "new").length,
-      leaders: data.items.filter((i) => i.isLeader).length,
-      compression: data.items.filter((i) => i.isCompression).length,
+      HIGH: data.items.filter((i) => i.priority === "HIGH").length,
+      WATCH: data.items.filter((i) => i.priority === "WATCH").length,
+      RADAR: data.items.filter((i) => i.priority === "RADAR").length,
     };
   }, [data]);
 
   const filteredItems = useMemo(() => {
     if (!data) return [];
-    switch (activeTab) {
-      case "strong": return data.items.filter((i) => i.persistence === "strong");
-      case "confirmed": return data.items.filter((i) => i.persistence === "confirmed");
-      case "new": return data.items.filter((i) => i.persistence === "new");
-      case "compression": return data.items.filter((i) => i.isCompression);
-      default: return data.items;
-    }
+    if (activeTab === "all") return data.items;
+    return data.items.filter((i) => i.priority === activeTab);
   }, [data, activeTab]);
 
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.marketMomentum")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("landing.tool.marketAnticipation")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.stats}>
           <div className={styles.statBadge}>
-            <span className={styles.statNumber} style={{ color: "#22c55e" }}>{counts.strong}</span>
-            <span className={styles.statLabel}>{t("momentum.strong")}</span>
+            <span className={styles.statNumber} style={{ color: "#ef4444" }}>{counts.HIGH}</span>
+            <span className={styles.statLabel}>HIGH</span>
           </div>
           <div className={styles.statBadge}>
-            <span className={styles.statNumber} style={{ color: "#3b82f6" }}>{counts.confirmed}</span>
-            <span className={styles.statLabel}>{t("momentum.confirmed")}</span>
+            <span className={styles.statNumber} style={{ color: "#eab308" }}>{counts.WATCH}</span>
+            <span className={styles.statLabel}>WATCH</span>
           </div>
           <div className={styles.statBadge}>
-            <span className={styles.statNumber} style={{ color: "#f59e0b" }}>{counts.new}</span>
-            <span className={styles.statLabel}>{t("momentum.new")}</span>
-          </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statNumber} style={{ color: "#ef4444" }}>{counts.leaders}</span>
-            <span className={styles.statLabel}>{t("momentum.leaders")}</span>
-          </div>
-          <div className={styles.statBadge}>
-            <span className={styles.statNumber} style={{ color: "#8b5cf6" }}>{counts.compression}</span>
-            <span className={styles.statLabel}>{t("momentum.compression")}</span>
+            <span className={styles.statNumber} style={{ color: "#6b7280" }}>{counts.RADAR}</span>
+            <span className={styles.statLabel}>RADAR</span>
           </div>
         </div>
       )}
@@ -260,10 +249,9 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
         <div className={styles.tabs}>
           {([
             ["all", `${t("momentum.all")} (${data.count})`],
-            ["strong", `${t("momentum.strong")} (${counts.strong})`],
-            ["confirmed", `${t("momentum.confirmed")} (${counts.confirmed})`],
-            ["new", `${t("momentum.new")} (${counts.new})`],
-            ["compression", `${t("momentum.compression")} (${counts.compression})`],
+            ["HIGH", `HIGH (${counts.HIGH})`],
+            ["WATCH", `WATCH (${counts.WATCH})`],
+            ["RADAR", `RADAR (${counts.RADAR})`],
           ] as [TabKey, string][]).map(([key, label]) => (
             <button
               key={key}
@@ -279,46 +267,51 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       {data && filteredItems.length > 0 && (
         <div className={styles.symbolsContainer}>
           <div className={styles.symbolsGrid}>
-            {filteredItems.map((item) => {
-              const phaseStyle = PHASE_COLORS[item.phase] ?? { bg: "transparent", color: "inherit" };
-              return (
-                <div key={item.symbol} className={styles.symbolCard}>
-                  <div className={styles.symbolHeader}>
-                    <span className={styles.symbolName}>{item.symbol}</span>
-                    <span
-                      className={styles.phaseBadge}
-                      style={{ background: phaseStyle.bg, color: phaseStyle.color }}
-                    >
-                      {item.phase}
-                    </span>
-                  </div>
-                  {item.companyName && (
-                    <span className={styles.companyName}>{item.companyName}</span>
-                  )}
-                  <div className={styles.scores}>
-                    <span className={styles.scoreItem}>
-                      DS:<span className={styles.scoreValue}>{item.dailyScore}</span>
-                    </span>
-                    <span className={styles.scoreItem}>
-                      TQ:<span className={styles.scoreValue}>{item.trendQuality}</span>
-                    </span>
-                    <span className={styles.scoreItem}>
-                      LS:<span className={styles.scoreValue}>{item.leaderScore}</span>
-                      {item.leaderSubTier && <span style={{ fontSize: "0.6rem", opacity: 0.7 }}>({item.leaderSubTier})</span>}
-                    </span>
-                    {item.sma200Rising === false && (
-                      <span className={styles.scoreItem} style={{ color: "#ef4444" }}>SMA200↓</span>
-                    )}
-                  </div>
-                  <div className={styles.indicators}>
-                    <span className={styles.indicator}>EZ:{item.ez.toFixed(1)}%</span>
-                    {item.rsi14 != null && <span className={styles.indicator}>RSI:{item.rsi14.toFixed(0)}</span>}
-                    {item.mfi14 != null && <span className={styles.indicator}>MFI:{item.mfi14.toFixed(0)}</span>}
-                    {item.bandWidth20 != null && <span className={styles.indicator}>BW:{(item.bandWidth20 * 100).toFixed(1)}%</span>}
-                  </div>
+            {filteredItems.map((item) => (
+              <div key={item.symbol} className={styles.symbolCard}>
+                <div className={styles.symbolHeader}>
+                  <span className={styles.symbolName}>{item.symbol}</span>
+                  <span
+                    className={styles.priorityBadge}
+                    style={{ background: PRIORITY_COLORS[item.priority] }}
+                  >
+                    {item.priority}
+                  </span>
                 </div>
-              );
-            })}
+                {item.companyName && (
+                  <span className={styles.companyName}>{item.companyName}</span>
+                )}
+                <div className={styles.signals}>
+                  {item.signals.map((sig, i) => {
+                    const sigStyle = SIGNAL_COLORS[sig.type] ?? { bg: "transparent", color: "inherit" };
+                    return (
+                      <span
+                        key={i}
+                        className={styles.signalBadge}
+                        style={{ background: sigStyle.bg, color: sigStyle.color }}
+                      >
+                        {sig.type}: {sig.label}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className={styles.scores}>
+                  <span className={styles.scoreItem}>
+                    S0:<span className={styles.scoreValue}>{item.stage0Score}</span>
+                  </span>
+                </div>
+                <div className={styles.indicators}>
+                  {item.stochK14 != null && <span className={styles.indicator}>%K:{item.stochK14.toFixed(0)}</span>}
+                  {item.stochD14 != null && <span className={styles.indicator}>%D:{item.stochD14.toFixed(0)}</span>}
+                  {item.rsi14 != null && <span className={styles.indicator}>RSI:{item.rsi14.toFixed(0)}</span>}
+                  {item.bandWidth20 != null && <span className={styles.indicator}>BW:{(item.bandWidth20 * 100).toFixed(1)}%</span>}
+                </div>
+                <div className={styles.structureBadges}>
+                  {item.sma20AboveSma50 && <span className={styles.structureBadge}>SMA20&gt;50</span>}
+                  {item.closeAboveSma200 && <span className={styles.structureBadge}>Close&gt;SMA200</span>}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -355,6 +348,6 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MomentumWidget />
+    <AnticipationWidget />
   </StrictMode>,
 );

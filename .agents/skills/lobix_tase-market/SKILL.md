@@ -32,6 +32,7 @@ Use this skill when the user wants to:
 | Sector heatmap | `get-market-sector-heatmap-data` | `show-market-sector-heatmap-widget` |
 | Live last-update prices | `get-market-last-update-data` | `show-market-last-update-widget` |
 | Momentum expert system | `get-market-momentum-data` | `show-market-momentum-widget` |
+| Anticipation scanner (Stage 0) | `get-market-anticipation-data` | `show-market-anticipation-widget` |
 
 ### Symbol Analysis
 | Goal | Data Tool | Widget Tool |

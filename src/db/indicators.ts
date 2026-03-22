@@ -275,6 +275,43 @@ function mfi(
   return out;
 }
 
+function stochastic(
+  high: (number | null)[],
+  low: (number | null)[],
+  close: (number | null)[],
+  kPeriod = 14,
+  smoothK = 3,
+  dPeriod = 3,
+): { stochK: (number | null)[]; stochD: (number | null)[] } {
+  const len = close.length;
+  const rawK = new Array(len).fill(null) as (number | null)[];
+
+  for (let i = kPeriod - 1; i < len; i++) {
+    let lowestLow = Infinity;
+    let highestHigh = -Infinity;
+    let valid = true;
+    for (let j = i - kPeriod + 1; j <= i; j++) {
+      const h = high[j];
+      const l = low[j];
+      if (h === null || l === null) { valid = false; break; }
+      if (l < lowestLow) lowestLow = l;
+      if (h > highestHigh) highestHigh = h;
+    }
+    if (!valid) continue;
+    const c = close[i];
+    if (c === null) continue;
+    const range = highestHigh - lowestLow;
+    rawK[i] = range === 0 ? 50 : ((c - lowestLow) / range) * 100;
+  }
+
+  // Slow %K = SMA(rawK, smoothK)
+  const slowK = sma(rawK, smoothK);
+  // %D = SMA(slowK, dPeriod)
+  const stochD = sma(slowK, dPeriod);
+
+  return { stochK: slowK, stochD };
+}
+
 /* ---------------------------- Public functions ---------------------------- */
 
 async function getTradingIndicators({
@@ -345,6 +382,8 @@ async function getTradingIndicators({
     return (ub - lb) / m;
   });
 
+  const { stochK: stochK14Arr, stochD: stochD14Arr } = stochastic(highArr, lowArr, close, 14, 3, 3);
+
   const idx = rows.length - 1;
   return {
     rsi14: rsi14Arr[idx] ?? null,
@@ -362,6 +401,8 @@ async function getTradingIndicators({
     upperBollingerBand20: upperBB20[idx] ?? null,
     lowerBollingerBand20: lowerBB20[idx] ?? null,
     bandWidth20: bandWidth20[idx] ?? null,
+    stochK14: stochK14Arr[idx] ?? null,
+    stochD14: stochD14Arr[idx] ?? null,
   };
 }
 

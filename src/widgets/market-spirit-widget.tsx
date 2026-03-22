@@ -13,7 +13,7 @@ import styles from "./market-spirit-widget.module.css";
 
 type MarketScore = "Defense" | "Selective" | "Attack" | null;
 
-type RegimeType = "weak" | "early" | "healthy" | "overextended";
+type RegimeType = "weak" | "early" | "healthy" | "overextended" | "avoid" | "attack" | "selective" | "neutral" | "defense";
 
 interface MarketSpiritData {
   tradeDate: string;
@@ -27,6 +27,8 @@ interface MarketSpiritData {
   compressionBreadth?: number;
   regime?: RegimeType;
   regimeDescription?: string;
+  avgBandWidth?: number;
+  positionSizing?: Record<string, Record<string, string>>;
 }
 
 function extractMarketSpiritData(callToolResult: CallToolResult | null | undefined): MarketSpiritData | null {
@@ -204,10 +206,11 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
 
   const getRegimeColor = (regime?: RegimeType): string => {
     switch (regime) {
-      case "weak": return "#ef4444";
-      case "early": return "#eab308";
-      case "healthy": return "#22c55e";
-      case "overextended": return "#f97316";
+      case "weak": case "defense": return "#ef4444";
+      case "early": case "neutral": return "#eab308";
+      case "healthy": case "selective": return "#3b82f6";
+      case "overextended": case "attack": return "#22c55e";
+      case "avoid": return "#991b1b";
       default: return "#6b7280";
     }
   };
@@ -272,6 +275,49 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
             </div>
             <span className={styles.gaugeValue}>{data.compressionBreadth ?? 0}%</span>
           </div>
+        </div>
+      )}
+
+      {data && data.avgBandWidth != null && (
+        <div className={styles.gaugeItem}>
+          <span className={styles.gaugeLabel}>Avg BW</span>
+          <div className={styles.gaugeBar}>
+            <div
+              className={styles.gaugeFill}
+              style={{
+                width: `${Math.min(data.avgBandWidth, 50) * 2}%`,
+                background: data.avgBandWidth > 30 ? "#ef4444" : data.avgBandWidth > 20 ? "#eab308" : "#22c55e",
+              }}
+            />
+          </div>
+          <span className={styles.gaugeValue}>{data.avgBandWidth}%</span>
+        </div>
+      )}
+
+      {data?.positionSizing && data.regime && (
+        <div style={{ width: "100%", maxWidth: "340px", margin: "0 auto", fontSize: "0.7rem" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "center" }}>
+            <thead>
+              <tr>
+                <th style={{ padding: "0.2rem 0.3rem", color: "var(--t-text-secondary)", fontWeight: 600 }}>Regime</th>
+                {Object.keys(Object.values(data.positionSizing)[0] ?? {}).map((bw) => (
+                  <th key={bw} style={{ padding: "0.2rem 0.3rem", color: "var(--t-text-secondary)", fontWeight: 600 }}>{bw}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(data.positionSizing).map(([regime, sizes]) => (
+                <tr key={regime} style={{ background: regime === data.regime ? "rgba(59, 130, 246, 0.1)" : "transparent" }}>
+                  <td style={{ padding: "0.2rem 0.3rem", fontWeight: regime === data.regime ? 700 : 400, color: regime === data.regime ? getRegimeColor(data.regime) : "var(--t-text-secondary)" }}>
+                    {regime}
+                  </td>
+                  {Object.values(sizes).map((size, i) => (
+                    <td key={i} style={{ padding: "0.2rem 0.3rem", color: "var(--t-text-primary)" }}>{size}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

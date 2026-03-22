@@ -11,6 +11,7 @@ import type {
   EndOfDayResult,
   MarketSpiritResponse,
   MomentumResponse,
+  AnticipationResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
   CandlestickTimeframe,
@@ -27,6 +28,7 @@ export type {
   EndOfDayResult,
   MarketSpiritResponse,
   MomentumResponse,
+  AnticipationResponse,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
   CandlestickTimeframe,
@@ -99,6 +101,11 @@ const getMomentumSchema = {
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
+const getAnticipationSchema = {
+  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
+  tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
+};
+
 const getEndOfDaySymbolsSchema = {
   symbols: z.array(z.string()).optional().describe("List of stock symbols to query (e.g. ['TEVA', 'LUMI'])"),
   dateFrom: z.string().optional().describe("Start date in YYYY-MM-DD format. If not provided, defaults to the last available trading day."),
@@ -145,6 +152,11 @@ const REGIME_DESCRIPTIONS: Record<string, string> = {
   early: "Early momentum building — selective opportunities emerging",
   healthy: "Healthy momentum breadth — favorable environment for trend-following",
   overextended: "Broad momentum — watch for overextension and mean reversion",
+  avoid: "Extreme volatility — avoid new positions",
+  attack: "Strong breadth with low volatility — full offense",
+  selective: "Moderate breadth — selective opportunities",
+  neutral: "Borderline breadth with elevated volatility — proceed with caution",
+  defense: "Low breadth — defensive positioning",
 };
 
 function formatMarketSpiritResult(data: MarketSpiritResponse): CallToolResult {
@@ -164,6 +176,24 @@ function formatMarketSpiritResult(data: MarketSpiritResponse): CallToolResult {
           compressionBreadth: data.compressionBreadth,
           regime: data.regime,
           regimeDescription: REGIME_DESCRIPTIONS[data.regime] ?? null,
+          avgBandWidth: data.avgBandWidth ?? null,
+          positionSizing: data.positionSizing ?? null,
+        }, null, 2),
+      },
+    ],
+  };
+}
+
+function formatAnticipationResult(data: AnticipationResponse): CallToolResult {
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({
+          tradeDate: data.tradeDate,
+          marketType: data.marketType,
+          count: data.count,
+          items: data.items,
         }, null, 2),
       },
     ],
@@ -284,6 +314,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const endOfDayResourceUri = `ui://tase-end-of-day/market-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const marketSpiritResourceUri = `ui://tase-end-of-day/market-spirit-widget-ver-${WIDGET_VERSION}.html`;
   const momentumResourceUri = `ui://tase-end-of-day/market-momentum-widget-ver-${WIDGET_VERSION}.html`;
+  const anticipationResourceUri = `ui://tase-end-of-day/market-anticipation-widget-ver-${WIDGET_VERSION}.html`;
   const endOfDaySymbolsResourceUri = `ui://tase-end-of-day/my-position-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const candlestickResourceUri = `ui://tase-end-of-day/symbol-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsCandlestickResourceUri = `ui://tase-end-of-day/my-position-candlestick-widget-ver-${WIDGET_VERSION}.html`;
@@ -412,6 +443,45 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
           {
             type: "text",
             text: `Momentum Scanner: ${data.count} symbols for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
+          },
+        ],
+      };
+    },
+  );
+
+  // Data-only tool: Get Anticipation Symbols
+  registerAppTool(server,
+    "get-market-anticipation-data",
+    {
+      title: "Get Market Anticipation Data",
+      description: "Returns Stage 0 anticipation symbols: pre-uptrend setups identified via Stochastic %K/%D crossovers, rising momentum, and bullish divergences. Identifies potential uptrend candidates 2–5 days before the momentum scanner fires. Data only - use show-market-anticipation-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getAnticipationSchema,
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchAnticipationSymbols(args.marketType, args.tradeDate);
+      return formatAnticipationResult(data);
+    },
+  );
+
+  // UI tool: Show Anticipation Symbols widget
+  registerAppTool(server,
+    "show-market-anticipation-widget",
+    {
+      title: "Show Market Anticipation",
+      description: "Displays Stage 0 anticipation scanner showing pre-uptrend setups with Stochastic signals, priority ratings, and scoring.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getAnticipationSchema,
+      _meta: { ui: { resourceUri: anticipationResourceUri } },
+    },
+    async (args): Promise<CallToolResult> => {
+      const data = await providers.fetchAnticipationSymbols(args.marketType, args.tradeDate);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Anticipation Scanner: ${data.count} symbols for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
           },
         ],
       };
@@ -1400,6 +1470,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, endOfDayResourceUri, endOfDayResourceUri, RESOURCE_CONFIG, readWidget(endOfDayResourceUri, "market-end-of-day-widget.html"));
   registerAppResource(server, marketSpiritResourceUri, marketSpiritResourceUri, RESOURCE_CONFIG, readWidget(marketSpiritResourceUri, "market-spirit-widget.html"));
   registerAppResource(server, momentumResourceUri, momentumResourceUri, RESOURCE_CONFIG, readWidget(momentumResourceUri, "market-momentum-widget.html"));
+  registerAppResource(server, anticipationResourceUri, anticipationResourceUri, RESOURCE_CONFIG, readWidget(anticipationResourceUri, "market-anticipation-widget.html"));
   registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day-widget.html"));
   registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick-widget.html"));
   registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick-widget.html"));

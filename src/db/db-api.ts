@@ -6,6 +6,9 @@ import type {
   MarketSpiritResponse,
   MomentumResponse,
   MomentumSymbolItem,
+  AnticipationResponse,
+  AnticipationSymbolItem,
+  AnticipationSignal,
   EndOfDaySymbolsResponse,
   CandlestickResponse,
   CandlestickTimeframe,
@@ -47,6 +50,8 @@ const EOD_SELECT = {
   upperBollingerBand20: true,
   lowerBollingerBand20: true,
   bandWidth20: true,
+  stochK14: true,
+  stochD14: true,
   ez: true,
 } as const;
 
@@ -81,6 +86,8 @@ type DbRow = {
   upperBollingerBand20: number | null;
   lowerBollingerBand20: number | null;
   bandWidth20: number | null;
+  stochK14: number | null;
+  stochD14: number | null;
   ez: number | null;
 };
 
@@ -120,6 +127,8 @@ function rowToStockData(row: DbRow): StockData {
     upperBollingerBand20: row.upperBollingerBand20,
     lowerBollingerBand20: row.lowerBollingerBand20,
     bandWidth20: row.bandWidth20,
+    stochK14: row.stochK14,
+    stochD14: row.stochD14,
     ez: row.ez,
     companyName: null,
     sector: null,
@@ -311,6 +320,8 @@ export async function fetchMarketSpirit(
   let moneyFlowBreadth = 0;
   let compressionBreadth = 0;
 
+  let avgBandWidth = 0;
+
   if (liquidTotal > 0) {
     const momentumCount = liquid.filter((s) => computeDailyScore(s) >= 6).length;
     const mfiCount = liquid.filter((s) => (s.mfi14 ?? 0) > 60).length;
@@ -319,13 +330,31 @@ export async function fetchMarketSpirit(
     momentumBreadth = Math.round((momentumCount / liquidTotal) * 100);
     moneyFlowBreadth = Math.round((mfiCount / liquidTotal) * 100);
     compressionBreadth = Math.round((compressionCount / liquidTotal) * 100);
+
+    // Average BandWidth across liquid universe (as %)
+    const bwValues = liquid.filter((s) => s.bandWidth20 != null).map((s) => s.bandWidth20! * 100);
+    avgBandWidth = bwValues.length > 0 ? Math.round(bwValues.reduce((a, b) => a + b, 0) / bwValues.length * 10) / 10 : 0;
   }
 
+  // 5-regime classification (checked in order)
   const regime: MarketSpiritResponse["regime"] =
-    momentumBreadth > 50 ? "overextended" :
-    momentumBreadth >= 30 ? "healthy" :
-    momentumBreadth >= 15 ? "early" :
-    "weak";
+    avgBandWidth > 30 ? "avoid" :
+    momentumBreadth >= 30 && avgBandWidth < 20 ? "attack" :
+    momentumBreadth >= 15 && momentumBreadth < 30 && avgBandWidth < 30 ? "selective" :
+    momentumBreadth >= 10 && momentumBreadth < 15 && avgBandWidth >= 20 && avgBandWidth <= 30 ? "neutral" :
+    momentumBreadth < 15 ? "defense" :
+    // fallback for edge cases
+    momentumBreadth > 50 ? "avoid" :
+    "selective";
+
+  // Position sizing matrix: regime × BW grid
+  const positionSizing: Record<string, Record<string, string>> = {
+    attack:    { "BW<8%":  "100%", "BW 8-15%": "75%",  "BW 15-25%": "50%",  "BW>25%": "25%" },
+    selective: { "BW<8%":  "75%",  "BW 8-15%": "50%",  "BW 15-25%": "25%",  "BW>25%": "0%"  },
+    neutral:   { "BW<8%":  "50%",  "BW 8-15%": "25%",  "BW 15-25%": "0%",   "BW>25%": "0%"  },
+    defense:   { "BW<8%":  "25%",  "BW 8-15%": "0%",   "BW 15-25%": "0%",   "BW>25%": "0%"  },
+    avoid:     { "BW<8%":  "0%",   "BW 8-15%": "0%",   "BW 15-25%": "0%",   "BW>25%": "0%"  },
+  };
 
   return {
     tradeDate: tradeDateStr,
@@ -334,9 +363,11 @@ export async function fetchMarketSpirit(
     moneyFlowBreadth,
     compressionBreadth,
     regime,
+    positionSizing,
     score,
     adv,
     adLine,
+    avgBandWidth,
   };
 }
 
@@ -367,14 +398,14 @@ export async function fetchMomentumSymbols(
     : await getLastTradeDate(marketType);
   const tradeDateStr = toDateStr(date);
 
-  // Fetch last 3 trading days of data for all liquid symbols
+  // Fetch last 6 trading days of data for all liquid symbols (need 5+ for MACD declining check)
   const rows = await prisma.$queryRaw<MomentumDbRow[]>`
-    WITH last3 AS (
+    WITH lastN AS (
       SELECT DISTINCT "tradeDate"
       FROM "TaseSecuritiesEndOfDayTradingData"
       WHERE "tradeDate" <= ${date} AND "marketType" = ${marketType}
       ORDER BY "tradeDate" DESC
-      LIMIT 3
+      LIMIT 6
     )
     SELECT
       t.symbol,
@@ -387,7 +418,7 @@ export async function fetchMomentumSymbols(
       s."companyName"
     FROM "TaseSecuritiesEndOfDayTradingData" t
     LEFT JOIN "TaseSymbol" s ON t.symbol = s.symbol
-    WHERE t."tradeDate" IN (SELECT "tradeDate" FROM last3)
+    WHERE t."tradeDate" IN (SELECT "tradeDate" FROM lastN)
       AND t."marketType" = ${marketType}
       AND t."turnover10" IS NOT NULL
       AND t."turnover10" >= 1500000
@@ -409,6 +440,20 @@ export async function fetchMomentumSymbols(
   const allDates = [...new Set(rows.map((r) => toDateStr(r.tradeDate)))].sort().reverse();
   const latestDateStr = allDates[0]!;
 
+  // SMA200 Rising Gate: fetch SMA200 from ~365 calendar days ago per symbol
+  const histDate = new Date(date);
+  histDate.setDate(histDate.getDate() - 365);
+  type Sma200HistRow = { symbol: string; sma200: number | null };
+  const sma200HistRows = await prisma.$queryRaw<Sma200HistRow[]>`
+    SELECT DISTINCT ON (symbol) symbol, "sma200"
+    FROM "TaseSecuritiesEndOfDayTradingData"
+    WHERE "marketType" = ${marketType}
+      AND "tradeDate" <= ${histDate}
+    ORDER BY symbol, "tradeDate" DESC
+  `;
+  const sma200HistMap = new Map<string, number | null>();
+  for (const r of sma200HistRows) sma200HistMap.set(r.symbol, r.sma200);
+
   const items: MomentumSymbolItem[] = [];
 
   for (const [symbol, symbolRows] of bySymbol) {
@@ -422,8 +467,9 @@ export async function fetchMomentumSymbols(
       row: r,
     }));
 
-    // Persistence: count days with DailyScore >= 6
-    const daysAbove6 = dailyScores.filter((d) => d.score >= 6).length;
+    // Persistence: count days with DailyScore >= 6 (use only last 3 days)
+    const last3Scores = dailyScores.slice(0, 3);
+    const daysAbove6 = last3Scores.filter((d) => d.score >= 6).length;
     if (daysAbove6 === 0) continue; // Exclude symbols with 0 qualifying days
 
     const persistence: MomentumSymbolItem["persistence"] =
@@ -434,6 +480,25 @@ export async function fetchMomentumSymbols(
     if (!latestEntry) continue;
     const latest = latestEntry.row;
     const latestScore = latestEntry.score;
+
+    // MACD Hist Declining Disqualifier: if MACD Hist declined for 5+ consecutive days → skip
+    let macdDeclining = false;
+    if (dailyScores.length >= 5) {
+      let consecutiveDeclines = 0;
+      for (let i = 0; i < dailyScores.length - 1; i++) {
+        const curr = dailyScores[i]!.row.macdHist;
+        const prev = dailyScores[i + 1]!.row.macdHist;
+        if (curr != null && prev != null && curr < prev) {
+          consecutiveDeclines++;
+        } else {
+          break;
+        }
+      }
+      macdDeclining = consecutiveDeclines >= 5;
+    }
+
+    // Skip symbols with 5+ consecutive MACD declines
+    if (macdDeclining) continue;
 
     // Previous day for MACD comparison
     const prevEntry = dailyScores.length > 1 ? dailyScores[1] : null;
@@ -473,10 +538,34 @@ export async function fetchMomentumSymbols(
     if (turnover10 > 0 && turnover > turnover10) leaderScore += 1;
     leaderScore = Math.min(9, leaderScore);
 
+    // LeaderScore Sub-tiers
+    let leaderSubTier: MomentumSymbolItem["leaderSubTier"] = null;
+    if (leaderScore >= 5 && leaderScore <= 6) {
+      if (ez < 8) leaderSubTier = "A";
+      else if (ez <= 12) leaderSubTier = "B";
+      else leaderSubTier = "C";
+    }
+
     // Compression
     const isCompression = latest.bandWidth20 != null && latest.bandWidth20 < 0.06;
     const isStrongCompression = latest.bandWidth20 != null && latest.bandWidth20 < 0.04;
     const isEarlyBreakout = isCompression && rsiRising && mfiRising;
+
+    // BandWidth Zone
+    const bw = latest.bandWidth20 != null ? latest.bandWidth20 * 100 : 0; // convert to %
+    const bandWidthZone: MomentumSymbolItem["bandWidthZone"] =
+      bw < 4 ? "strong_compression" :
+      bw < 6 ? "compression" :
+      bw < 12 ? "normal" :
+      bw < 20 ? "elevated" :
+      bw < 30 ? "high" :
+      "extreme";
+
+    // SMA200 Rising Gate
+    const histSma200 = sma200HistMap.get(symbol);
+    const sma200Rising = histSma200 == null || latest.sma200 == null
+      ? true  // pass by default if no historical data
+      : latest.sma200 > histSma200;
 
     // Phase
     let phase: MomentumSymbolItem["phase"];
@@ -506,11 +595,215 @@ export async function fetchMomentumSymbols(
       rsi14: latest.rsi14,
       bandWidth20: latest.bandWidth20,
       mfi14: latest.mfi14,
+      macdDeclining,
+      leaderSubTier,
+      bandWidthZone,
+      sma200Rising,
     });
   }
 
   // Sort by leaderScore DESC, trendQuality DESC
   items.sort((a, b) => b.leaderScore - a.leaderScore || b.trendQuality - a.trendQuality);
+
+  return { tradeDate: tradeDateStr, marketType, count: items.length, items };
+}
+
+// --- Stage 0 Anticipation Layer ---
+
+type AnticipationDbRow = {
+  symbol: string;
+  tradeDate: Date;
+  closingPrice: number | null;
+  sma20: number | null;
+  sma50: number | null;
+  sma200: number | null;
+  rsi14: number | null;
+  macdHist: number | null;
+  mfi14: number | null;
+  ez: number | null;
+  bandWidth20: number | null;
+  stochK14: number | null;
+  stochD14: number | null;
+  turnover10: number | null;
+  companyName: string | null;
+};
+
+function detectSignalA(latest: AnticipationDbRow, prev: AnticipationDbRow | null): boolean {
+  // Structural gate: SMA20 > SMA50
+  if (latest.sma20 == null || latest.sma50 == null || latest.sma20 <= latest.sma50) return false;
+  // %K crosses above %D below 30
+  if (latest.stochK14 == null || latest.stochD14 == null) return false;
+  if (prev == null || prev.stochK14 == null || prev.stochD14 == null) return false;
+  const crossover = prev.stochK14 <= prev.stochD14 && latest.stochK14 > latest.stochD14;
+  if (!crossover || latest.stochK14 >= 30) return false;
+  // RSI 35–55
+  const rsi = latest.rsi14 ?? 0;
+  if (rsi < 35 || rsi > 55) return false;
+  // MACD Hist negative
+  if (latest.macdHist == null || latest.macdHist >= 0) return false;
+  return true;
+}
+
+function detectSignalB(latest: AnticipationDbRow, prev: AnticipationDbRow | null): boolean {
+  // Strong structure: SMA20 > SMA50 AND Close > SMA200
+  if (latest.sma20 == null || latest.sma50 == null || latest.sma20 <= latest.sma50) return false;
+  if (latest.closingPrice == null || latest.sma200 == null || latest.closingPrice <= latest.sma200) return false;
+  // %K 40–65 rising
+  if (latest.stochK14 == null || latest.stochK14 < 40 || latest.stochK14 > 65) return false;
+  if (prev == null || prev.stochK14 == null || latest.stochK14 <= prev.stochK14) return false;
+  // %K > %D
+  if (latest.stochD14 == null || latest.stochK14 <= latest.stochD14) return false;
+  // RSI 45–60
+  const rsi = latest.rsi14 ?? 0;
+  if (rsi < 45 || rsi > 60) return false;
+  // MACD turning (hist rising)
+  if (latest.macdHist == null || prev.macdHist == null || latest.macdHist <= prev.macdHist) return false;
+  return true;
+}
+
+function detectSignalC(latest: AnticipationDbRow, histRows: AnticipationDbRow[]): boolean {
+  // Close > SMA200
+  if (latest.closingPrice == null || latest.sma200 == null || latest.closingPrice <= latest.sma200) return false;
+  if (latest.stochK14 == null) return false;
+
+  // Find a row 5–10 days ago with lower close price but higher stochastic (bullish divergence)
+  // histRows are sorted desc, so index 5-10 are 5-10 days back
+  for (let i = 5; i <= Math.min(10, histRows.length - 1); i++) {
+    const older = histRows[i];
+    if (!older) continue;
+    if (older.closingPrice == null || older.stochK14 == null) continue;
+    // Price made lower low
+    if (latest.closingPrice >= older.closingPrice) continue;
+    // Stochastic made higher low (bullish divergence)
+    if (latest.stochK14 > older.stochK14) return true;
+  }
+  return false;
+}
+
+export async function fetchAnticipationSymbols(
+  marketType = "STOCK",
+  tradeDate?: string,
+): Promise<AnticipationResponse> {
+  const date = tradeDate
+    ? new Date(tradeDate)
+    : await getLastTradeDate(marketType);
+  const tradeDateStr = toDateStr(date);
+
+  // Fetch last 20 trading days for stochastic crossover + divergence detection
+  const rows = await prisma.$queryRaw<AnticipationDbRow[]>`
+    WITH last20 AS (
+      SELECT DISTINCT "tradeDate"
+      FROM "TaseSecuritiesEndOfDayTradingData"
+      WHERE "tradeDate" <= ${date} AND "marketType" = ${marketType}
+      ORDER BY "tradeDate" DESC
+      LIMIT 20
+    )
+    SELECT
+      t.symbol,
+      t."tradeDate",
+      t."closingPrice",
+      t."sma20", t."sma50", t."sma200",
+      t."rsi14", t."macdHist", t."mfi14",
+      t."ez", t."bandWidth20",
+      t."stochK14", t."stochD14",
+      t."turnover10",
+      s."companyName"
+    FROM "TaseSecuritiesEndOfDayTradingData" t
+    LEFT JOIN "TaseSymbol" s ON t.symbol = s.symbol
+    WHERE t."tradeDate" IN (SELECT "tradeDate" FROM last20)
+      AND t."marketType" = ${marketType}
+      AND t."turnover10" IS NOT NULL
+      AND t."turnover10" >= 1500000
+  `;
+
+  if (rows.length === 0) {
+    return { tradeDate: tradeDateStr, marketType, count: 0, items: [] };
+  }
+
+  // Group by symbol
+  const bySymbol = new Map<string, AnticipationDbRow[]>();
+  for (const row of rows) {
+    const arr = bySymbol.get(row.symbol) ?? [];
+    arr.push(row);
+    bySymbol.set(row.symbol, arr);
+  }
+
+  const allDates = [...new Set(rows.map((r) => toDateStr(r.tradeDate)))].sort().reverse();
+  const latestDateStr = allDates[0]!;
+
+  // Get momentum symbols to exclude (DailyScore >= 6 on latest day)
+  const momentumSymbols = new Set<string>();
+  for (const [symbol, symbolRows] of bySymbol) {
+    const latestRow = symbolRows.find((r) => toDateStr(r.tradeDate) === latestDateStr);
+    if (latestRow && computeDailyScore(latestRow) >= 6) {
+      momentumSymbols.add(symbol);
+    }
+  }
+
+  const items: AnticipationSymbolItem[] = [];
+
+  for (const [symbol, symbolRows] of bySymbol) {
+    if (momentumSymbols.has(symbol)) continue;
+
+    symbolRows.sort((a, b) => b.tradeDate.getTime() - a.tradeDate.getTime());
+    const latest = symbolRows[0]!;
+    if (toDateStr(latest.tradeDate) !== latestDateStr) continue;
+    const prev = symbolRows.length > 1 ? symbolRows[1]! : null;
+
+    // Detect signals
+    const signals: AnticipationSignal[] = [];
+    if (detectSignalA(latest, prev)) signals.push({ type: "A", label: "Stoch Crossover <30" });
+    if (detectSignalB(latest, prev)) signals.push({ type: "B", label: "Rising Stoch 40-65" });
+    if (detectSignalC(latest, symbolRows)) signals.push({ type: "C", label: "Bullish Divergence" });
+
+    if (signals.length === 0) continue;
+
+    // Stage 0 scoring
+    let stage0Score = 0;
+    // Signal points: A=3, B=3, C=2
+    for (const sig of signals) {
+      if (sig.type === "A") stage0Score += 3;
+      else if (sig.type === "B") stage0Score += 3;
+      else if (sig.type === "C") stage0Score += 2;
+    }
+
+    // Structural bonuses
+    const sma20AboveSma50 = latest.sma20 != null && latest.sma50 != null && latest.sma20 > latest.sma50;
+    const closeAboveSma200 = latest.closingPrice != null && latest.sma200 != null && latest.closingPrice > latest.sma200;
+    if (sma20AboveSma50) stage0Score += 2;
+    if (closeAboveSma200) stage0Score += 1;
+    // MACD turning
+    if (prev != null && latest.macdHist != null && prev.macdHist != null && latest.macdHist > prev.macdHist) stage0Score += 1;
+    // BW < 8%
+    if (latest.bandWidth20 != null && latest.bandWidth20 < 0.08) stage0Score += 1;
+    // RSI 40-55
+    const rsi = latest.rsi14 ?? 0;
+    if (rsi >= 40 && rsi <= 55) stage0Score += 1;
+
+    if (stage0Score < 3) continue;
+
+    const priority: AnticipationSymbolItem["priority"] =
+      stage0Score >= 9 ? "HIGH" :
+      stage0Score >= 6 ? "WATCH" :
+      "RADAR";
+
+    items.push({
+      symbol,
+      companyName: latest.companyName,
+      stage0Score,
+      priority,
+      signals,
+      stochK14: latest.stochK14,
+      stochD14: latest.stochD14,
+      rsi14: latest.rsi14,
+      macdHist: latest.macdHist,
+      bandWidth20: latest.bandWidth20,
+      sma20AboveSma50,
+      closeAboveSma200,
+    });
+  }
+
+  items.sort((a, b) => b.stage0Score - a.stage0Score);
 
   return { tradeDate: tradeDateStr, marketType, count: items.length, items };
 }
@@ -652,6 +945,8 @@ export async function fetchEndOfDaySymbolsByDate(
     upperBollingerBand20: null,
     lowerBollingerBand20: null,
     bandWidth20: null,
+    stochK14: null,
+    stochD14: null,
     ez: null,
     companyName: null,
     sector: null,
@@ -721,6 +1016,8 @@ function aggRowToStockData(row: AggRow, symbol: string): StockData {
     upperBollingerBand20: null,
     lowerBollingerBand20: null,
     bandWidth20: null,
+    stochK14: null,
+    stochD14: null,
     companyName: null,
     sector: null,
     subSector: null,
@@ -1015,6 +1312,7 @@ export const dbProviders: TaseDataProviders = {
   fetchEndOfDay,
   fetchMarketSpirit,
   fetchMomentumSymbols,
+  fetchAnticipationSymbols,
   fetchEndOfDaySymbols,
   fetchEndOfDaySymbolsByDate,
   fetchCandlestick,

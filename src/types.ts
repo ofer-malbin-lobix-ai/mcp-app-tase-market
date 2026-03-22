@@ -31,6 +31,8 @@ export interface StockData {
   upperBollingerBand20: number | null;
   lowerBollingerBand20: number | null;
   bandWidth20: number | null;
+  stochK14: number | null;
+  stochD14: number | null;
   ez: number | null;
   companyName: string | null;
   sector: string | null;
@@ -50,11 +52,15 @@ export interface MarketSpiritResponse {
   momentumBreadth: number;      // % of universe with DailyScore >= 6
   moneyFlowBreadth: number;     // % with MFI > 60
   compressionBreadth: number;   // % with bandWidth < 6%
-  regime: "weak" | "early" | "healthy" | "overextended";
+  regime: "weak" | "early" | "healthy" | "overextended" | "avoid" | "attack" | "selective" | "neutral" | "defense";
+  // Position sizing matrix
+  positionSizing?: Record<string, Record<string, string>>;
   // Legacy fields kept for backward compat
   score: "Defense" | "Selective" | "Attack" | null;
   adv: number | null;
   adLine: number | null;
+  // Enhanced regime info
+  avgBandWidth?: number;
 }
 
 export interface MomentumSymbolItem {
@@ -76,6 +82,11 @@ export interface MomentumSymbolItem {
   rsi14: number | null;
   bandWidth20: number | null;
   mfi14: number | null;
+  // v4 enhanced fields
+  macdDeclining: boolean;
+  leaderSubTier: "A" | "B" | "C" | null;
+  bandWidthZone: "strong_compression" | "compression" | "normal" | "elevated" | "high" | "extreme";
+  sma200Rising: boolean;
 }
 
 export interface MomentumResponse {
@@ -83,6 +94,33 @@ export interface MomentumResponse {
   marketType: string;
   count: number;
   items: MomentumSymbolItem[];
+}
+
+export interface AnticipationSignal {
+  type: "A" | "B" | "C";
+  label: string;
+}
+
+export interface AnticipationSymbolItem {
+  symbol: string;
+  companyName: string | null;
+  stage0Score: number;          // 0–13
+  priority: "HIGH" | "WATCH" | "RADAR";
+  signals: AnticipationSignal[];
+  stochK14: number | null;
+  stochD14: number | null;
+  rsi14: number | null;
+  macdHist: number | null;
+  bandWidth20: number | null;
+  sma20AboveSma50: boolean;
+  closeAboveSma200: boolean;
+}
+
+export interface AnticipationResponse {
+  tradeDate: string;
+  marketType: string;
+  count: number;
+  items: AnticipationSymbolItem[];
 }
 
 export type CandlestickTimeframe = "1D" | "3D" | "1W" | "1M" | "3M";
@@ -148,6 +186,7 @@ export interface TaseDataProviders {
   fetchEndOfDay(marketType?: string, tradeDate?: string): Promise<EndOfDayResult>;
   fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
   fetchMomentumSymbols(marketType?: string, tradeDate?: string): Promise<MomentumResponse>;
+  fetchAnticipationSymbols(marketType?: string, tradeDate?: string): Promise<AnticipationResponse>;
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
   fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string, period?: HeatmapPeriod): Promise<EndOfDaySymbolsResponse>;
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe): Promise<CandlestickResponse>;
