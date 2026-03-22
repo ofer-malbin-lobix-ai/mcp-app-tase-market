@@ -58,7 +58,8 @@
     "test:all:dev": "node tests/widget-tests.mjs all --mcp tase-market-dev",
     "test:widget:claude": "node tests/widget-tests.mjs --platform claude-desktop",
     "test:all:claude": "node tests/widget-tests.mjs all --platform claude-desktop",
-    "deploy:prod": "git checkout production && git merge main && git push origin production && git checkout main"
+    "deploy:prod": "git checkout production && git merge main && git push origin production && git checkout main",
+    "migrate:prod": "env $(grep -v '^#' .env.production.local | grep -v '^$' | xargs) npx prisma migrate deploy"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "^1.1.2",
