@@ -1463,30 +1463,30 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
 
   // Register resources
   const readWidget = (uri: string, file: string) =>
-    async () => resourceContent(uri, await fs.readFile(path.join(DIST_DIR, file), "utf-8"));
+    async () => resourceContent(uri, await fs.readFile(path.join(DIST_DIR, "src", "widgets", file), "utf-8"));
 
-  registerAppResource(server, myPositionResourceUri, myPositionResourceUri, RESOURCE_CONFIG, readWidget(myPositionResourceUri, "my-position-table-widget.html"));
-  registerAppResource(server, sectorHeatmapResourceUri, sectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(sectorHeatmapResourceUri, "market-sector-heatmap-widget.html"));
-  registerAppResource(server, endOfDayResourceUri, endOfDayResourceUri, RESOURCE_CONFIG, readWidget(endOfDayResourceUri, "market-end-of-day-widget.html"));
-  registerAppResource(server, marketSpiritResourceUri, marketSpiritResourceUri, RESOURCE_CONFIG, readWidget(marketSpiritResourceUri, "market-spirit-widget.html"));
-  registerAppResource(server, momentumResourceUri, momentumResourceUri, RESOURCE_CONFIG, readWidget(momentumResourceUri, "market-momentum-widget.html"));
-  registerAppResource(server, anticipationResourceUri, anticipationResourceUri, RESOURCE_CONFIG, readWidget(anticipationResourceUri, "market-anticipation-widget.html"));
-  registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day-widget.html"));
-  registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick-widget.html"));
-  registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick-widget.html"));
-  registerAppResource(server, subscriptionResourceUri, subscriptionResourceUri, RESOURCE_CONFIG, readWidget(subscriptionResourceUri, "tase-market-landing-widget.html"));
-  registerAppResource(server, settingsResourceUri, settingsResourceUri, { ...RESOURCE_CONFIG, _meta: { ui: { ...RESOURCE_UI_META, permissions: { clipboardWrite: {} } } } }, readWidget(settingsResourceUri, "tase-market-settings-widget.html"));
-  registerAppResource(server, myPositionsManagerResourceUri, myPositionsManagerResourceUri, RESOURCE_CONFIG, readWidget(myPositionsManagerResourceUri, "my-positions-manager-widget.html"));
-  registerAppResource(server, symbolsCandlestickWidgetResourceUri, symbolsCandlestickWidgetResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickWidgetResourceUri, "symbols-candlestick-widget.html"));
-  registerAppResource(server, symbolsTableResourceUri, symbolsTableResourceUri, RESOURCE_CONFIG, readWidget(symbolsTableResourceUri, "symbols-table-widget.html"));
-  registerAppResource(server, symbolEndOfDaysResourceUri, symbolEndOfDaysResourceUri, RESOURCE_CONFIG, readWidget(symbolEndOfDaysResourceUri, "symbol-end-of-days-widget.html"));
-  registerAppResource(server, symbolsEndOfDayResourceUri, symbolsEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(symbolsEndOfDayResourceUri, "symbols-end-of-day-widget.html"));
-  registerAppResource(server, intradayCandlestickResourceUri, intradayCandlestickResourceUri, RESOURCE_CONFIG, readWidget(intradayCandlestickResourceUri, "symbol-intraday-candlestick-widget.html"));
-  registerAppResource(server, marketLastUpdateResourceUri, marketLastUpdateResourceUri, RESOURCE_CONFIG, readWidget(marketLastUpdateResourceUri, "market-last-update-widget.html"));
-  registerAppResource(server, watchlistManagerResourceUri, watchlistManagerResourceUri, RESOURCE_CONFIG, readWidget(watchlistManagerResourceUri, "watchlist-manager-widget.html"));
-  registerAppResource(server, watchlistTableResourceUri, watchlistTableResourceUri, RESOURCE_CONFIG, readWidget(watchlistTableResourceUri, "watchlist-table-widget.html"));
-  registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day-widget.html"));
-  registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick-widget.html"));
+  registerAppResource(server, myPositionResourceUri, myPositionResourceUri, RESOURCE_CONFIG, readWidget(myPositionResourceUri, "my-position-table/my-position-table-widget.html"));
+  registerAppResource(server, sectorHeatmapResourceUri, sectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(sectorHeatmapResourceUri, "market-sector-heatmap/market-sector-heatmap-widget.html"));
+  registerAppResource(server, endOfDayResourceUri, endOfDayResourceUri, RESOURCE_CONFIG, readWidget(endOfDayResourceUri, "market-end-of-day/market-end-of-day-widget.html"));
+  registerAppResource(server, marketSpiritResourceUri, marketSpiritResourceUri, RESOURCE_CONFIG, readWidget(marketSpiritResourceUri, "market-spirit/market-spirit-widget.html"));
+  registerAppResource(server, momentumResourceUri, momentumResourceUri, RESOURCE_CONFIG, readWidget(momentumResourceUri, "market-momentum/market-momentum-widget.html"));
+  registerAppResource(server, anticipationResourceUri, anticipationResourceUri, RESOURCE_CONFIG, readWidget(anticipationResourceUri, "market-anticipation/market-anticipation-widget.html"));
+  registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day/my-position-end-of-day-widget.html"));
+  registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick/symbol-candlestick-widget.html"));
+  registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick/my-position-candlestick-widget.html"));
+  registerAppResource(server, subscriptionResourceUri, subscriptionResourceUri, RESOURCE_CONFIG, readWidget(subscriptionResourceUri, "tase-market-landing/tase-market-landing-widget.html"));
+  registerAppResource(server, settingsResourceUri, settingsResourceUri, { ...RESOURCE_CONFIG, _meta: { ui: { ...RESOURCE_UI_META, permissions: { clipboardWrite: {} } } } }, readWidget(settingsResourceUri, "tase-market-settings/tase-market-settings-widget.html"));
+  registerAppResource(server, myPositionsManagerResourceUri, myPositionsManagerResourceUri, RESOURCE_CONFIG, readWidget(myPositionsManagerResourceUri, "my-positions-manager/my-positions-manager-widget.html"));
+  registerAppResource(server, symbolsCandlestickWidgetResourceUri, symbolsCandlestickWidgetResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickWidgetResourceUri, "symbols-candlestick/symbols-candlestick-widget.html"));
+  registerAppResource(server, symbolsTableResourceUri, symbolsTableResourceUri, RESOURCE_CONFIG, readWidget(symbolsTableResourceUri, "symbols-table/symbols-table-widget.html"));
+  registerAppResource(server, symbolEndOfDaysResourceUri, symbolEndOfDaysResourceUri, RESOURCE_CONFIG, readWidget(symbolEndOfDaysResourceUri, "symbol-end-of-days/symbol-end-of-days-widget.html"));
+  registerAppResource(server, symbolsEndOfDayResourceUri, symbolsEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(symbolsEndOfDayResourceUri, "symbols-end-of-day/symbols-end-of-day-widget.html"));
+  registerAppResource(server, intradayCandlestickResourceUri, intradayCandlestickResourceUri, RESOURCE_CONFIG, readWidget(intradayCandlestickResourceUri, "symbol-intraday-candlestick/symbol-intraday-candlestick-widget.html"));
+  registerAppResource(server, marketLastUpdateResourceUri, marketLastUpdateResourceUri, RESOURCE_CONFIG, readWidget(marketLastUpdateResourceUri, "market-last-update/market-last-update-widget.html"));
+  registerAppResource(server, watchlistManagerResourceUri, watchlistManagerResourceUri, RESOURCE_CONFIG, readWidget(watchlistManagerResourceUri, "watchlist-manager/watchlist-manager-widget.html"));
+  registerAppResource(server, watchlistTableResourceUri, watchlistTableResourceUri, RESOURCE_CONFIG, readWidget(watchlistTableResourceUri, "watchlist-table/watchlist-table-widget.html"));
+  registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day/watchlist-end-of-day-widget.html"));
+  registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick/watchlist-candlestick-widget.html"));
 
   return server;
 }
