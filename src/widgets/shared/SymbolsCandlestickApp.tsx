@@ -502,9 +502,9 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   const { language, dir, toggle, t } = useLanguage();
 
   const CANDLESTICK_TITLE_KEYS: Record<string, string> = {
-    "get-symbols-end-of-days-data": "landing.tool.symbolsCandlestick",
-    "get-my-position-end-of-day-data": "landing.tool.myPositionCandlestick",
-    "get-watchlist-end-of-day-data": "landing.tool.watchlistCandlestick",
+    "get-symbols-end-of-days-data": "home.tool.symbolsCandlestick",
+    "get-my-position-end-of-day-data": "home.tool.myPositionCandlestick",
+    "get-watchlist-end-of-day-data": "home.tool.watchlistCandlestick",
   };
   const titleKey = CANDLESTICK_TITLE_KEYS[config.toolName];
   const title = (titleKey ? t(titleKey as any) : "") || deriveTitle(config.toolName);

@@ -229,7 +229,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.marketMomentum")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.marketMomentum")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.stats}>

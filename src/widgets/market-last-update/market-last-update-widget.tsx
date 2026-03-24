@@ -360,7 +360,7 @@ function LastUpdateAppInner({
   }, [summaryRows]);
 
   return (
-    <WidgetLayout title={t("landing.tool.marketLastUpdate")} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.marketLastUpdate")} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.summary}>

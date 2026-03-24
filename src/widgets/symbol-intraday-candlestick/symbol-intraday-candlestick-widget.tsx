@@ -432,7 +432,7 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
     : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.symbolIntradayCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.symbolIntradayCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

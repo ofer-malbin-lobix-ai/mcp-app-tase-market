@@ -265,7 +265,7 @@ function WatchlistManagerApp() {
 
   return (
     <WidgetLayout
-      title={t("landing.tool.watchlistManager")}
+      title={t("home.tool.watchlistManager")}
       subtitle={data ? `${watchlist.length} item${watchlist.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

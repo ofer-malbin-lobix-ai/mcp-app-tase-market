@@ -61,11 +61,11 @@ export interface EndOfDayWidgetData {
 // --- Helpers ---
 
 export const TOOL_TITLE_KEYS: Record<string, string> = {
-  "get-market-end-of-day-data": "landing.tool.marketEndOfDay",
-  "get-symbols-end-of-day-data": "landing.tool.symbolsEndOfDay",
-  "get-my-position-end-of-day-data": "landing.tool.myPositionEndOfDay",
-  "get-watchlist-end-of-day-data": "landing.tool.watchlistEndOfDay",
-  "get-symbol-end-of-days-data": "landing.tool.symbolEndOfDays",
+  "get-market-end-of-day-data": "home.tool.marketEndOfDay",
+  "get-symbols-end-of-day-data": "home.tool.symbolsEndOfDay",
+  "get-my-position-end-of-day-data": "home.tool.myPositionEndOfDay",
+  "get-watchlist-end-of-day-data": "home.tool.watchlistEndOfDay",
+  "get-symbol-end-of-days-data": "home.tool.symbolEndOfDays",
 };
 
 export function deriveTitle(toolName: string): string {

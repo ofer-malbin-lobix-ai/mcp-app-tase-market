@@ -407,7 +407,7 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
     : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.symbolCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.symbolCandlestick")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
 
       <div className={styles.controls}>
         <label className={styles.dateLabel}>

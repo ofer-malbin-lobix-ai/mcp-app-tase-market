@@ -19,7 +19,7 @@
     "test:symbols-candlestick": "node widget-tests.mjs symbols-candlestick",
     "test:symbols-table": "node widget-tests.mjs symbols-table",
     "test:symbol-candlestick": "node widget-tests.mjs symbol-candlestick",
-    "test:landing": "node widget-tests.mjs landing",
+    "test:home": "node widget-tests.mjs home",
     "start-chrome": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --remote-debugging-port=9226 --user-data-dir=$HOME/.tase-test-profile --no-first-run --no-default-browser-check --disable-extensions about:blank &"
   },
   "dependencies": {

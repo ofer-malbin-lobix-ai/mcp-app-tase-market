@@ -42,7 +42,7 @@
  *   watchlist-end-of-day  — show-watchlist-end-of-day-widget (auto-fetch symbols) + sort + filters
  *   watchlist-candlestick — show-watchlist-candlestick-widget (auto-fetch symbols) + symbol switch + period
  *   settings                — show-tase-market-settings-widget + subscribe button + footer
- *   landing                 — show-tase-market-landing-widget + Symbols tab + Reference tab
+ *   home                    — show-tase-market-home-widget + Symbols tab + Reference tab
  *   refresh-mcp             — refresh the MCP connector in ChatGPT Settings (cache bust)
  *   all                     — run all tests sequentially
  */
@@ -608,13 +608,13 @@ async function testSettings(page) {
   console.log('  ✅ settings passed');
 }
 
-async function testLanding(page) {
-  console.log('\n🧪 Test: landing');
+async function testHome(page) {
+  console.log('\n🧪 Test: home');
   await newChat(page);
-  await sendMessage(page, `@${MCP_NAME} call show-tase-market-landing-widget`);
+  await sendMessage(page, `@${MCP_NAME} call show-tase-market-home-widget`);
   console.log('  Waiting for widget...');
   await sleep(30000);
-  await screenshot(page, 'landing-market');
+  await screenshot(page, 'home-market');
 
   const frame = await waitForWidgetFrame(page, { selector: 'button' });
   if (!frame) { console.log('  ⚠️  Widget frame not found'); return; }
@@ -622,7 +622,7 @@ async function testLanding(page) {
   const symbolsClicked = await clickButton(frame, 'Symbols');
   console.log(`  ${symbolsClicked ? '✅' : '⚠️ '} Symbols tab ${symbolsClicked ? 'clicked' : 'not found'}`);
   await sleep(1500);
-  await screenshot(page, 'landing-symbols');
+  await screenshot(page, 'home-symbols');
 
   const hasIntraday = await frame.evaluate(() => {
     return !!Array.from(document.querySelectorAll('button, span, div')).find(el => el.textContent.includes('Intraday'));
@@ -633,7 +633,7 @@ async function testLanding(page) {
   const refClicked = await clickButton(frame, 'Reference');
   console.log(`  ${refClicked ? '✅' : '⚠️ '} Reference tab ${refClicked ? 'clicked' : 'not found'}`);
   await sleep(1500);
-  await screenshot(page, 'landing-reference-widgets');
+  await screenshot(page, 'home-reference-widgets');
 
   const hasWidgetsTable = await frame.evaluate(() => {
     return !!Array.from(document.querySelectorAll('th, td')).find(el => el.textContent.includes('show-market-end-of-day-widget'));
@@ -643,14 +643,14 @@ async function testLanding(page) {
   const dataToolsClicked = await clickButton(frame, 'Data Tools');
   console.log(`  ${dataToolsClicked ? '✅' : '⚠️ '} Data Tools sub-tab ${dataToolsClicked ? 'clicked' : 'not found'}`);
   await sleep(1500);
-  await screenshot(page, 'landing-reference-data-tools');
+  await screenshot(page, 'home-reference-data-tools');
 
   const hasDataToolsTable = await frame.evaluate(() => {
     return !!Array.from(document.querySelectorAll('th, td')).find(el => el.textContent.includes('get-market-end-of-day-data'));
   });
   console.log(`  ${hasDataToolsTable ? '✅' : '⚠️ '} Data Tools reference table ${hasDataToolsTable ? 'found' : 'not found'}`);
 
-  console.log('  ✅ landing passed');
+  console.log('  ✅ home passed');
 }
 
 // ─── Refresh MCP connector (ChatGPT) ─────────────────────────────────────────
@@ -1021,14 +1021,14 @@ async function testSettingsDesktop() {
   console.log('  ✅ settings (Claude Desktop) passed');
 }
 
-async function testLandingDesktop() {
-  console.log('\n🧪 Test: landing (Claude Desktop)');
+async function testHomeDesktop() {
+  console.log('\n🧪 Test: home (Claude Desktop)');
   await newChatDesktop();
-  await sendMessageDesktop('call show-tase-market-landing-widget');
+  await sendMessageDesktop('call show-tase-market-home-widget');
   console.log('  Waiting for widget...');
   await sleep(30000);
-  await screenshotDesktop('cd-landing');
-  console.log('  ✅ landing (Claude Desktop) passed');
+  await screenshotDesktop('cd-home');
+  console.log('  ✅ home (Claude Desktop) passed');
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -1055,7 +1055,7 @@ const CHATGPT_TEST_MAP = {
   'symbol-end-of-days':            testSymbolEndOfDays,
   'market-last-update':              testLastUpdate,
   'settings':                 testSettings,
-  'landing':                  testLanding,
+  'home':                  testHome,
   'refresh-mcp':              refreshMcp,
 };
 
@@ -1081,7 +1081,7 @@ const CLAUDE_DESKTOP_TEST_MAP = {
   'symbol-end-of-days':            testSymbolEndOfDaysDesktop,
   'market-last-update':              testLastUpdateDesktop,
   'settings':                 testSettingsDesktop,
-  'landing':                  testLandingDesktop,
+  'home':                  testHomeDesktop,
 };
 
 const TEST_MAP = PLATFORM === 'claude-desktop' ? CLAUDE_DESKTOP_TEST_MAP : CHATGPT_TEST_MAP;

@@ -259,7 +259,7 @@ function MyPositionApp() {
 
   return (
     <WidgetLayout
-      title={t("landing.tool.myPositionTable")}
+      title={t("home.tool.myPositionTable")}
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

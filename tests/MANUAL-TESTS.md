@@ -24,4 +24,4 @@ Copy-paste these into Claude Desktop to test each widget.
 | 19 | symbol-intraday-candlestick | `call show-symbol-intraday-candlestick-widget with securityIdOrSymbol: "TEVA"` |
 | 20 | symbol-end-of-days | `call show-symbol-end-of-days-widget with symbol: "TEVA"` |
 | 21 | settings | `call show-tase-market-settings-widget` |
-| 22 | landing | `call show-tase-market-landing-widget` |
+| 22 | home | `call show-tase-market-home-widget` |

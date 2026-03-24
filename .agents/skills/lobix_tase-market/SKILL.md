@@ -59,10 +59,10 @@ Use this skill when the user wants to:
 | Watchlist EOD data | `get-watchlist-end-of-day-data` | `show-watchlist-end-of-day-widget` |
 | Watchlist candlestick | `get-watchlist-period-data` | `show-watchlist-candlestick-widget` |
 
-### Settings & Landing
+### Settings & Home
 | Goal | Widget Tool |
 |------|-------------|
-| All tools overview | `show-tase-market-landing-widget` |
+| All tools overview | `show-tase-market-home-widget` |
 | Subscription & settings | `show-tase-market-settings-widget` |
 
 ## Decision Guide

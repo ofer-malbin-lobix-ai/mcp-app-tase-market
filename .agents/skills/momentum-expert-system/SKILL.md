@@ -245,7 +245,7 @@ Uses **momentum breadth** AND **average BandWidth** across the liquid universe.
 | Momentum Widget UI | `src/widgets/market-momentum-widget.tsx` | React component |
 | Anticipation Widget UI | `src/widgets/market-anticipation-widget.tsx` | React component |
 | Spirit Widget UI | `src/widgets/market-spirit-widget.tsx` | React component |
-| Translations | `src/components/translations.ts` | `momentum.*`, `landing.tool.marketAnticipation` |
+| Translations | `src/components/translations.ts` | `momentum.*`, `home.tool.marketAnticipation` |
 
 ## MCP Tools
 

@@ -311,7 +311,7 @@ function WatchlistTableApp() {
 
   return (
     <WidgetLayout
-      title={t("landing.tool.watchlistTable")}
+      title={t("home.tool.watchlistTable")}
       subtitle={baseData ? `${baseData.dateTo} · ${displayRows.length} symbol${displayRows.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

@@ -310,7 +310,7 @@ function MyPositionsManagerApp() {
 
   return (
     <WidgetLayout
-      title={t("landing.tool.myPositionsManager")}
+      title={t("home.tool.myPositionsManager")}
       subtitle={data ? `${positions.length} position${positions.length !== 1 ? "s" : ""}` : undefined}
       app={app}
       hostContext={hostContext}

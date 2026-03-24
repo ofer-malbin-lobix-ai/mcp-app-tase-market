@@ -226,7 +226,7 @@ function AnticipationWidgetInner({ app, data, setData, hostContext }: Anticipati
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.marketAnticipation")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.marketAnticipation")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
 
       {data && (
         <div className={styles.stats}>

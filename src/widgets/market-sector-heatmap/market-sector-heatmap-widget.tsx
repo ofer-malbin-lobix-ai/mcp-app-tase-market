@@ -456,7 +456,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const subtitle = data ? `${data.marketType} · ${data.count} stocks` : undefined;
 
   return (
-    <WidgetLayout title={t("landing.tool.marketSectorHeatmap")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={t("home.tool.marketSectorHeatmap")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
       <div
         style={{
