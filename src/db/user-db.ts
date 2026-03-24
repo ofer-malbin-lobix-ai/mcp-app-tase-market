@@ -4,15 +4,11 @@ import { prisma } from './db.js';
  * Ensure user record exists (lazy creation on first access).
  */
 export async function ensureUser(userId: string, email?: string) {
-  const existing = await prisma.appUser.findUnique({ where: { id: userId } });
-  if (existing) {
-    if (email && existing.email !== email) {
-      return prisma.appUser.update({ where: { id: userId }, data: { email } });
-    }
-    return existing;
-  }
-
-  return prisma.appUser.create({ data: { id: userId, email } });
+  return prisma.appUser.upsert({
+    where: { id: userId },
+    update: { ...(email !== undefined && { email }) },
+    create: { id: userId, email },
+  });
 }
 
 // ─── Positions ──────────────────────────────────────────────────────

@@ -104,7 +104,8 @@ export async function startStreamableHTTPServer(
       resource: AUTH0_AUDIENCE,
       authorization_servers: AUTH0_DOMAIN ? [baseUrl] : [],
       scopes_supported: ["openid", "email", "profile"],
-      service_documentation: baseUrl,
+      bearer_methods_supported: ["header"],
+      resource_documentation: baseUrl,
     });
   };
   app.get("/.well-known/oauth-protected-resource", protectedResourceHandler);
@@ -118,6 +119,12 @@ export async function startStreamableHTTPServer(
         const metadata = await response.json() as Record<string, unknown>;
         // Rewrite authorization_endpoint to our proxy so we can normalize the resource param
         metadata.authorization_endpoint = `${baseUrl}/oauth/authorize`;
+        if (!metadata.code_challenge_methods_supported) {
+          metadata.code_challenge_methods_supported = ["S256"];
+        }
+        if (!metadata.registration_endpoint) {
+          metadata.registration_endpoint = `https://${AUTH0_DOMAIN}/oidc/register`;
+        }
         res.json(metadata);
       } catch (error) {
         console.error("Failed to fetch Auth0 metadata:", error);
@@ -284,8 +291,9 @@ export async function startStreamableHTTPServer(
   const mcpAuth = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.headers.authorization) {
       const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
+      console.warn("AUTH: No Authorization header", { url: req.url, method: req.method, sessionId: req.headers["mcp-session-id"] });
       res.status(401).set({
-        "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}"`,
+        "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", scope="openid email profile"`,
       }).json({ error: "Unauthorized" });
       return;
     }
@@ -295,9 +303,10 @@ export async function startStreamableHTTPServer(
         if (err) {
           // Invalid token — return 401 with PRM to trigger re-auth
           const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
+          console.error("AUTH ERROR:", { message: (err as Error)?.message, code: (err as any)?.code, url: req.url, sessionId: req.headers["mcp-session-id"] });
           if (!res.headersSent) {
             res.status(401).set({
-              "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", error="invalid_token"`,
+              "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", error="invalid_token", scope="openid email profile"`,
             }).json({ error: "Invalid token" });
           }
           return;
@@ -323,7 +332,8 @@ export async function startStreamableHTTPServer(
   };
 
   // Protected MCP endpoint with subscription check
-  app.all("/mcp", mcpAuth, requireSubscription, mcpHandler);
+  app.post("/mcp", mcpAuth, requireSubscription, mcpHandler);
+  app.get("/mcp", mcpAuth, mcpHandler);
 
   const httpServer = app.listen(port, (err) => {
     if (err) {
