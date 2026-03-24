@@ -1443,7 +1443,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show Settings widget
+  // UI tool: Show Tase Market Settings widget
   registerAppTool(server,
     "show-tase-market-settings-widget",
     {
