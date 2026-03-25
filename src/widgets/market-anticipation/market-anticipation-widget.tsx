@@ -19,6 +19,7 @@ interface AnticipationSignal {
 interface AnticipationSymbolItem {
   symbol: string;
   companyName: string | null;
+  companySector: string | null;
   stage0Score: number;
   priority: "HIGH" | "WATCH" | "RADAR";
   signals: AnticipationSignal[];
@@ -39,6 +40,8 @@ interface AnticipationData {
 }
 
 type TabKey = "all" | "HIGH" | "WATCH" | "RADAR";
+type CategoryKey = "stocks" | "fundTraded";
+const FUND_SECTORS = ["ETFs", "Foreign Fund Traded"];
 
 function extractAnticipationData(callToolResult: CallToolResult | null | undefined): AnticipationData | null {
   try {
@@ -172,6 +175,7 @@ function AnticipationWidgetInner({ app, data, setData, hostContext }: Anticipati
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>("stocks");
 
   useEffect(() => {
     if (data) setIsRefreshing(false);
@@ -208,25 +212,56 @@ function AnticipationWidgetInner({ app, data, setData, hostContext }: Anticipati
     }
   }, [app, setData]);
 
-  const counts = useMemo(() => {
-    if (!data) return { HIGH: 0, WATCH: 0, RADAR: 0 };
+  const categoryItems = useMemo(() => {
+    if (!data) return [];
+    if (activeCategory === "fundTraded") {
+      return data.items.filter((i) => i.companySector != null && FUND_SECTORS.includes(i.companySector));
+    }
+    return data.items.filter((i) => i.companySector == null || !FUND_SECTORS.includes(i.companySector));
+  }, [data, activeCategory]);
+
+  const categoryCounts = useMemo(() => {
+    if (!data) return { stocks: 0, fundTraded: 0 };
     return {
-      HIGH: data.items.filter((i) => i.priority === "HIGH").length,
-      WATCH: data.items.filter((i) => i.priority === "WATCH").length,
-      RADAR: data.items.filter((i) => i.priority === "RADAR").length,
+      stocks: data.items.filter((i) => i.companySector == null || !FUND_SECTORS.includes(i.companySector)).length,
+      fundTraded: data.items.filter((i) => i.companySector != null && FUND_SECTORS.includes(i.companySector)).length,
     };
   }, [data]);
 
+  const counts = useMemo(() => {
+    return {
+      HIGH: categoryItems.filter((i) => i.priority === "HIGH").length,
+      WATCH: categoryItems.filter((i) => i.priority === "WATCH").length,
+      RADAR: categoryItems.filter((i) => i.priority === "RADAR").length,
+    };
+  }, [categoryItems]);
+
   const filteredItems = useMemo(() => {
-    if (!data) return [];
-    if (activeTab === "all") return data.items;
-    return data.items.filter((i) => i.priority === activeTab);
-  }, [data, activeTab]);
+    if (activeTab === "all") return categoryItems;
+    return categoryItems.filter((i) => i.priority === activeTab);
+  }, [categoryItems, activeTab]);
 
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
     <WidgetLayout title={t("home.tool.marketAnticipation")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+
+      {data && (
+        <div className={styles.categoryTabs}>
+          {([
+            ["stocks", `${t("momentum.stocks")} (${categoryCounts.stocks})`],
+            ["fundTraded", `${t("momentum.fundTraded")} (${categoryCounts.fundTraded})`],
+          ] as [CategoryKey, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              className={`${styles.categoryTab} ${activeCategory === key ? styles.categoryTabActive : ""}`}
+              onClick={() => { setActiveCategory(key); setActiveTab("all"); }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {data && (
         <div className={styles.stats}>
@@ -248,7 +283,7 @@ function AnticipationWidgetInner({ app, data, setData, hostContext }: Anticipati
       {data && (
         <div className={styles.tabs}>
           {([
-            ["all", `${t("momentum.all")} (${data.count})`],
+            ["all", `${t("momentum.all")} (${categoryItems.length})`],
             ["HIGH", `HIGH (${counts.HIGH})`],
             ["WATCH", `WATCH (${counts.WATCH})`],
             ["RADAR", `RADAR (${counts.RADAR})`],

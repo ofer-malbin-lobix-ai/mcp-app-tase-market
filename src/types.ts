@@ -105,6 +105,7 @@ export interface AnticipationSignal {
 export interface AnticipationSymbolItem {
   symbol: string;
   companyName: string | null;
+  companySector: string | null;
   stage0Score: number;          // 0–13
   priority: "HIGH" | "WATCH" | "RADAR";
   signals: AnticipationSignal[];

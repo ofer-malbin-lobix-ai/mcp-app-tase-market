@@ -8,6 +8,37 @@
   background-clip: text;
 }
 
+.categoryTabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--t-border);
+}
+
+.categoryTab {
+  padding: 0.5rem 1.25rem;
+  font-size: var(--font-text-base-size, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--t-text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.categoryTab:hover {
+  color: var(--t-text-primary);
+}
+
+.categoryTabActive {
+  color: #06b6d4;
+  border-bottom-color: #06b6d4;
+}
+
 .stats {
   display: flex;
   gap: 0.75rem;

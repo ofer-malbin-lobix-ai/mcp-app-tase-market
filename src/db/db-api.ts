@@ -629,6 +629,7 @@ type AnticipationDbRow = {
   stochD14: number | null;
   turnover10: number | null;
   companyName: string | null;
+  companySector: string | null;
 };
 
 function detectSignalA(latest: AnticipationDbRow, prev: AnticipationDbRow | null): boolean {
@@ -710,7 +711,8 @@ export async function fetchAnticipationSymbols(
       t."ez", t."bandWidth20",
       t."stochK14", t."stochD14",
       t."turnover10",
-      s."companyName"
+      s."companyName",
+      s."companySector"
     FROM "TaseSecuritiesEndOfDayTradingData" t
     LEFT JOIN "TaseSymbol" s ON t.symbol = s.symbol
     WHERE t."tradeDate" IN (SELECT "tradeDate" FROM last20)
@@ -793,6 +795,7 @@ export async function fetchAnticipationSymbols(
     items.push({
       symbol,
       companyName: latest.companyName,
+      companySector: latest.companySector,
       stage0Score,
       priority,
       signals,
