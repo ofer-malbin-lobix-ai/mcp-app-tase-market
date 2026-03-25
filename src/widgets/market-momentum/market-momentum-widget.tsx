@@ -14,6 +14,7 @@ import styles from "./market-momentum-widget.module.css";
 interface MomentumSymbolItem {
   symbol: string;
   companyName: string | null;
+  companySector: string | null;
   dailyScore: number;
   trendQuality: number;
   leaderScore: number;
@@ -39,6 +40,8 @@ interface MomentumData {
 }
 
 type TabKey = "all" | "strong" | "confirmed" | "new" | "compression";
+type CategoryKey = "stocks" | "fundTraded";
+const FUND_SECTORS = ["ETFs", "Foreign Fund Traded"];
 
 function extractMomentumData(callToolResult: CallToolResult | null | undefined): MomentumData | null {
   try {
@@ -167,6 +170,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>("stocks");
 
   // Clear initial loading state when data first arrives
   useEffect(() => {
@@ -204,32 +208,63 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
     }
   }, [app, setData]);
 
-  const counts = useMemo(() => {
-    if (!data) return { strong: 0, confirmed: 0, new: 0, leaders: 0, compression: 0 };
+  const categoryItems = useMemo(() => {
+    if (!data) return [];
+    if (activeCategory === "fundTraded") {
+      return data.items.filter((i) => i.companySector != null && FUND_SECTORS.includes(i.companySector));
+    }
+    return data.items.filter((i) => i.companySector == null || !FUND_SECTORS.includes(i.companySector));
+  }, [data, activeCategory]);
+
+  const categoryCounts = useMemo(() => {
+    if (!data) return { stocks: 0, fundTraded: 0 };
     return {
-      strong: data.items.filter((i) => i.persistence === "strong").length,
-      confirmed: data.items.filter((i) => i.persistence === "confirmed").length,
-      new: data.items.filter((i) => i.persistence === "new").length,
-      leaders: data.items.filter((i) => i.isLeader).length,
-      compression: data.items.filter((i) => i.isCompression).length,
+      stocks: data.items.filter((i) => i.companySector == null || !FUND_SECTORS.includes(i.companySector)).length,
+      fundTraded: data.items.filter((i) => i.companySector != null && FUND_SECTORS.includes(i.companySector)).length,
     };
   }, [data]);
 
+  const counts = useMemo(() => {
+    return {
+      strong: categoryItems.filter((i) => i.persistence === "strong").length,
+      confirmed: categoryItems.filter((i) => i.persistence === "confirmed").length,
+      new: categoryItems.filter((i) => i.persistence === "new").length,
+      leaders: categoryItems.filter((i) => i.isLeader).length,
+      compression: categoryItems.filter((i) => i.isCompression).length,
+    };
+  }, [categoryItems]);
+
   const filteredItems = useMemo(() => {
-    if (!data) return [];
     switch (activeTab) {
-      case "strong": return data.items.filter((i) => i.persistence === "strong");
-      case "confirmed": return data.items.filter((i) => i.persistence === "confirmed");
-      case "new": return data.items.filter((i) => i.persistence === "new");
-      case "compression": return data.items.filter((i) => i.isCompression);
-      default: return data.items;
+      case "strong": return categoryItems.filter((i) => i.persistence === "strong");
+      case "confirmed": return categoryItems.filter((i) => i.persistence === "confirmed");
+      case "new": return categoryItems.filter((i) => i.persistence === "new");
+      case "compression": return categoryItems.filter((i) => i.isCompression);
+      default: return categoryItems;
     }
-  }, [data, activeTab]);
+  }, [categoryItems, activeTab]);
 
   const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
 
   return (
     <WidgetLayout title={t("home.tool.marketMomentum")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>
+
+      {data && (
+        <div className={styles.categoryTabs}>
+          {([
+            ["stocks", `${t("momentum.stocks")} (${categoryCounts.stocks})`],
+            ["fundTraded", `${t("momentum.fundTraded")} (${categoryCounts.fundTraded})`],
+          ] as [CategoryKey, string][]).map(([key, label]) => (
+            <button
+              key={key}
+              className={`${styles.categoryTab} ${activeCategory === key ? styles.categoryTabActive : ""}`}
+              onClick={() => { setActiveCategory(key); setActiveTab("all"); }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {data && (
         <div className={styles.stats}>
@@ -259,7 +294,7 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
       {data && (
         <div className={styles.tabs}>
           {([
-            ["all", `${t("momentum.all")} (${data.count})`],
+            ["all", `${t("momentum.all")} (${categoryItems.length})`],
             ["strong", `${t("momentum.strong")} (${counts.strong})`],
             ["confirmed", `${t("momentum.confirmed")} (${counts.confirmed})`],
             ["new", `${t("momentum.new")} (${counts.new})`],

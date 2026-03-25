@@ -163,6 +163,8 @@ const t = {
   "momentum.compression": { en: "Compression", he: "דחיסה" },
   "momentum.all": { en: "All", he: "הכל" },
   "momentum.noSymbols": { en: "No symbols in this category.", he: "אין מניות בקטגוריה זו." },
+  "momentum.stocks": { en: "Stocks", he: "מניות" },
+  "momentum.fundTraded": { en: "Fund Traded", he: "קרנות" },
 
   // ── Market Last Update ─────────────────────────────────────
   "lastUpdate.col.lastPrice": { en: "Last Price", he: "מחיר אחרון" },

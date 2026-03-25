@@ -37,6 +37,37 @@
   color: var(--t-text-secondary);
 }
 
+.categoryTabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--t-border);
+}
+
+.categoryTab {
+  padding: 0.5rem 1.25rem;
+  font-size: var(--font-text-base-size, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--t-text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.categoryTab:hover {
+  color: var(--t-text-primary);
+}
+
+.categoryTabActive {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+}
+
 .tabs {
   display: flex;
   gap: 0.25rem;

@@ -387,6 +387,7 @@ type MomentumDbRow = {
   turnover: bigint | null;
   turnover10: number | null;
   companyName: string | null;
+  companySector: string | null;
 };
 
 export async function fetchMomentumSymbols(
@@ -415,7 +416,8 @@ export async function fetchMomentumSymbols(
       t."rsi14", t."macdHist", t."mfi14",
       t."ez", t."bandWidth20",
       t.turnover, t."turnover10",
-      s."companyName"
+      s."companyName",
+      s."companySector"
     FROM "TaseSecuritiesEndOfDayTradingData" t
     LEFT JOIN "TaseSymbol" s ON t.symbol = s.symbol
     WHERE t."tradeDate" IN (SELECT "tradeDate" FROM lastN)
@@ -582,6 +584,7 @@ export async function fetchMomentumSymbols(
     items.push({
       symbol,
       companyName: latest.companyName,
+      companySector: latest.companySector,
       dailyScore: latestScore,
       trendQuality,
       leaderScore,

@@ -66,6 +66,7 @@ export interface MarketSpiritResponse {
 export interface MomentumSymbolItem {
   symbol: string;
   companyName: string | null;
+  companySector: string | null;
   // Scores
   dailyScore: number;          // 0-8
   trendQuality: number;        // 0-10
