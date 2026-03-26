@@ -38,6 +38,8 @@ export type {
 };
 
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
+import indicesData from "./src/data/indices.json" with { type: "json" };
+// @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { fetchIntraday } from "./src/tase-data-hub/fetch-intraday-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { fetchLastUpdate } from "./src/tase-data-hub/fetch-last-update-from-tase-data-hub.js";
@@ -1439,6 +1441,26 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
       return {
         content: [{ type: "text", text: JSON.stringify({ subscribeUrl }) }],
+      };
+    },
+  );
+
+  // Data-only tool: Get indices list data
+  registerAppTool(server,
+    "get-indices-list-data",
+    {
+      title: "Get Indices List Data",
+      description: "Returns a list of TASE indices with index ID and name. Supports English and Hebrew.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: {
+        language: z.enum(["en", "he"]).optional().default("en").describe("Language for index names: 'en' (English) or 'he' (Hebrew)"),
+      },
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args: { language: "en" | "he" }): Promise<CallToolResult> => {
+      const list = indicesData[args.language];
+      return {
+        content: [{ type: "text", text: JSON.stringify(list) }],
       };
     },
   );

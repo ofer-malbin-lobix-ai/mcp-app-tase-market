@@ -1,0 +1,1118 @@
+{
+  "en": [
+    {
+      "index": 1,
+      "indexName": "General Shares and Convertibles"
+    },
+    {
+      "index": 2,
+      "indexName": "Shares"
+    },
+    {
+      "index": 3,
+      "indexName": "Warrants"
+    },
+    {
+      "index": 4,
+      "indexName": "Convertible Bonds"
+    },
+    {
+      "index": 13,
+      "indexName": "Banks Shares and Convertibles"
+    },
+    {
+      "index": 33,
+      "indexName": "TA-Insurance"
+    },
+    {
+      "index": 41,
+      "indexName": "Commerce & Services Shares and Convertibles"
+    },
+    {
+      "index": 61,
+      "indexName": "RealEstate & Construction Shares and Convertibles"
+    },
+    {
+      "index": 73,
+      "indexName": "Industry Shares and Convertibles"
+    },
+    {
+      "index": 97,
+      "indexName": "Chemical, Rubber & Plastic Shares and Convertibles"
+    },
+    {
+      "index": 117,
+      "indexName": "Investment & Holdings Shares and Convertibles"
+    },
+    {
+      "index": 127,
+      "indexName": "Oil & Gas Exploration Shares and Convertibles"
+    },
+    {
+      "index": 137,
+      "indexName": "TA-125"
+    },
+    {
+      "index": 142,
+      "indexName": "TA-35"
+    },
+    {
+      "index": 143,
+      "indexName": "TA-90"
+    },
+    {
+      "index": 145,
+      "indexName": "TA Global-BlueTech"
+    },
+    {
+      "index": 147,
+      "indexName": "TA-SME60"
+    },
+    {
+      "index": 148,
+      "indexName": "TA-Finance"
+    },
+    {
+      "index": 149,
+      "indexName": "TA-RealEstate"
+    },
+    {
+      "index": 150,
+      "indexName": "TA-Maala"
+    },
+    {
+      "index": 161,
+      "indexName": "Yeter-Rest of Shares & Convertibles"
+    },
+    {
+      "index": 162,
+      "indexName": "Yeter-Rest of Shares"
+    },
+    {
+      "index": 163,
+      "indexName": "TA-Growth"
+    },
+    {
+      "index": 164,
+      "indexName": "TA-Banks5"
+    },
+    {
+      "index": 166,
+      "indexName": "Tel-Div"
+    },
+    {
+      "index": 167,
+      "indexName": "TA-Biomed"
+    },
+    {
+      "index": 168,
+      "indexName": "TA-AllShare"
+    },
+    {
+      "index": 169,
+      "indexName": "TA-Technology"
+    },
+    {
+      "index": 170,
+      "indexName": "TA-Oil & Gas"
+    },
+    {
+      "index": 171,
+      "indexName": "TA-Insurance & Financial Services"
+    },
+    {
+      "index": 172,
+      "indexName": "TA-Communication & InformationTechnology"
+    },
+    {
+      "index": 173,
+      "indexName": "TA Tech - Elite"
+    },
+    {
+      "index": 174,
+      "indexName": "TA-35 Dollar"
+    },
+    {
+      "index": 175,
+      "indexName": "TA-Rimon"
+    },
+    {
+      "index": 176,
+      "indexName": "TA-90 and SME60 CAP 0.8%"
+    },
+    {
+      "index": 177,
+      "indexName": "TA Sector-Balance"
+    },
+    {
+      "index": 178,
+      "indexName": "TA-Industrials"
+    },
+    {
+      "index": 179,
+      "indexName": "TA-Family"
+    },
+    {
+      "index": 180,
+      "indexName": "TA-Energy Utilities"
+    },
+    {
+      "index": 181,
+      "indexName": "TA-Construction"
+    },
+    {
+      "index": 182,
+      "indexName": "TA-Investment Properties in Israel"
+    },
+    {
+      "index": 183,
+      "indexName": "TA-Investment Properties Abroad"
+    },
+    {
+      "index": 184,
+      "indexName": "TA-Cleantech"
+    },
+    {
+      "index": 185,
+      "indexName": "TA-125 Fossil Free"
+    },
+    {
+      "index": 187,
+      "indexName": "TA-Dual Listing"
+    },
+    {
+      "index": 188,
+      "indexName": "TA-Retail & Food"
+    },
+    {
+      "index": 189,
+      "indexName": "TA 125 Equal Weight"
+    },
+    {
+      "index": 194,
+      "indexName": "TA-Bank"
+    },
+    {
+      "index": 195,
+      "indexName": "TA125-Value"
+    },
+    {
+      "index": 196,
+      "indexName": "TA 90 and Banks"
+    },
+    {
+      "index": 197,
+      "indexName": "TA20"
+    },
+    {
+      "index": 198,
+      "indexName": "TA50 Real"
+    },
+    {
+      "index": 199,
+      "indexName": "TA200"
+    },
+    {
+      "index": 200,
+      "indexName": "Tel Div Aristocrats"
+    },
+    {
+      "index": 202,
+      "indexName": "TA-90 EW PM"
+    },
+    {
+      "index": 203,
+      "indexName": "TA-SME60 EW PM"
+    },
+    {
+      "index": 204,
+      "indexName": "TA Banks 5-Equal Weight"
+    },
+    {
+      "index": 205,
+      "indexName": "TA Banks & Insurance EW"
+    },
+    {
+      "index": 206,
+      "indexName": "TA Infrastructures"
+    },
+    {
+      "index": 207,
+      "indexName": "TA Defense"
+    },
+    {
+      "index": 208,
+      "indexName": "TA Real Estate-35"
+    },
+    {
+      "index": 209,
+      "indexName": "TA Technology 35"
+    },
+    {
+      "index": 210,
+      "indexName": "TA-Israel Energy"
+    },
+    {
+      "index": 598,
+      "indexName": "VTA35"
+    },
+    {
+      "index": 601,
+      "indexName": "All-Bond"
+    },
+    {
+      "index": 602,
+      "indexName": "Tel-Gov"
+    },
+    {
+      "index": 603,
+      "indexName": "All Corporate Bonds"
+    },
+    {
+      "index": 604,
+      "indexName": "All-Bond CPI-Linked"
+    },
+    {
+      "index": 605,
+      "indexName": "Tel Gov - CPI Linked"
+    },
+    {
+      "index": 606,
+      "indexName": "CPI-Linked Corporate Bonds"
+    },
+    {
+      "index": 637,
+      "indexName": "Tel Gov - CPI Linked 0-2"
+    },
+    {
+      "index": 646,
+      "indexName": "Tel Gov - CPI Linked 2-5"
+    },
+    {
+      "index": 658,
+      "indexName": "Tel Gov - CPI Linked 5-10"
+    },
+    {
+      "index": 690,
+      "indexName": "Tel Gov-Non Linked"
+    },
+    {
+      "index": 694,
+      "indexName": "Tel Gov-CPI-Linked, 15+ Years"
+    },
+    {
+      "index": 700,
+      "indexName": "Tel Gov - Shekel"
+    },
+    {
+      "index": 701,
+      "indexName": "Tel Gov-Floating Shekel"
+    },
+    {
+      "index": 702,
+      "indexName": "Tel Gov - Shekel 0-2"
+    },
+    {
+      "index": 703,
+      "indexName": "Tel Gov - Shekel 2-5"
+    },
+    {
+      "index": 704,
+      "indexName": "Tel Gov - Shekel 5+"
+    },
+    {
+      "index": 707,
+      "indexName": "Tel Bond-20 CPI Linked"
+    },
+    {
+      "index": 708,
+      "indexName": "Tel Bond-40 CPI Linked"
+    },
+    {
+      "index": 709,
+      "indexName": "Tel Bond-60 CPI Linked"
+    },
+    {
+      "index": 710,
+      "indexName": "Tel Bond-Shekel"
+    },
+    {
+      "index": 711,
+      "indexName": "Tel Bond-CPI Linked"
+    },
+    {
+      "index": 712,
+      "indexName": "Tel Bond-CPI Linked SmallCap"
+    },
+    {
+      "index": 713,
+      "indexName": "Tel Bond-CPI Linked Banks Exclude COCO"
+    },
+    {
+      "index": 714,
+      "indexName": "Tel Bond Yields CPI Linked"
+    },
+    {
+      "index": 715,
+      "indexName": "Tel Bond-Composite"
+    },
+    {
+      "index": 716,
+      "indexName": "All-Bond Floating Shekel"
+    },
+    {
+      "index": 717,
+      "indexName": "Tel Bond-Non Linked"
+    },
+    {
+      "index": 718,
+      "indexName": "TelBond-Yield NIS"
+    },
+    {
+      "index": 719,
+      "indexName": "Tel Bond-Global Shekel"
+    },
+    {
+      "index": 720,
+      "indexName": "Tel Bond Shekel-50"
+    },
+    {
+      "index": 721,
+      "indexName": "Tel Bond-CPI Linked 1-3"
+    },
+    {
+      "index": 722,
+      "indexName": "Tel Bond-CPI Linked 3-5"
+    },
+    {
+      "index": 723,
+      "indexName": "Tel Bond-CPI Linked 5-15"
+    },
+    {
+      "index": 724,
+      "indexName": "Tel Bond-Shekel 1-3"
+    },
+    {
+      "index": 725,
+      "indexName": "Tel Bond-Shekel 3-5"
+    },
+    {
+      "index": 726,
+      "indexName": "Tel Bond-Shekel 5-15"
+    },
+    {
+      "index": 727,
+      "indexName": "Tel Gov - CPI Linked 5+"
+    },
+    {
+      "index": 728,
+      "indexName": "Tel Gov - CPI Linked 10+"
+    },
+    {
+      "index": 729,
+      "indexName": "Tel Gov - Shekel 5-10"
+    },
+    {
+      "index": 730,
+      "indexName": "Tel Gov - Shekel 10+"
+    },
+    {
+      "index": 731,
+      "indexName": "Tel Bond-CPI Linked MaalaSRI"
+    },
+    {
+      "index": 732,
+      "indexName": "Tel Bond-Shekel MaalaSRI"
+    },
+    {
+      "index": 733,
+      "indexName": "Tel Bond-Shekel Bank&Insurance"
+    },
+    {
+      "index": 734,
+      "indexName": "Tel Bond-CPI Linked RealEstate"
+    },
+    {
+      "index": 735,
+      "indexName": "Tel Bond-CPI Linked A"
+    },
+    {
+      "index": 736,
+      "indexName": "Tel Bond-CPI Linked AA-AAA"
+    },
+    {
+      "index": 737,
+      "indexName": "Tel Bond-Shekel A"
+    },
+    {
+      "index": 738,
+      "indexName": "Tel Bond-Shekel AA-AAA"
+    },
+    {
+      "index": 739,
+      "indexName": "All-Bond Dollar & Top 5 Tel Bond 20 CPI"
+    },
+    {
+      "index": 740,
+      "indexName": "All-Bond Shekel"
+    },
+    {
+      "index": 742,
+      "indexName": "Tel Bond Shekel 100"
+    },
+    {
+      "index": 743,
+      "indexName": "Tel Bond 100 CPI Linked"
+    },
+    {
+      "index": 744,
+      "indexName": "Tel Bond-CoCo A+"
+    },
+    {
+      "index": 745,
+      "indexName": "Tel Bond Yields CPI Linked Diversified"
+    },
+    {
+      "index": 746,
+      "indexName": "Tel Bond Shekel-Yield Diversified"
+    },
+    {
+      "index": 747,
+      "indexName": "Tel Bond CPI Banks & COCO"
+    },
+    {
+      "index": 748,
+      "indexName": "Tel Bond Shekel 5-10"
+    },
+    {
+      "index": 749,
+      "indexName": "Tel Bond CPI 5-10"
+    },
+    {
+      "index": 750,
+      "indexName": "Tel Bond Banks&GovComp"
+    },
+    {
+      "index": 751,
+      "indexName": "Bond Max one year maturity"
+    },
+    {
+      "index": 752,
+      "indexName": "Tel Bond 125 Value Shekel"
+    },
+    {
+      "index": 753,
+      "indexName": "Tel Bond 125 Value CPI"
+    },
+    {
+      "index": 756,
+      "indexName": "Tel Bond CPI Linked AAA"
+    },
+    {
+      "index": 757,
+      "indexName": "Tel Bond Non Linked AAA"
+    },
+    {
+      "index": 758,
+      "indexName": "Tel Bond CPI Linked Double Rating"
+    },
+    {
+      "index": 759,
+      "indexName": "Tel Bond Non Linked Double Rating"
+    },
+    {
+      "index": 760,
+      "indexName": "Tel-Bond Bullet 2029 ILS"
+    },
+    {
+      "index": 761,
+      "indexName": "Tel-Bond Bullet 10/28 CPI"
+    },
+    {
+      "index": 762,
+      "indexName": "Tel-Bond Bullet 29 Israel"
+    },
+    {
+      "index": 763,
+      "indexName": "Tel Bond CP"
+    },
+    {
+      "index": 764,
+      "indexName": "Deposit Backed Bonds"
+    },
+    {
+      "index": 765,
+      "indexName": "Tel-Bond 60 ILS"
+    },
+    {
+      "index": 766,
+      "indexName": "TB A Diversified Issuers"
+    },
+    {
+      "index": 767,
+      "indexName": "TB AA Diversified Issuers"
+    },
+    {
+      "index": 800,
+      "indexName": "Tel Gov T-Bills (MAKAM)"
+    }
+  ],
+  "he": [
+    {
+      "index": 1,
+      "indexName": "מניות והמירים כללי"
+    },
+    {
+      "index": 2,
+      "indexName": "מניות כללי"
+    },
+    {
+      "index": 3,
+      "indexName": "אופציות כללי"
+    },
+    {
+      "index": 4,
+      "indexName": "אג\"ח להמרה כללי"
+    },
+    {
+      "index": 13,
+      "indexName": "בנקים מניות והמירים"
+    },
+    {
+      "index": 33,
+      "indexName": "ת\"א-ביטוח"
+    },
+    {
+      "index": 41,
+      "indexName": "מסחר ושירותים מניות והמירים"
+    },
+    {
+      "index": 61,
+      "indexName": "נדל\"ן ובינוי מניות והמירים"
+    },
+    {
+      "index": 73,
+      "indexName": "תעשייה מניות והמירים"
+    },
+    {
+      "index": 97,
+      "indexName": "כימיה, גומי ופלסטיקה מניות והמירים"
+    },
+    {
+      "index": 117,
+      "indexName": "השקעה ואחזקות מניות והמירים"
+    },
+    {
+      "index": 127,
+      "indexName": "חיפושי גז ונפט מניות והמירים"
+    },
+    {
+      "index": 137,
+      "indexName": "ת\"א-125"
+    },
+    {
+      "index": 142,
+      "indexName": "ת\"א-35"
+    },
+    {
+      "index": 143,
+      "indexName": "ת\"א-90"
+    },
+    {
+      "index": 145,
+      "indexName": "ת\"א גלובל-בלוטק"
+    },
+    {
+      "index": 147,
+      "indexName": "ת\"א-SME60"
+    },
+    {
+      "index": 148,
+      "indexName": "ת\"א-פיננסים"
+    },
+    {
+      "index": 149,
+      "indexName": "ת\"א-נדל\"ן"
+    },
+    {
+      "index": 150,
+      "indexName": "ת\"א-מעלה"
+    },
+    {
+      "index": 161,
+      "indexName": "יתר מניות והמירים"
+    },
+    {
+      "index": 162,
+      "indexName": "יתר מניות"
+    },
+    {
+      "index": 163,
+      "indexName": "ת\"א-צמיחה"
+    },
+    {
+      "index": 164,
+      "indexName": "ת\"א בנקים-5"
+    },
+    {
+      "index": 166,
+      "indexName": "תל-דיב"
+    },
+    {
+      "index": 167,
+      "indexName": "ת\"א-ביומד"
+    },
+    {
+      "index": 168,
+      "indexName": "ת\"א All-Share"
+    },
+    {
+      "index": 169,
+      "indexName": "ת\"א-טכנולוגיה"
+    },
+    {
+      "index": 170,
+      "indexName": "ת\"א-נפט וגז"
+    },
+    {
+      "index": 171,
+      "indexName": "ת\"א-ביטוח ושירותים פיננסיים"
+    },
+    {
+      "index": 172,
+      "indexName": "ת\"א תקשורת וטכנולוגיות מידע"
+    },
+    {
+      "index": 173,
+      "indexName": "ת\"א טק - עילית"
+    },
+    {
+      "index": 174,
+      "indexName": "ת\"א-35 דולר"
+    },
+    {
+      "index": 175,
+      "indexName": "ת\"א-רימון"
+    },
+    {
+      "index": 176,
+      "indexName": "ת\"א-90 ו-CAP 0.8% SME60"
+    },
+    {
+      "index": 177,
+      "indexName": "ת\"א סקטור-באלאנס"
+    },
+    {
+      "index": 178,
+      "indexName": "ת\"א-תעשייה"
+    },
+    {
+      "index": 179,
+      "indexName": "ת\"א-פמילי"
+    },
+    {
+      "index": 180,
+      "indexName": "ת\"א-תשתיות אנרגיה"
+    },
+    {
+      "index": 181,
+      "indexName": "ת\"א-בנייה"
+    },
+    {
+      "index": 182,
+      "indexName": "ת\"א-מניב ישראל"
+    },
+    {
+      "index": 183,
+      "indexName": "ת\"א-מניב חו\"ל"
+    },
+    {
+      "index": 184,
+      "indexName": "ת\"א-קלינטק"
+    },
+    {
+      "index": 185,
+      "indexName": "ת\"א-125 אקלים נקי"
+    },
+    {
+      "index": 187,
+      "indexName": "ת\"א-דואליות"
+    },
+    {
+      "index": 188,
+      "indexName": "ת\"א-רשתות שיווק ומזון"
+    },
+    {
+      "index": 189,
+      "indexName": "ת\"א 125 משקל שווה"
+    },
+    {
+      "index": 194,
+      "indexName": "ת\"א בנקים"
+    },
+    {
+      "index": 195,
+      "indexName": "ת\"א-125 ערך"
+    },
+    {
+      "index": 196,
+      "indexName": "ת\"א 90 ובנקים"
+    },
+    {
+      "index": 197,
+      "indexName": "ת\"א-20"
+    },
+    {
+      "index": 198,
+      "indexName": "ת\"א-50 ריאלי"
+    },
+    {
+      "index": 199,
+      "indexName": "ת\"א-200"
+    },
+    {
+      "index": 200,
+      "indexName": "תל דיב אריסטוקרט"
+    },
+    {
+      "index": 202,
+      "indexName": "ת\"א-90 מודל רווחיות משקל שווה"
+    },
+    {
+      "index": 203,
+      "indexName": "ת\"א SME60 מודל רווחיות משקל שווה"
+    },
+    {
+      "index": 204,
+      "indexName": " ת\"א בנקים5- משקל שווה"
+    },
+    {
+      "index": 205,
+      "indexName": "ת\"א-בנקים וביטוח משקל שווה"
+    },
+    {
+      "index": 206,
+      "indexName": "ת\"א תשתיות"
+    },
+    {
+      "index": 207,
+      "indexName": "ת\"א בטחוניות"
+    },
+    {
+      "index": 208,
+      "indexName": "ת\"א נדל\"ן-35"
+    },
+    {
+      "index": 209,
+      "indexName": "ת\"א טכנולוגיה 35"
+    },
+    {
+      "index": 210,
+      "indexName": "ת\"א-אנרגיה ישראל"
+    },
+    {
+      "index": 598,
+      "indexName": "VTA35"
+    },
+    {
+      "index": 601,
+      "indexName": "All-Bond כללי"
+    },
+    {
+      "index": 602,
+      "indexName": "תל גוב-כללי"
+    },
+    {
+      "index": 603,
+      "indexName": "אג\"ח כללי - קונצרני"
+    },
+    {
+      "index": 604,
+      "indexName": "All-Bond צמודות"
+    },
+    {
+      "index": 605,
+      "indexName": "תל גוב-צמודות"
+    },
+    {
+      "index": 606,
+      "indexName": "אג\"ח צמודות מדד - קונצרני"
+    },
+    {
+      "index": 637,
+      "indexName": "תל גוב- צמודות 0-2"
+    },
+    {
+      "index": 646,
+      "indexName": "תל גוב-צמודות 2-5"
+    },
+    {
+      "index": 658,
+      "indexName": "תל גוב-צמודות 5-10"
+    },
+    {
+      "index": 690,
+      "indexName": "תל גוב-לא צמודות"
+    },
+    {
+      "index": 694,
+      "indexName": "תל גוב-צמודות 15+"
+    },
+    {
+      "index": 700,
+      "indexName": "תל גוב-שקלי"
+    },
+    {
+      "index": 701,
+      "indexName": "תל גוב משתנה שקלי"
+    },
+    {
+      "index": 702,
+      "indexName": "תל גוב-שקלי 0-2"
+    },
+    {
+      "index": 703,
+      "indexName": "תל גוב-שקלי 2-5"
+    },
+    {
+      "index": 704,
+      "indexName": "תל גוב-שקלי 5+"
+    },
+    {
+      "index": 707,
+      "indexName": "תל בונד 20 צמודות"
+    },
+    {
+      "index": 708,
+      "indexName": "תל בונד 40 צמודות"
+    },
+    {
+      "index": 709,
+      "indexName": "תל בונד 60 צמודות"
+    },
+    {
+      "index": 710,
+      "indexName": "תל בונד-שקלי"
+    },
+    {
+      "index": 711,
+      "indexName": "תל בונד צמודות"
+    },
+    {
+      "index": 712,
+      "indexName": "תל בונד צמודות-יתר"
+    },
+    {
+      "index": 713,
+      "indexName": "תל בונד צמודות בנקים ללא קוקו"
+    },
+    {
+      "index": 714,
+      "indexName": "תל בונד תשואות צמודות"
+    },
+    {
+      "index": 715,
+      "indexName": "תל בונד-מאגר"
+    },
+    {
+      "index": 716,
+      "indexName": "All-Bond ריבית משתנה שקלי"
+    },
+    {
+      "index": 717,
+      "indexName": "תל בונד-לא צמודות"
+    },
+    {
+      "index": 718,
+      "indexName": "תלבונד-תשואות שקלי"
+    },
+    {
+      "index": 719,
+      "indexName": "תל בונד גלובל שקלי"
+    },
+    {
+      "index": 720,
+      "indexName": "תל בונד שקלי-50"
+    },
+    {
+      "index": 721,
+      "indexName": "תל בונד-צמודות 1-3"
+    },
+    {
+      "index": 722,
+      "indexName": "תל בונד-צמודות 3-5"
+    },
+    {
+      "index": 723,
+      "indexName": "תל בונד-צמודות 5-15"
+    },
+    {
+      "index": 724,
+      "indexName": "תל בונד-שקלי 1-3"
+    },
+    {
+      "index": 725,
+      "indexName": "תל בונד-שקלי 3-5"
+    },
+    {
+      "index": 726,
+      "indexName": "תל בונד-שקלי 5-15"
+    },
+    {
+      "index": 727,
+      "indexName": "תל גוב-צמודות 5+"
+    },
+    {
+      "index": 728,
+      "indexName": "תל גוב-צמודות 10+"
+    },
+    {
+      "index": 729,
+      "indexName": "תל גוב-שקלי 5-10"
+    },
+    {
+      "index": 730,
+      "indexName": "תל גוב-שקלי 10+"
+    },
+    {
+      "index": 731,
+      "indexName": "תל בונד-צמודות מעלה"
+    },
+    {
+      "index": 732,
+      "indexName": "תל בונד-שקלי מעלה"
+    },
+    {
+      "index": 733,
+      "indexName": "תל בונד שקלי-בנקים וביטוח"
+    },
+    {
+      "index": 734,
+      "indexName": "תל בונד צמודות-נדל\"ן"
+    },
+    {
+      "index": 735,
+      "indexName": "תל בונד-צמודות A"
+    },
+    {
+      "index": 736,
+      "indexName": "תל בונד-צמודות AA-AAA"
+    },
+    {
+      "index": 737,
+      "indexName": "תל בונד-שקלי A"
+    },
+    {
+      "index": 738,
+      "indexName": "תל בונד-שקלי AA-AAA"
+    },
+    {
+      "index": 739,
+      "indexName": "All-bond דולר וטופ 5 תל בונד 20 צמודות"
+    },
+    {
+      "index": 740,
+      "indexName": "All-Bond שקלי"
+    },
+    {
+      "index": 742,
+      "indexName": "תל בונד שקלי 100"
+    },
+    {
+      "index": 743,
+      "indexName": "תל בונד 100 צמודות"
+    },
+    {
+      "index": 744,
+      "indexName": "תל בונד-קוקו A+"
+    },
+    {
+      "index": 745,
+      "indexName": "תל בונד תשואות צמודות פיזור רחב"
+    },
+    {
+      "index": 746,
+      "indexName": "תל בונד תשואות שקלי-פיזור רחב"
+    },
+    {
+      "index": 747,
+      "indexName": "תל בונד צמודות בנקים"
+    },
+    {
+      "index": 748,
+      "indexName": "תל בונד שקלי 5-10"
+    },
+    {
+      "index": 749,
+      "indexName": "תל בונד צמודות 5-10"
+    },
+    {
+      "index": 750,
+      "indexName": "תל בונד צמודות בנקים וחברות ממשלתיות"
+    },
+    {
+      "index": 751,
+      "indexName": "בונד קצר עד שנה"
+    },
+    {
+      "index": 752,
+      "indexName": "תל בונד 125 ערך שקלי"
+    },
+    {
+      "index": 753,
+      "indexName": "תל בונד 125 ערך צמודות"
+    },
+    {
+      "index": 756,
+      "indexName": "תל בונד צמודות AAA"
+    },
+    {
+      "index": 757,
+      "indexName": "תל בונד לא צמודות AAA"
+    },
+    {
+      "index": 758,
+      "indexName": "תל בונד צמודות דירוג כפול"
+    },
+    {
+      "index": 759,
+      "indexName": "תל בונד לא צמודות דירוג כפול"
+    },
+    {
+      "index": 760,
+      "indexName": "תל-בונד בולט 2029 שקלי"
+    },
+    {
+      "index": 761,
+      "indexName": "תל-בונד בולט 10/2028 צמוד"
+    },
+    {
+      "index": 762,
+      "indexName": "תל-בונד בולט 2029 ישראל"
+    },
+    {
+      "index": 763,
+      "indexName": "תל בונד נע\"מ"
+    },
+    {
+      "index": 764,
+      "indexName": "אג\"ח מגובה פקדונות"
+    },
+    {
+      "index": 765,
+      "indexName": "תל בונד 60 שקלי"
+    },
+    {
+      "index": 766,
+      "indexName": "תל בונד A פיזור מנפיקים"
+    },
+    {
+      "index": 767,
+      "indexName": "תל בונד AA פיזור מנפיקים"
+    },
+    {
+      "index": 800,
+      "indexName": "תל גוב-מק\"מ"
+    }
+  ]
+}

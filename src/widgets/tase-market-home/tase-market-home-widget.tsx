@@ -63,6 +63,7 @@ const DATA_TOOL_REFERENCE = [
   { n: 24, tool: "get-symbol-intraday-candlestick-data", params: "securityIdOrSymbol", visibility: "model, app", usedBy: "symbol-intraday-candlestick" },
   { n: 25, tool: "get-market-last-update-data", params: "none", visibility: "model, app", usedBy: "market-last-update" },
   { n: 26, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
+  { n: 27, tool: "get-indices-list-data", params: "language?", visibility: "model, app", usedBy: "standalone" },
 ];
 
 interface ToolItem {
