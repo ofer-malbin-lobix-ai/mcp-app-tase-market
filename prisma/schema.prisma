@@ -65,6 +65,7 @@ model TaseSymbol {
   companySector      String?
   companySubSector   String?
   companyName        String?
+  indices            Int[]    @default([])
   updatedAt          DateTime @updatedAt
   tradingData        TaseSecuritiesEndOfDayTradingData[]
 }

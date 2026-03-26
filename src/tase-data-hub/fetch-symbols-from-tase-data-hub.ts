@@ -15,6 +15,7 @@ interface TaseDataHubSymbolItem {
   companySector?: string | null;
   companySubSector?: string | null;
   companyName?: string | null;
+  securityIsIncludedInContinuousIndices?: number[][] | null;
 }
 
 interface TaseDataHubSymbolsResponse {
@@ -78,6 +79,7 @@ export async function fetchAndStoreSymbols(date: string): Promise<{ fetched: num
       companySector: item.companySector ?? null,
       companySubSector: item.companySubSector ?? null,
       companyName: item.companyName ?? null,
+      indices: item.securityIsIncludedInContinuousIndices?.flat() ?? [],
     }))
     .filter((v): v is typeof v & { symbol: string } => v.symbol != null);
 
@@ -91,7 +93,7 @@ export async function fetchAndStoreSymbols(date: string): Promise<{ fetched: num
   const placeholders = values
     .map(
       (_, i) =>
-        `($${i * 8 + 1}, $${i * 8 + 2}, $${i * 8 + 3}, $${i * 8 + 4}, $${i * 8 + 5}, $${i * 8 + 6}, $${i * 8 + 7}, $${i * 8 + 8}, NOW())`,
+        `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9}::int[], NOW())`,
     )
     .join(", ");
 
@@ -104,10 +106,11 @@ export async function fetchAndStoreSymbols(date: string): Promise<{ fetched: num
     v.companySector,
     v.companySubSector,
     v.companyName,
+    `{${v.indices.join(",")}}`,
   ]);
 
   const sql = `
-    INSERT INTO "TaseSymbol" (symbol, "securityId", isin, "securityName", "companySuperSector", "companySector", "companySubSector", "companyName", "updatedAt")
+    INSERT INTO "TaseSymbol" (symbol, "securityId", isin, "securityName", "companySuperSector", "companySector", "companySubSector", "companyName", indices, "updatedAt")
     VALUES ${placeholders}
     ON CONFLICT (symbol) DO UPDATE SET
       "securityId" = EXCLUDED."securityId",
@@ -117,6 +120,7 @@ export async function fetchAndStoreSymbols(date: string): Promise<{ fetched: num
       "companySector" = EXCLUDED."companySector",
       "companySubSector" = EXCLUDED."companySubSector",
       "companyName" = EXCLUDED."companyName",
+      indices = EXCLUDED.indices,
       "updatedAt" = NOW()
   `;
 

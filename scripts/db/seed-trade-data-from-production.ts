@@ -42,7 +42,7 @@ async function seedSymbols() {
   const placeholders = rows
     .map(
       (_, i) =>
-        `($${i * 8 + 1}, $${i * 8 + 2}, $${i * 8 + 3}, $${i * 8 + 4}, $${i * 8 + 5}, $${i * 8 + 6}, $${i * 8 + 7}, $${i * 8 + 8}, NOW())`,
+        `($${i * 9 + 1}, $${i * 9 + 2}, $${i * 9 + 3}, $${i * 9 + 4}, $${i * 9 + 5}, $${i * 9 + 6}, $${i * 9 + 7}, $${i * 9 + 8}, $${i * 9 + 9}::int[], NOW())`,
     )
     .join(", ");
 
@@ -55,10 +55,11 @@ async function seedSymbols() {
     r.companySector,
     r.companySubSector,
     r.companyName,
+    `{${(r.indices ?? []).join(",")}}`,
   ]);
 
   const sql = `
-    INSERT INTO "TaseSymbol" (symbol, "securityId", isin, "securityName", "companySuperSector", "companySector", "companySubSector", "companyName", "updatedAt")
+    INSERT INTO "TaseSymbol" (symbol, "securityId", isin, "securityName", "companySuperSector", "companySector", "companySubSector", "companyName", indices, "updatedAt")
     VALUES ${placeholders}
     ON CONFLICT (symbol) DO UPDATE SET
       "securityId" = EXCLUDED."securityId",
@@ -68,6 +69,7 @@ async function seedSymbols() {
       "companySector" = EXCLUDED."companySector",
       "companySubSector" = EXCLUDED."companySubSector",
       "companyName" = EXCLUDED."companyName",
+      indices = EXCLUDED.indices,
       "updatedAt" = NOW()
   `;
 
