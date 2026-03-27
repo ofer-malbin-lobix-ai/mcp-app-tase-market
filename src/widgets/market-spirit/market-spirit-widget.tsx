@@ -215,7 +215,7 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
     }
   };
 
-  const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
+  const subtitle = data ? data.tradeDate : undefined;
 
   return (
     <WidgetLayout title={t("home.tool.marketSpirit")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>

@@ -83,28 +83,23 @@ const DELETE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: true, idempot
 
 // Input schemas
 const getTaseDataSchema = {
-  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
 const getSectorHeatmapSchema = {
-  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
   period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 trading days), 1M=monthly (21 trading days), 3M=quarterly (63 trading days). Default: 1D"),
 };
 
 const getMarketSpiritSchema = {
-  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
 const getMomentumSchema = {
-  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
 const getAnticipationSchema = {
-  marketType: z.enum(["STOCK", "BOND", "TASE UP STOCK", "LOAN"]).optional().describe("Market type filter (default: STOCK)"),
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
 };
 
@@ -140,7 +135,6 @@ function formatTaseDataResult(data: EndOfDayResult): CallToolResult {
         type: "text",
         text: JSON.stringify({
           tradeDate: data.tradeDate,
-          marketType: data.marketType,
           count: data.items.length,
           items: data.items,
         }, null, 2),
@@ -168,7 +162,6 @@ function formatMarketSpiritResult(data: MarketSpiritResponse): CallToolResult {
         type: "text",
         text: JSON.stringify({
           tradeDate: data.tradeDate,
-          marketType: data.marketType,
           score: data.score,
           description: data.score ? SCORE_DESCRIPTIONS[data.score] : "Unable to determine market spirit",
           adv: data.adv ?? null,
@@ -193,7 +186,6 @@ function formatAnticipationResult(data: AnticipationResponse): CallToolResult {
         type: "text",
         text: JSON.stringify({
           tradeDate: data.tradeDate,
-          marketType: data.marketType,
           count: data.count,
           items: data.items,
         }, null, 2),
@@ -209,7 +201,6 @@ function formatMomentumResult(data: MomentumResponse): CallToolResult {
         type: "text",
         text: JSON.stringify({
           tradeDate: data.tradeDate,
-          marketType: data.marketType,
           count: data.count,
           items: data.items,
         }, null, 2),
@@ -345,7 +336,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchEndOfDay(args.marketType, args.tradeDate);
+      const data = await providers.fetchEndOfDay(args.tradeDate);
       return formatTaseDataResult(data);
     },
   );
@@ -361,12 +352,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: endOfDayResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchEndOfDay(args.marketType, args.tradeDate);
+      const data = await providers.fetchEndOfDay(args.tradeDate);
       return {
         content: [
           {
             type: "text",
-            text: `Displaying ${data.items.length} stocks for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
+            text: `Displaying ${data.items.length} stocks for ${data.tradeDate}`,
           },
         ],
       };
@@ -384,7 +375,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchMarketSpirit(args.marketType, args.tradeDate);
+      const data = await providers.fetchMarketSpirit(args.tradeDate);
       return formatMarketSpiritResult(data);
     },
   );
@@ -400,12 +391,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: marketSpiritResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchMarketSpirit(args.marketType, args.tradeDate);
+      const data = await providers.fetchMarketSpirit(args.tradeDate);
       return {
         content: [
           {
             type: "text",
-            text: `Market Spirit: ${data.score ?? "Unknown"} for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
+            text: `Market Spirit: ${data.score ?? "Unknown"} for ${data.tradeDate}`,
           },
         ],
       };
@@ -423,7 +414,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchMomentumSymbols(args.marketType, args.tradeDate);
+      const data = await providers.fetchMomentumSymbols(args.tradeDate);
       return formatMomentumResult(data);
     },
   );
@@ -439,12 +430,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: momentumResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchMomentumSymbols(args.marketType, args.tradeDate);
+      const data = await providers.fetchMomentumSymbols(args.tradeDate);
       return {
         content: [
           {
             type: "text",
-            text: `Momentum Scanner: ${data.count} symbols for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
+            text: `Momentum Scanner: ${data.count} symbols for ${data.tradeDate}`,
           },
         ],
       };
@@ -462,7 +453,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchAnticipationSymbols(args.marketType, args.tradeDate);
+      const data = await providers.fetchAnticipationSymbols(args.tradeDate);
       return formatAnticipationResult(data);
     },
   );
@@ -478,12 +469,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: anticipationResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchAnticipationSymbols(args.marketType, args.tradeDate);
+      const data = await providers.fetchAnticipationSymbols(args.tradeDate);
       return {
         content: [
           {
             type: "text",
-            text: `Anticipation Scanner: ${data.count} symbols for ${data.tradeDate}${data.marketType ? ` (${data.marketType})` : ""}`,
+            text: `Anticipation Scanner: ${data.count} symbols for ${data.tradeDate}`,
           },
         ],
       };
@@ -738,14 +729,13 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchSectorHeatmap(args.marketType, args.tradeDate, args.period as HeatmapPeriod | undefined);
+      const data = await providers.fetchSectorHeatmap(args.tradeDate, args.period as HeatmapPeriod | undefined);
       return {
         content: [
           {
             type: "text",
             text: JSON.stringify({
               tradeDate: data.tradeDate,
-              marketType: data.marketType,
               count: data.count,
               items: data.items,
             }),
@@ -766,12 +756,12 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       _meta: { ui: { resourceUri: sectorHeatmapResourceUri } },
     },
     async (args): Promise<CallToolResult> => {
-      const data = await providers.fetchSectorHeatmap(args.marketType, args.tradeDate, args.period as HeatmapPeriod | undefined);
+      const data = await providers.fetchSectorHeatmap(args.tradeDate, args.period as HeatmapPeriod | undefined);
       return {
         content: [
           {
             type: "text",
-            text: `Sector heatmap: ${data.count} stocks for ${data.tradeDate} (${data.marketType})`,
+            text: `Sector heatmap: ${data.count} stocks for ${data.tradeDate}`,
           },
         ],
       };

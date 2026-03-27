@@ -241,7 +241,7 @@ function AnticipationWidgetInner({ app, data, setData, hostContext }: Anticipati
     return categoryItems.filter((i) => i.priority === activeTab);
   }, [categoryItems, activeTab]);
 
-  const subtitle = data ? `${data.tradeDate} · ${data.marketType}` : undefined;
+  const subtitle = data ? data.tradeDate : undefined;
 
   return (
     <WidgetLayout title={t("home.tool.marketAnticipation")} subtitle={subtitle} app={app} hostContext={hostContext} titleClassName={styles.title} language={language} dir={dir} onLanguageToggle={toggle}>

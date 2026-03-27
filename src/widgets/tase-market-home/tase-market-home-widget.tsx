@@ -12,11 +12,11 @@ import { createRoot } from "react-dom/client";
 import styles from "./tase-market-home-widget.module.css";
 
 const WIDGET_REFERENCE = [
-  { n: 1, widget: "market-end-of-day", showTool: "show-market-end-of-day-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-end-of-day-data"], dataParams: ["marketType?, tradeDate?"] },
-  { n: 2, widget: "market-spirit", showTool: "show-market-spirit-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-spirit-data"], dataParams: ["marketType?, tradeDate?"] },
-  { n: 3, widget: "market-sector-heatmap", showTool: "show-market-sector-heatmap-widget", showParams: "marketType?, tradeDate?, period?", dataTools: ["get-market-sector-heatmap-data"], dataParams: ["marketType?, tradeDate?, period?"] },
-  { n: 4, widget: "market-momentum", showTool: "show-market-momentum-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-momentum-data"], dataParams: ["marketType?, tradeDate?"] },
-  { n: 5, widget: "market-anticipation", showTool: "show-market-anticipation-widget", showParams: "marketType?, tradeDate?", dataTools: ["get-market-anticipation-data"], dataParams: ["marketType?, tradeDate?"] },
+  { n: 1, widget: "market-end-of-day", showTool: "show-market-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-market-end-of-day-data"], dataParams: ["tradeDate?"] },
+  { n: 2, widget: "market-spirit", showTool: "show-market-spirit-widget", showParams: "tradeDate?", dataTools: ["get-market-spirit-data"], dataParams: ["tradeDate?"] },
+  { n: 3, widget: "market-sector-heatmap", showTool: "show-market-sector-heatmap-widget", showParams: "tradeDate?, period?", dataTools: ["get-market-sector-heatmap-data"], dataParams: ["tradeDate?, period?"] },
+  { n: 4, widget: "market-momentum", showTool: "show-market-momentum-widget", showParams: "tradeDate?", dataTools: ["get-market-momentum-data"], dataParams: ["tradeDate?"] },
+  { n: 5, widget: "market-anticipation", showTool: "show-market-anticipation-widget", showParams: "tradeDate?", dataTools: ["get-market-anticipation-data"], dataParams: ["tradeDate?"] },
   { n: 6, widget: "my-position-table", showTool: "show-my-position-table-widget", showParams: "tradeDate?", dataTools: ["get-my-position-table-data"], dataParams: ["tradeDate?"] },
   { n: 7, widget: "my-position-candlestick", showTool: "show-my-position-candlestick-widget", showParams: "dateFrom, dateTo?", dataTools: ["get-my-position-end-of-day-data", "get-symbol-candlestick-data", "get-my-position-period-data"], dataParams: ["dateFrom?, dateTo?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?"] },
   { n: 8, widget: "my-position-end-of-day", showTool: "show-my-position-end-of-day-widget", showParams: "tradeDate?", dataTools: ["get-my-position-end-of-day-data"], dataParams: ["tradeDate?"] },
@@ -37,11 +37,11 @@ const WIDGET_REFERENCE = [
 ];
 
 const DATA_TOOL_REFERENCE = [
-  { n: 1, tool: "get-market-end-of-day-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-end-of-day" },
-  { n: 2, tool: "get-market-spirit-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-spirit" },
-  { n: 3, tool: "get-market-sector-heatmap-data", params: "marketType?, tradeDate?, period?", visibility: "model, app", usedBy: "market-sector-heatmap" },
-  { n: 4, tool: "get-market-momentum-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-momentum" },
-  { n: 5, tool: "get-market-anticipation-data", params: "marketType?, tradeDate?", visibility: "model, app", usedBy: "market-anticipation" },
+  { n: 1, tool: "get-market-end-of-day-data", params: "tradeDate?", visibility: "model, app", usedBy: "market-end-of-day" },
+  { n: 2, tool: "get-market-spirit-data", params: "tradeDate?", visibility: "model, app", usedBy: "market-spirit" },
+  { n: 3, tool: "get-market-sector-heatmap-data", params: "tradeDate?, period?", visibility: "model, app", usedBy: "market-sector-heatmap" },
+  { n: 4, tool: "get-market-momentum-data", params: "tradeDate?", visibility: "model, app", usedBy: "market-momentum" },
+  { n: 5, tool: "get-market-anticipation-data", params: "tradeDate?", visibility: "model, app", usedBy: "market-anticipation" },
   { n: 6, tool: "get-my-position-table-data", params: "tradeDate?", visibility: "model, app", usedBy: "my-position-table" },
   { n: 7, tool: "get-my-position-end-of-day-data", params: "tradeDate?", visibility: "model, app", usedBy: "my-position-end-of-day, my-position-candlestick" },
   { n: 8, tool: "get-my-position-period-data", params: "tradeDate?, period?", visibility: "model, app", usedBy: "my-position-candlestick" },

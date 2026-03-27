@@ -138,9 +138,9 @@ function rowToStockData(row: DbRow): StockData {
 }
 
 async function getLastTradeDate(
-  marketType: string,
   before?: Date,
 ): Promise<Date> {
+  const marketType = "STOCK";
   const row = await prisma.taseSecuritiesEndOfDayTradingData.findFirst({
     where: {
       marketType,
@@ -155,12 +155,12 @@ async function getLastTradeDate(
 }
 
 export async function fetchEndOfDay(
-  marketType = "STOCK",
   tradeDate?: string,
 ): Promise<EndOfDayResult> {
+  const marketType = "STOCK";
   const date = tradeDate
     ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
+    : await getLastTradeDate();
 
   const rows = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
     where: { tradeDate: date, marketType },
@@ -187,7 +187,7 @@ export async function fetchEndOfDay(
       indices: row.taseSymbol?.indices ?? null,
     })),
     tradeDate: toDateStr(date),
-    marketType,
+    marketType: null,
   };
 }
 
@@ -236,12 +236,12 @@ function computeDailyScore(row: {
  *   regime: <15% weak, 15-30% early, 30-50% healthy, >50% overextended
  */
 export async function fetchMarketSpirit(
-  marketType = "STOCK",
   tradeDate?: string,
 ): Promise<MarketSpiritResponse> {
+  const marketType = "STOCK";
   const date = tradeDate
     ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
+    : await getLastTradeDate();
   const tradeDateStr = toDateStr(date);
 
   const stocks = await prisma.taseSecuritiesEndOfDayTradingData.findMany({
@@ -265,7 +265,6 @@ export async function fetchMarketSpirit(
   if (total === 0) {
     return {
       tradeDate: tradeDateStr,
-      marketType,
       momentumBreadth: 0,
       moneyFlowBreadth: 0,
       compressionBreadth: 0,
@@ -361,7 +360,6 @@ export async function fetchMarketSpirit(
 
   return {
     tradeDate: tradeDateStr,
-    marketType,
     momentumBreadth,
     moneyFlowBreadth,
     compressionBreadth,
@@ -394,12 +392,12 @@ type MomentumDbRow = {
 };
 
 export async function fetchMomentumSymbols(
-  marketType = "STOCK",
   tradeDate?: string,
 ): Promise<MomentumResponse> {
+  const marketType = "STOCK";
   const date = tradeDate
     ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
+    : await getLastTradeDate();
   const tradeDateStr = toDateStr(date);
 
   // Fetch last 6 trading days of data for all liquid symbols (need 5+ for MACD declining check)
@@ -430,7 +428,7 @@ export async function fetchMomentumSymbols(
   `;
 
   if (rows.length === 0) {
-    return { tradeDate: tradeDateStr, marketType, count: 0, items: [] };
+    return { tradeDate: tradeDateStr, count: 0, items: [] };
   }
 
   // Group rows by symbol
@@ -611,7 +609,7 @@ export async function fetchMomentumSymbols(
   // Sort by leaderScore DESC, trendQuality DESC
   items.sort((a, b) => b.leaderScore - a.leaderScore || b.trendQuality - a.trendQuality);
 
-  return { tradeDate: tradeDateStr, marketType, count: items.length, items };
+  return { tradeDate: tradeDateStr, count: items.length, items };
 }
 
 // --- Stage 0 Anticipation Layer ---
@@ -688,12 +686,12 @@ function detectSignalC(latest: AnticipationDbRow, histRows: AnticipationDbRow[])
 }
 
 export async function fetchAnticipationSymbols(
-  marketType = "STOCK",
   tradeDate?: string,
 ): Promise<AnticipationResponse> {
+  const marketType = "STOCK";
   const date = tradeDate
     ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
+    : await getLastTradeDate();
   const tradeDateStr = toDateStr(date);
 
   // Fetch last 20 trading days for stochastic crossover + divergence detection
@@ -725,7 +723,7 @@ export async function fetchAnticipationSymbols(
   `;
 
   if (rows.length === 0) {
-    return { tradeDate: tradeDateStr, marketType, count: 0, items: [] };
+    return { tradeDate: tradeDateStr, count: 0, items: [] };
   }
 
   // Group by symbol
@@ -814,7 +812,7 @@ export async function fetchAnticipationSymbols(
 
   items.sort((a, b) => b.stage0Score - a.stage0Score);
 
-  return { tradeDate: tradeDateStr, marketType, count: items.length, items };
+  return { tradeDate: tradeDateStr, count: items.length, items };
 }
 
 export async function fetchEndOfDaySymbols(
@@ -822,7 +820,7 @@ export async function fetchEndOfDaySymbols(
   dateFrom?: string,
   dateTo?: string,
 ): Promise<EndOfDaySymbolsResponse> {
-  const lastDate = await getLastTradeDate("STOCK");
+  const lastDate = await getLastTradeDate();
   const from = dateFrom ? new Date(dateFrom) : lastDate;
   const to = dateTo ? new Date(dateTo) : lastDate;
 
@@ -854,7 +852,7 @@ export async function fetchEndOfDaySymbolsByDate(
   tradeDate?: string,
   period: HeatmapPeriod = "1D",
 ): Promise<EndOfDaySymbolsResponse> {
-  const lastDate = await getLastTradeDate("STOCK");
+  const lastDate = await getLastTradeDate();
   const date = tradeDate ? new Date(tradeDate) : lastDate;
   const dateStr = toDateStr(date);
 
@@ -1143,7 +1141,7 @@ export async function fetchCandlestick(
   dateTo?: string,
   timeframe: CandlestickTimeframe = "1D",
 ): Promise<CandlestickResponse> {
-  const lastDate = await getLastTradeDate("STOCK");
+  const lastDate = await getLastTradeDate();
   const to = dateTo ? new Date(dateTo) : lastDate;
   const from = dateFrom
     ? new Date(dateFrom)
@@ -1195,13 +1193,13 @@ type PeriodRow = {
 };
 
 export async function fetchSectorHeatmap(
-  marketType = "STOCK",
   tradeDate?: string,
   period: HeatmapPeriod = "1D",
 ): Promise<SectorHeatmapResponse> {
+  const marketType = "STOCK";
   const date = tradeDate
     ? new Date(tradeDate)
-    : await getLastTradeDate(marketType);
+    : await getLastTradeDate();
   const dateStr = toDateStr(date);
 
   if (period === "1D") {
@@ -1235,7 +1233,6 @@ export async function fetchSectorHeatmap(
 
     return {
       tradeDate: dateStr,
-      marketType,
       period,
       count: items.length,
       items,
@@ -1296,7 +1293,7 @@ export async function fetchSectorHeatmap(
     subSector: r.companysubsector,
   }));
 
-  return { tradeDate: dateStr, marketType, period, count: items.length, items };
+  return { tradeDate: dateStr, period, count: items.length, items };
 }
 
 export async function resolveSymbolAndSecurityId(

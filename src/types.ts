@@ -48,7 +48,6 @@ export interface EndOfDayResult {
 
 export interface MarketSpiritResponse {
   tradeDate: string;
-  marketType: string;
   // New breadth metrics
   momentumBreadth: number;      // % of universe with DailyScore >= 6
   moneyFlowBreadth: number;     // % with MFI > 60
@@ -93,7 +92,6 @@ export interface MomentumSymbolItem {
 
 export interface MomentumResponse {
   tradeDate: string;
-  marketType: string;
   count: number;
   items: MomentumSymbolItem[];
 }
@@ -121,7 +119,6 @@ export interface AnticipationSymbolItem {
 
 export interface AnticipationResponse {
   tradeDate: string;
-  marketType: string;
   count: number;
   items: AnticipationSymbolItem[];
 }
@@ -179,21 +176,20 @@ export interface SymbolHeatmapItem {
 
 export interface SectorHeatmapResponse {
   tradeDate: string;
-  marketType: string;
   period: HeatmapPeriod;
   count: number;
   items: SymbolHeatmapItem[];
 }
 
 export interface TaseDataProviders {
-  fetchEndOfDay(marketType?: string, tradeDate?: string): Promise<EndOfDayResult>;
-  fetchMarketSpirit(marketType?: string, tradeDate?: string): Promise<MarketSpiritResponse>;
-  fetchMomentumSymbols(marketType?: string, tradeDate?: string): Promise<MomentumResponse>;
-  fetchAnticipationSymbols(marketType?: string, tradeDate?: string): Promise<AnticipationResponse>;
+  fetchEndOfDay(tradeDate?: string): Promise<EndOfDayResult>;
+  fetchMarketSpirit(tradeDate?: string): Promise<MarketSpiritResponse>;
+  fetchMomentumSymbols(tradeDate?: string): Promise<MomentumResponse>;
+  fetchAnticipationSymbols(tradeDate?: string): Promise<AnticipationResponse>;
   fetchEndOfDaySymbols(symbols?: string[], dateFrom?: string, dateTo?: string): Promise<EndOfDaySymbolsResponse>;
   fetchEndOfDaySymbolsByDate(symbols: string[], tradeDate?: string, period?: HeatmapPeriod): Promise<EndOfDaySymbolsResponse>;
   fetchCandlestick(symbol: string, dateFrom?: string, dateTo?: string, timeframe?: CandlestickTimeframe): Promise<CandlestickResponse>;
-  fetchSectorHeatmap(marketType?: string, tradeDate?: string, period?: HeatmapPeriod): Promise<SectorHeatmapResponse>;
+  fetchSectorHeatmap(tradeDate?: string, period?: HeatmapPeriod): Promise<SectorHeatmapResponse>;
   resolveSymbol(securityIdOrSymbol: string | number): Promise<{ symbol: string; securityId: number }>;
 }
 
