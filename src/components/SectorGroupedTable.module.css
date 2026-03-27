@@ -1,112 +1,4 @@
-/* Index End of Day — Sector Breakdown Widget */
-
-.error {
-  color: #ef4444;
-  padding: 16px;
-  font-family: monospace;
-}
-
-.loading {
-  color: var(--t-text-secondary);
-  padding: 16px;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 2px;
-}
-
-/* ── Header ──────────────────────────────────────── */
-
-.headerRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.subtitle {
-  font-size: 13px;
-  color: var(--t-text-secondary);
-  font-weight: 400;
-}
-
-.dateInput {
-  padding: 4px 8px;
-  border: 1px solid var(--t-border);
-  border-radius: 6px;
-  background: var(--t-bg-secondary);
-  color: var(--t-text-primary);
-  font-size: 13px;
-  font-family: inherit;
-}
-
-.indexSelect {
-  min-width: 180px;
-}
-
-.refreshBtn {
-  padding: 4px 12px;
-  border: 1px solid var(--t-border);
-  border-radius: 6px;
-  background: var(--t-bg-secondary);
-  color: var(--t-text-primary);
-  cursor: pointer;
-  font-size: 13px;
-  transition: opacity 0.15s;
-}
-
-.refreshBtn:hover {
-  opacity: 0.8;
-}
-
-.refreshing {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Summary Cards ───────────────────────────────── */
-
-.summaryGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
-}
-
-.summaryCard {
-  background: var(--t-bg-secondary);
-  border: 1px solid var(--t-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  text-align: center;
-}
-
-.summaryLabel {
-  font-size: 11px;
-  color: var(--t-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.summaryValue {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--t-text-primary);
-}
-
-.positive {
-  color: #22c55e !important;
-}
-
-.negative {
-  color: #ef4444 !important;
-}
+/* Sector Grouped Table — Controls + Accordion */
 
 /* ── Controls ────────────────────────────────────── */
 
@@ -258,7 +150,6 @@
   color: var(--t-text-secondary);
   font-weight: 500;
   font-size: 11px;
-  text-transform: uppercase;
   letter-spacing: 0.3px;
   border-bottom: 1px solid var(--t-border);
   white-space: nowrap;
@@ -297,19 +188,18 @@
   text-overflow: ellipsis;
 }
 
-/* ── Footer ──────────────────────────────────────── */
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0 0;
-  font-size: 11px;
-  color: var(--t-text-secondary);
-  border-top: 1px solid var(--t-border);
+.positive {
+  color: #22c55e !important;
 }
 
-/* ── No data ─────────────────────────────────────── */
+.negative {
+  color: #ef4444 !important;
+}
+
+.numCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 .noData {
   text-align: center;

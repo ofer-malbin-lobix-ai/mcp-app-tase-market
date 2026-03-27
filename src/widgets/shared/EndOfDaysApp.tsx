@@ -248,7 +248,7 @@ function EndOfDaysInner({
               <div className={`${styles.summaryValue} ${styles.losers}`}>{marketSummary.losers}</div>
             </div>
             <div className={styles.summaryCard}>
-              <div className={styles.summaryLabel}>{t("eod.totalVolume")}</div>
+              <div className={styles.summaryLabel}>{t("eod.totalTurnover")}</div>
               <div className={styles.summaryValue}>{formatVolume(marketSummary.totalVolume)}</div>
             </div>
           </div>

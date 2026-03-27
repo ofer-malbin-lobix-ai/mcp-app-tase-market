@@ -365,19 +365,19 @@ function LastUpdateAppInner({
       {data && (
         <div className={styles.summary}>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>{t("eod.totalStocks")}</div>
+            <div className={styles.summaryLabel}>{t("eod.constituents")}</div>
             <div className={styles.summaryValue}>
               {marketSummary.totalStocks}
             </div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>{t("eod.gainers")}</div>
+            <div className={styles.summaryLabel}>{t("eod.advancers")}</div>
             <div className={`${styles.summaryValue} ${styles.gainers}`}>
               {marketSummary.gainers}
             </div>
           </div>
           <div className={styles.summaryCard}>
-            <div className={styles.summaryLabel}>{t("eod.losers")}</div>
+            <div className={styles.summaryLabel}>{t("eod.decliners")}</div>
             <div className={`${styles.summaryValue} ${styles.losers}`}>
               {marketSummary.losers}
             </div>

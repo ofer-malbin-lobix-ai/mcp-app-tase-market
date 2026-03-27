@@ -39,6 +39,7 @@
 
 .controls {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
@@ -62,16 +63,6 @@
   border-color: var(--t-accent);
 }
 
-.controls button {
-  background: var(--t-accent);
-  color: white;
-  border: none;
-}
-
-.controls button:hover {
-  opacity: 0.9;
-}
-
 .refreshButton {
   padding: 0.5rem 1rem;
   border: none;
@@ -81,7 +72,7 @@
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
-  align-self: flex-end;
+  align-self: center;
 }
 
 .refreshButton:hover {
