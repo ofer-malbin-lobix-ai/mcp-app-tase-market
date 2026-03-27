@@ -13,10 +13,6 @@
       "indexName": "Warrants"
     },
     {
-      "index": 4,
-      "indexName": "Convertible Bonds"
-    },
-    {
       "index": 13,
       "indexName": "Banks Shares and Convertibles"
     },
@@ -257,28 +253,12 @@
       "indexName": "VTA35"
     },
     {
-      "index": 601,
-      "indexName": "All-Bond"
-    },
-    {
       "index": 602,
       "indexName": "Tel-Gov"
     },
     {
-      "index": 603,
-      "indexName": "All Corporate Bonds"
-    },
-    {
-      "index": 604,
-      "indexName": "All-Bond CPI-Linked"
-    },
-    {
       "index": 605,
       "indexName": "Tel Gov - CPI Linked"
-    },
-    {
-      "index": 606,
-      "indexName": "CPI-Linked Corporate Bonds"
     },
     {
       "index": 637,
@@ -321,86 +301,6 @@
       "indexName": "Tel Gov - Shekel 5+"
     },
     {
-      "index": 707,
-      "indexName": "Tel Bond-20 CPI Linked"
-    },
-    {
-      "index": 708,
-      "indexName": "Tel Bond-40 CPI Linked"
-    },
-    {
-      "index": 709,
-      "indexName": "Tel Bond-60 CPI Linked"
-    },
-    {
-      "index": 710,
-      "indexName": "Tel Bond-Shekel"
-    },
-    {
-      "index": 711,
-      "indexName": "Tel Bond-CPI Linked"
-    },
-    {
-      "index": 712,
-      "indexName": "Tel Bond-CPI Linked SmallCap"
-    },
-    {
-      "index": 713,
-      "indexName": "Tel Bond-CPI Linked Banks Exclude COCO"
-    },
-    {
-      "index": 714,
-      "indexName": "Tel Bond Yields CPI Linked"
-    },
-    {
-      "index": 715,
-      "indexName": "Tel Bond-Composite"
-    },
-    {
-      "index": 716,
-      "indexName": "All-Bond Floating Shekel"
-    },
-    {
-      "index": 717,
-      "indexName": "Tel Bond-Non Linked"
-    },
-    {
-      "index": 718,
-      "indexName": "TelBond-Yield NIS"
-    },
-    {
-      "index": 719,
-      "indexName": "Tel Bond-Global Shekel"
-    },
-    {
-      "index": 720,
-      "indexName": "Tel Bond Shekel-50"
-    },
-    {
-      "index": 721,
-      "indexName": "Tel Bond-CPI Linked 1-3"
-    },
-    {
-      "index": 722,
-      "indexName": "Tel Bond-CPI Linked 3-5"
-    },
-    {
-      "index": 723,
-      "indexName": "Tel Bond-CPI Linked 5-15"
-    },
-    {
-      "index": 724,
-      "indexName": "Tel Bond-Shekel 1-3"
-    },
-    {
-      "index": 725,
-      "indexName": "Tel Bond-Shekel 3-5"
-    },
-    {
-      "index": 726,
-      "indexName": "Tel Bond-Shekel 5-15"
-    },
-    {
       "index": 727,
       "indexName": "Tel Gov - CPI Linked 5+"
     },
@@ -415,142 +315,6 @@
     {
       "index": 730,
       "indexName": "Tel Gov - Shekel 10+"
-    },
-    {
-      "index": 731,
-      "indexName": "Tel Bond-CPI Linked MaalaSRI"
-    },
-    {
-      "index": 732,
-      "indexName": "Tel Bond-Shekel MaalaSRI"
-    },
-    {
-      "index": 733,
-      "indexName": "Tel Bond-Shekel Bank&Insurance"
-    },
-    {
-      "index": 734,
-      "indexName": "Tel Bond-CPI Linked RealEstate"
-    },
-    {
-      "index": 735,
-      "indexName": "Tel Bond-CPI Linked A"
-    },
-    {
-      "index": 736,
-      "indexName": "Tel Bond-CPI Linked AA-AAA"
-    },
-    {
-      "index": 737,
-      "indexName": "Tel Bond-Shekel A"
-    },
-    {
-      "index": 738,
-      "indexName": "Tel Bond-Shekel AA-AAA"
-    },
-    {
-      "index": 739,
-      "indexName": "All-Bond Dollar & Top 5 Tel Bond 20 CPI"
-    },
-    {
-      "index": 740,
-      "indexName": "All-Bond Shekel"
-    },
-    {
-      "index": 742,
-      "indexName": "Tel Bond Shekel 100"
-    },
-    {
-      "index": 743,
-      "indexName": "Tel Bond 100 CPI Linked"
-    },
-    {
-      "index": 744,
-      "indexName": "Tel Bond-CoCo A+"
-    },
-    {
-      "index": 745,
-      "indexName": "Tel Bond Yields CPI Linked Diversified"
-    },
-    {
-      "index": 746,
-      "indexName": "Tel Bond Shekel-Yield Diversified"
-    },
-    {
-      "index": 747,
-      "indexName": "Tel Bond CPI Banks & COCO"
-    },
-    {
-      "index": 748,
-      "indexName": "Tel Bond Shekel 5-10"
-    },
-    {
-      "index": 749,
-      "indexName": "Tel Bond CPI 5-10"
-    },
-    {
-      "index": 750,
-      "indexName": "Tel Bond Banks&GovComp"
-    },
-    {
-      "index": 751,
-      "indexName": "Bond Max one year maturity"
-    },
-    {
-      "index": 752,
-      "indexName": "Tel Bond 125 Value Shekel"
-    },
-    {
-      "index": 753,
-      "indexName": "Tel Bond 125 Value CPI"
-    },
-    {
-      "index": 756,
-      "indexName": "Tel Bond CPI Linked AAA"
-    },
-    {
-      "index": 757,
-      "indexName": "Tel Bond Non Linked AAA"
-    },
-    {
-      "index": 758,
-      "indexName": "Tel Bond CPI Linked Double Rating"
-    },
-    {
-      "index": 759,
-      "indexName": "Tel Bond Non Linked Double Rating"
-    },
-    {
-      "index": 760,
-      "indexName": "Tel-Bond Bullet 2029 ILS"
-    },
-    {
-      "index": 761,
-      "indexName": "Tel-Bond Bullet 10/28 CPI"
-    },
-    {
-      "index": 762,
-      "indexName": "Tel-Bond Bullet 29 Israel"
-    },
-    {
-      "index": 763,
-      "indexName": "Tel Bond CP"
-    },
-    {
-      "index": 764,
-      "indexName": "Deposit Backed Bonds"
-    },
-    {
-      "index": 765,
-      "indexName": "Tel-Bond 60 ILS"
-    },
-    {
-      "index": 766,
-      "indexName": "TB A Diversified Issuers"
-    },
-    {
-      "index": 767,
-      "indexName": "TB AA Diversified Issuers"
     },
     {
       "index": 800,
@@ -569,10 +333,6 @@
     {
       "index": 3,
       "indexName": "אופציות כללי"
-    },
-    {
-      "index": 4,
-      "indexName": "אג\"ח להמרה כללי"
     },
     {
       "index": 13,
@@ -815,28 +575,12 @@
       "indexName": "VTA35"
     },
     {
-      "index": 601,
-      "indexName": "All-Bond כללי"
-    },
-    {
       "index": 602,
       "indexName": "תל גוב-כללי"
     },
     {
-      "index": 603,
-      "indexName": "אג\"ח כללי - קונצרני"
-    },
-    {
-      "index": 604,
-      "indexName": "All-Bond צמודות"
-    },
-    {
       "index": 605,
       "indexName": "תל גוב-צמודות"
-    },
-    {
-      "index": 606,
-      "indexName": "אג\"ח צמודות מדד - קונצרני"
     },
     {
       "index": 637,
@@ -879,86 +623,6 @@
       "indexName": "תל גוב-שקלי 5+"
     },
     {
-      "index": 707,
-      "indexName": "תל בונד 20 צמודות"
-    },
-    {
-      "index": 708,
-      "indexName": "תל בונד 40 צמודות"
-    },
-    {
-      "index": 709,
-      "indexName": "תל בונד 60 צמודות"
-    },
-    {
-      "index": 710,
-      "indexName": "תל בונד-שקלי"
-    },
-    {
-      "index": 711,
-      "indexName": "תל בונד צמודות"
-    },
-    {
-      "index": 712,
-      "indexName": "תל בונד צמודות-יתר"
-    },
-    {
-      "index": 713,
-      "indexName": "תל בונד צמודות בנקים ללא קוקו"
-    },
-    {
-      "index": 714,
-      "indexName": "תל בונד תשואות צמודות"
-    },
-    {
-      "index": 715,
-      "indexName": "תל בונד-מאגר"
-    },
-    {
-      "index": 716,
-      "indexName": "All-Bond ריבית משתנה שקלי"
-    },
-    {
-      "index": 717,
-      "indexName": "תל בונד-לא צמודות"
-    },
-    {
-      "index": 718,
-      "indexName": "תלבונד-תשואות שקלי"
-    },
-    {
-      "index": 719,
-      "indexName": "תל בונד גלובל שקלי"
-    },
-    {
-      "index": 720,
-      "indexName": "תל בונד שקלי-50"
-    },
-    {
-      "index": 721,
-      "indexName": "תל בונד-צמודות 1-3"
-    },
-    {
-      "index": 722,
-      "indexName": "תל בונד-צמודות 3-5"
-    },
-    {
-      "index": 723,
-      "indexName": "תל בונד-צמודות 5-15"
-    },
-    {
-      "index": 724,
-      "indexName": "תל בונד-שקלי 1-3"
-    },
-    {
-      "index": 725,
-      "indexName": "תל בונד-שקלי 3-5"
-    },
-    {
-      "index": 726,
-      "indexName": "תל בונד-שקלי 5-15"
-    },
-    {
       "index": 727,
       "indexName": "תל גוב-צמודות 5+"
     },
@@ -973,142 +637,6 @@
     {
       "index": 730,
       "indexName": "תל גוב-שקלי 10+"
-    },
-    {
-      "index": 731,
-      "indexName": "תל בונד-צמודות מעלה"
-    },
-    {
-      "index": 732,
-      "indexName": "תל בונד-שקלי מעלה"
-    },
-    {
-      "index": 733,
-      "indexName": "תל בונד שקלי-בנקים וביטוח"
-    },
-    {
-      "index": 734,
-      "indexName": "תל בונד צמודות-נדל\"ן"
-    },
-    {
-      "index": 735,
-      "indexName": "תל בונד-צמודות A"
-    },
-    {
-      "index": 736,
-      "indexName": "תל בונד-צמודות AA-AAA"
-    },
-    {
-      "index": 737,
-      "indexName": "תל בונד-שקלי A"
-    },
-    {
-      "index": 738,
-      "indexName": "תל בונד-שקלי AA-AAA"
-    },
-    {
-      "index": 739,
-      "indexName": "All-bond דולר וטופ 5 תל בונד 20 צמודות"
-    },
-    {
-      "index": 740,
-      "indexName": "All-Bond שקלי"
-    },
-    {
-      "index": 742,
-      "indexName": "תל בונד שקלי 100"
-    },
-    {
-      "index": 743,
-      "indexName": "תל בונד 100 צמודות"
-    },
-    {
-      "index": 744,
-      "indexName": "תל בונד-קוקו A+"
-    },
-    {
-      "index": 745,
-      "indexName": "תל בונד תשואות צמודות פיזור רחב"
-    },
-    {
-      "index": 746,
-      "indexName": "תל בונד תשואות שקלי-פיזור רחב"
-    },
-    {
-      "index": 747,
-      "indexName": "תל בונד צמודות בנקים"
-    },
-    {
-      "index": 748,
-      "indexName": "תל בונד שקלי 5-10"
-    },
-    {
-      "index": 749,
-      "indexName": "תל בונד צמודות 5-10"
-    },
-    {
-      "index": 750,
-      "indexName": "תל בונד צמודות בנקים וחברות ממשלתיות"
-    },
-    {
-      "index": 751,
-      "indexName": "בונד קצר עד שנה"
-    },
-    {
-      "index": 752,
-      "indexName": "תל בונד 125 ערך שקלי"
-    },
-    {
-      "index": 753,
-      "indexName": "תל בונד 125 ערך צמודות"
-    },
-    {
-      "index": 756,
-      "indexName": "תל בונד צמודות AAA"
-    },
-    {
-      "index": 757,
-      "indexName": "תל בונד לא צמודות AAA"
-    },
-    {
-      "index": 758,
-      "indexName": "תל בונד צמודות דירוג כפול"
-    },
-    {
-      "index": 759,
-      "indexName": "תל בונד לא צמודות דירוג כפול"
-    },
-    {
-      "index": 760,
-      "indexName": "תל-בונד בולט 2029 שקלי"
-    },
-    {
-      "index": 761,
-      "indexName": "תל-בונד בולט 10/2028 צמוד"
-    },
-    {
-      "index": 762,
-      "indexName": "תל-בונד בולט 2029 ישראל"
-    },
-    {
-      "index": 763,
-      "indexName": "תל בונד נע\"מ"
-    },
-    {
-      "index": 764,
-      "indexName": "אג\"ח מגובה פקדונות"
-    },
-    {
-      "index": 765,
-      "indexName": "תל בונד 60 שקלי"
-    },
-    {
-      "index": 766,
-      "indexName": "תל בונד A פיזור מנפיקים"
-    },
-    {
-      "index": 767,
-      "indexName": "תל בונד AA פיזור מנפיקים"
     },
     {
       "index": 800,
