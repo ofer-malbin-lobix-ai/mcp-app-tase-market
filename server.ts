@@ -77,9 +77,9 @@ function resourceContent(uri: string, html: string) {
 }
 
 // Tool annotations for ChatGPT app submission
-const READ_ONLY_ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, openWorldHint: false } as const;
-const WRITE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, openWorldHint: false } as const;
-const DELETE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: true, openWorldHint: false } as const;
+const READ_ONLY_ANNOTATIONS = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
+const WRITE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
+const DELETE_ANNOTATIONS = { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false } as const;
 
 // Input schemas
 const getTaseDataSchema = {
@@ -1134,7 +1134,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     "show-my-positions-manager-widget",
     {
       title: "Show My Positions Manager",
-      description: "Displays an interactive manager to add, edit, and delete portfolio positions stored in your profile.",
+      description: "Displays the portfolio positions manager interface.",
       annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: myPositionsManagerResourceUri } },
@@ -1226,7 +1226,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     "show-watchlist-manager-widget",
     {
       title: "Show Watchlist Manager",
-      description: "Displays an interactive manager to add, edit, and delete watchlist items stored in your profile.",
+      description: "Displays the watchlist manager interface.",
       annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
       _meta: { ui: { resourceUri: watchlistManagerResourceUri } },
