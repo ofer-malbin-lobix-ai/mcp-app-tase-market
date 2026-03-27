@@ -237,6 +237,32 @@ const t = {
   "eod.subSector": { en: "Sub-Sector:", he: ":תת-מגזר" },
   "eod.allSymbols": { en: "All symbols", he: "כל המניות" },
 
+  // ── Index End of Day ──────────────────────────────────────
+  "indexEod.title": { en: "INDEX", he: "מדד" },
+  "indexEod.subtitle": { en: "Sector Breakdown", he: "פילוח מגזרי" },
+  "indexEod.endOfDay": { en: "End of Day", he: "סוף יום" },
+  "indexEod.constituents": { en: "Constituents", he: "מרכיבים" },
+  "indexEod.sectors": { en: "Sectors", he: "מגזרים" },
+  "indexEod.advancers": { en: "Advancers", he: "עולות" },
+  "indexEod.decliners": { en: "Decliners", he: "יורדות" },
+  "indexEod.avgChange": { en: "Avg Change", he: "שינוי ממוצע" },
+  "indexEod.totalTurnover": { en: "Total Turnover", he: "מחזור כולל" },
+  "indexEod.selectIndex": { en: "Select Index", he: "בחר מדד" },
+  "indexEod.searchPlaceholder": { en: "Search symbol, company, sector...", he: "חיפוש סימול, חברה, מגזר..." },
+  "indexEod.sort.chgPct": { en: "Chg %", he: "שינוי %" },
+  "indexEod.sort.turnover": { en: "Turnover", he: "מחזור" },
+  "indexEod.sort.rsi": { en: "RSI", he: "RSI" },
+  "indexEod.sort.ez": { en: "EZ", he: "EZ" },
+  "indexEod.sort.mktCap": { en: "Mkt Cap", he: "שווי שוק" },
+  "indexEod.expandAll": { en: "Expand All", he: "פתח הכל" },
+  "indexEod.collapseAll": { en: "Collapse All", he: "סגור הכל" },
+  "indexEod.otherSector": { en: "Other", he: "אחר" },
+  "indexEod.footerSource": { en: "Data: Tel Aviv Stock Exchange · TASE Data Hub", he: "נתונים: הבורסה לניירות ערך בתל אביב · TASE Data Hub" },
+  "indexEod.generated": { en: "Generated", he: "נוצר" },
+
+  "home.tool.indexEndOfDay": { en: "Index End of Day", he: "סוף יום מדד" },
+  "home.desc.indexEndOfDay": { en: "Index constituents grouped by sector with summary cards and accordion layout", he: "מרכיבי מדד מקובצים לפי מגזר עם כרטיסי סיכום ופריסת אקורדיון" },
+
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },
   "home.col.showTool": { en: "Show Tool", he: "הצג כלי" },

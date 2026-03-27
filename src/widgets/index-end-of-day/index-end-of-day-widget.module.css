@@ -1,0 +1,319 @@
+/* Index End of Day — Sector Breakdown Widget */
+
+.error {
+  color: #ef4444;
+  padding: 16px;
+  font-family: monospace;
+}
+
+.loading {
+  color: var(--t-text-secondary);
+  padding: 16px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+/* ── Header ──────────────────────────────────────── */
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--t-text-secondary);
+  font-weight: 400;
+}
+
+.dateInput {
+  padding: 4px 8px;
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  background: var(--t-bg-secondary);
+  color: var(--t-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.indexSelect {
+  min-width: 180px;
+}
+
+.refreshBtn {
+  padding: 4px 12px;
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  background: var(--t-bg-secondary);
+  color: var(--t-text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: opacity 0.15s;
+}
+
+.refreshBtn:hover {
+  opacity: 0.8;
+}
+
+.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Summary Cards ───────────────────────────────── */
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.summaryCard {
+  background: var(--t-bg-secondary);
+  border: 1px solid var(--t-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--t-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.summaryValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--t-text-primary);
+}
+
+.positive {
+  color: #22c55e !important;
+}
+
+.negative {
+  color: #ef4444 !important;
+}
+
+/* ── Controls ────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 10px;
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  background: var(--t-bg-secondary);
+  color: var(--t-text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.searchInput::placeholder {
+  color: var(--t-text-secondary);
+}
+
+.sortGroup {
+  display: flex;
+  gap: 2px;
+}
+
+.sortBtn {
+  padding: 4px 10px;
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  background: var(--t-bg-secondary);
+  color: var(--t-text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.sortBtn:hover {
+  color: var(--t-text-primary);
+}
+
+.sortBtnActive {
+  background: var(--t-text-primary);
+  color: var(--t-bg-primary);
+  border-color: var(--t-text-primary);
+}
+
+.expandCollapseBtn {
+  padding: 4px 10px;
+  border: 1px solid var(--t-border);
+  border-radius: 6px;
+  background: var(--t-bg-secondary);
+  color: var(--t-text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.expandCollapseBtn:hover {
+  color: var(--t-text-primary);
+}
+
+/* ── Sector Accordion ────────────────────────────── */
+
+.sectorList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sectorHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--t-bg-secondary);
+  border: 1px solid var(--t-border);
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.sectorHeader:hover {
+  background: var(--t-bg-tertiary, var(--t-bg-secondary));
+  filter: brightness(1.05);
+}
+
+.sectorArrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--t-text-secondary);
+  flex-shrink: 0;
+}
+
+.sectorArrowOpen {
+  transform: rotate(90deg);
+}
+
+.sectorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sectorName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--t-text-primary);
+  flex: 1;
+}
+
+.sectorBadge {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--t-border);
+  color: var(--t-text-secondary);
+  font-weight: 500;
+}
+
+.sectorAvgChange {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* ── Stock Table inside Sector ───────────────────── */
+
+.sectorContent {
+  padding: 4px 0 4px 20px;
+}
+
+.stockTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.stockTable th {
+  text-align: left;
+  padding: 4px 8px;
+  color: var(--t-text-secondary);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--t-border);
+  white-space: nowrap;
+}
+
+.stockTable th.numCol {
+  text-align: right;
+}
+
+.stockTable td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--t-border);
+  color: var(--t-text-primary);
+  white-space: nowrap;
+}
+
+.stockTable td.numCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.stockTable tr:last-child td {
+  border-bottom: none;
+}
+
+.symbolCell {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.textCell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 0;
+  font-size: 11px;
+  color: var(--t-text-secondary);
+  border-top: 1px solid var(--t-border);
+}
+
+/* ── No data ─────────────────────────────────────── */
+
+.noData {
+  text-align: center;
+  padding: 32px;
+  color: var(--t-text-secondary);
+  font-size: 14px;
+}

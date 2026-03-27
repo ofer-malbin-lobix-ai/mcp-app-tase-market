@@ -34,6 +34,7 @@ const WIDGET_REFERENCE = [
   { n: 20, widget: "market-last-update", showTool: "show-market-last-update-widget", showParams: "none", dataTools: ["get-market-last-update-data"], dataParams: ["none"] },
   { n: 21, widget: "settings", showTool: "show-tase-market-settings-widget", showParams: "none", dataTools: ["get-tase-market-settings-data"], dataParams: ["none"] },
   { n: 22, widget: "home", showTool: "show-tase-market-home-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
+  { n: 23, widget: "index-end-of-day", showTool: "show-index-end-of-day-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-end-of-day-data"], dataParams: ["tradeDate?, indexId?"] },
 ];
 
 const DATA_TOOL_REFERENCE = [
@@ -64,6 +65,7 @@ const DATA_TOOL_REFERENCE = [
   { n: 25, tool: "get-market-last-update-data", params: "none", visibility: "model, app", usedBy: "market-last-update" },
   { n: 26, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
   { n: 27, tool: "get-indices-list-data", params: "language?", visibility: "model, app", usedBy: "standalone" },
+  { n: 28, tool: "get-index-end-of-day-data", params: "tradeDate?, indexId?", visibility: "model, app", usedBy: "index-end-of-day" },
 ];
 
 interface ToolItem {
@@ -88,6 +90,7 @@ const TOOL_GROUPS: ToolGroup[] = [
       { icon: "\u{1F52C}", nameKey: "home.tool.marketMomentum", descKey: "home.desc.marketMomentum", prompt: "call show-market-momentum-widget" },
       { icon: "\u{1F52E}", nameKey: "home.tool.marketAnticipation", descKey: "home.desc.marketAnticipation", prompt: "call show-market-anticipation-widget" },
       { icon: "\u{1F4E1}", nameKey: "home.tool.marketLastUpdate", descKey: "home.desc.marketLastUpdate", prompt: "call show-market-last-update-widget" },
+      { icon: "\u{1F4CA}", nameKey: "home.tool.indexEndOfDay", descKey: "home.desc.indexEndOfDay", prompt: "call show-index-end-of-day-widget" },
     ],
   },
   {

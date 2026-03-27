@@ -120,6 +120,11 @@ const getIntradayCandlestickSchema = {
   securityIdOrSymbol: z.union([z.string(), z.number()]).describe("Stock symbol (e.g. 'TEVA') or securityId (e.g. 22)"),
 };
 
+const getIndexEndOfDaySchema = {
+  tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
+  indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
+};
+
 // Score descriptions for Market Spirit
 const SCORE_DESCRIPTIONS: Record<string, string> = {
   Defense: "Bearish market conditions - consider defensive positions",
@@ -324,6 +329,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const watchlistTableResourceUri = `ui://tase-end-of-day/watchlist-table-widget-ver-${WIDGET_VERSION}.html`;
   const watchlistEndOfDayResourceUri = `ui://tase-end-of-day/watchlist-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const watchlistCandlestickResourceUri = `ui://tase-end-of-day/watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
+  const indexEndOfDayResourceUri = `ui://tase-end-of-day/index-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1435,6 +1441,61 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // Data-only tool: Get Index End of Day data
+  registerAppTool(server,
+    "get-index-end-of-day-data",
+    {
+      title: "Get Index End of Day Data",
+      description: "Returns TASE end of day data for all stocks in a specific index, filtered by index ID. Data only - use show-index-end-of-day-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexEndOfDaySchema,
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const data = await providers.fetchEndOfDay(args.tradeDate);
+      const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              tradeDate: data.tradeDate,
+              indexId,
+              count: filtered.length,
+              items: filtered,
+            }, null, 2),
+          },
+        ],
+      };
+    },
+  );
+
+  // UI tool: Show Index End of Day widget
+  registerAppTool(server,
+    "show-index-end-of-day-widget",
+    {
+      title: "Show Index End of Day",
+      description: "Displays TASE index constituents grouped by sector with summary cards and accordion layout.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexEndOfDaySchema,
+      _meta: { ui: { resourceUri: indexEndOfDayResourceUri } },
+    },
+    async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const data = await providers.fetchEndOfDay(args.tradeDate);
+      const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Displaying ${filtered.length} stocks in index ${indexId} for ${data.tradeDate}`,
+          },
+        ],
+      };
+    },
+  );
+
   // Data-only tool: Get indices list data
   registerAppTool(server,
     "get-indices-list-data",
@@ -1499,6 +1560,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, watchlistTableResourceUri, watchlistTableResourceUri, RESOURCE_CONFIG, readWidget(watchlistTableResourceUri, "watchlist-table/watchlist-table-widget.html"));
   registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day/watchlist-end-of-day-widget.html"));
   registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick/watchlist-candlestick-widget.html"));
+  registerAppResource(server, indexEndOfDayResourceUri, indexEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(indexEndOfDayResourceUri, "index-end-of-day/index-end-of-day-widget.html"));
 
   return server;
 }

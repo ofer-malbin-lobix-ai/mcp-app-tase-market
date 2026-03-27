@@ -9,10 +9,8 @@ import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
 import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
-import { SearchableSelect } from "../../components/SearchableSelect";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
-import indicesData from "../../data/indices.json";
 import styles from "./end-of-day-widget.module.css";
 
 import type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
@@ -141,7 +139,6 @@ function EndOfDayInner({
   const { language, dir, toggle, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState("");
   const hasDateSynced = useRef(false);
-  const [selectedIndexId, setSelectedIndexId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -200,27 +197,6 @@ function EndOfDayInner({
   // CRITICAL: Memoize rows to prevent infinite re-renders
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
-  // Index filter options (sorted, language-aware)
-  const indexOptions = useMemo(() => {
-    const list = indicesData[language as "en" | "he"] as Array<{ index: number; indexName: string }>;
-    return list.sort((a, b) => a.indexName.localeCompare(b.indexName));
-  }, [language]);
-
-  // Index select options for SearchableSelect
-  const indexSelectOptions = useMemo(() => [
-    { value: "", label: t("eod.allIndices") },
-    ...indexOptions.map((idx) => ({ value: String(idx.index), label: idx.indexName })),
-  ], [indexOptions, t]);
-
-  // Filter rows by selected index
-  const indexFilteredRows = useMemo(() => {
-    if (selectedIndexId === null) return rows;
-    return rows.filter((row) => row.indices != null && row.indices.includes(selectedIndexId));
-  }, [rows, selectedIndexId]);
-
-  // Reset index filter when data changes
-  useEffect(() => { setSelectedIndexId(null); }, [data]);
-
   // Track filtered rows from DataTable for summary
   const [filteredRows, setFilteredRows] = useState<StockData[]>([]);
   const handleFilteredRowsChange = useCallback((rows: StockData[]) => {
@@ -228,7 +204,7 @@ function EndOfDayInner({
   }, []);
 
   // Calculate market summary from filtered rows (falls back to index-filtered rows)
-  const summaryRows = filteredRows.length > 0 ? filteredRows : indexFilteredRows;
+  const summaryRows = filteredRows.length > 0 ? filteredRows : rows;
   const marketSummary = useMemo(() => ({
     totalStocks: summaryRows.length,
     gainers: summaryRows.filter(row => (row.changeValue ?? 0) > 0).length,
@@ -291,20 +267,12 @@ function EndOfDayInner({
 
       {data ? (
         <DataTable
-          data={indexFilteredRows}
+          data={rows}
           columns={columns}
           initialPageSize={50}
           storageKey={`tase-${config.toolName.replace(/^get-/, "").replace(/-data$/, "")}-column-visibility`}
           initialColumnVisibility={INITIAL_COLUMN_VISIBILITY}
           onFilteredRowsChange={handleFilteredRowsChange}
-          toolbarExtra={config.isMarketView ? (
-            <SearchableSelect
-              options={indexSelectOptions}
-              value={selectedIndexId != null ? String(selectedIndexId) : ""}
-              onChange={(v) => setSelectedIndexId(v === "" ? null : Number(v))}
-              placeholder={t("eod.allIndices")}
-            />
-          ) : undefined}
         />
       ) : null}
     </WidgetLayout>
