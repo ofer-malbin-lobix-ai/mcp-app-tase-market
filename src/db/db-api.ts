@@ -133,6 +133,7 @@ function rowToStockData(row: DbRow): StockData {
     companyName: null,
     sector: null,
     subSector: null,
+    indices: null,
   };
 }
 
@@ -170,6 +171,7 @@ export async function fetchEndOfDay(
           companyName: true,
           companySector: true,
           companySubSector: true,
+          indices: true,
         },
       },
     },
@@ -182,6 +184,7 @@ export async function fetchEndOfDay(
       companyName: row.taseSymbol?.companyName ?? null,
       sector: row.taseSymbol?.companySector ?? null,
       subSector: row.taseSymbol?.companySubSector ?? null,
+      indices: row.taseSymbol?.indices ?? null,
     })),
     tradeDate: toDateStr(date),
     marketType,
@@ -957,6 +960,7 @@ export async function fetchEndOfDaySymbolsByDate(
     companyName: null,
     sector: null,
     subSector: null,
+    indices: null,
   }));
 
   return {
@@ -1027,6 +1031,7 @@ function aggRowToStockData(row: AggRow, symbol: string): StockData {
     companyName: null,
     sector: null,
     subSector: null,
+    indices: null,
   };
 }
 

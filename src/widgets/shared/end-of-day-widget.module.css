@@ -127,6 +127,10 @@
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dateInput:focus {

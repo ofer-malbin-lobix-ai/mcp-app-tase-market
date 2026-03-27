@@ -37,6 +37,7 @@ export interface StockData {
   companyName: string | null;
   sector: string | null;
   subSector: string | null;
+  indices: number[] | null;
 }
 
 export interface EndOfDayResult {

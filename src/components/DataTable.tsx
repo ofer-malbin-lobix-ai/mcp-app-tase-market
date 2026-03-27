@@ -69,6 +69,7 @@ interface DataTableProps<T> {
   storageKey?: string;
   initialColumnVisibility?: VisibilityState;
   onFilteredRowsChange?: (rows: T[]) => void;
+  toolbarExtra?: React.ReactNode;
 }
 
 export function DataTable<T>({
@@ -78,6 +79,7 @@ export function DataTable<T>({
   storageKey = "table-column-visibility",
   initialColumnVisibility,
   onFilteredRowsChange,
+  toolbarExtra,
 }: DataTableProps<T>) {
   const { t, dir } = useLanguage();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -215,6 +217,7 @@ export function DataTable<T>({
   return (
     <div className={styles.tableWrapper} dir={dir}>
       <div className={styles.toolbar}>
+        {toolbarExtra}
         <div className={styles.searchBox}>
           <input
             type="text"
@@ -280,6 +283,7 @@ export function DataTable<T>({
             </div>
           )}
         </div>
+
       </div>
 
       <div className={styles.tableContainer}>

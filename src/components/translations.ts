@@ -82,6 +82,9 @@ const t = {
   "home.desc.symbolCandlestick": { en: "Single-symbol candlestick chart", he: "גרף נרות למניה בודדת" },
   "home.desc.symbolIntradayCandlestick": { en: "Intraday candlestick chart with configurable timeframes", he: "גרף נרות תוך-יומי עם מסגרות זמן מותאמות" },
 
+  // ── SearchableSelect ─────────────────────────────────────
+  "searchableSelect.searchPlaceholder": { en: "Search...", he: "חיפוש..." },
+
   // ── End of Day ───────────────────────────────────────────
   "eod.totalStocks": { en: "Total Stocks", he: "סה״כ מניות" },
   "eod.gainers": { en: "Gainers", he: "עולות" },
@@ -94,7 +97,7 @@ const t = {
   "eod.date": { en: "Date:", he: ":תאריך" },
   "eod.from": { en: "From:", he: ":מתאריך" },
   "eod.to": { en: "To:", he: ":עד תאריך" },
-  "eod.marketType": { en: "Market Type:", he: ":סוג שוק" },
+  "eod.allIndices": { en: "All Indices", he: "כל המדדים" },
   "eod.refresh": { en: "Refresh", he: "רענון" },
   "eod.loading": { en: "Loading...", he: "...טוען" },
   "eod.noRowsFound": { en: "No rows found", he: "לא נמצאו שורות" },
@@ -233,10 +236,6 @@ const t = {
   "eod.sector": { en: "Sector:", he: ":מגזר" },
   "eod.subSector": { en: "Sub-Sector:", he: ":תת-מגזר" },
   "eod.allSymbols": { en: "All symbols", he: "כל המניות" },
-  "eod.marketTypeStock": { en: "Stock", he: "מניה" },
-  "eod.marketTypeBond": { en: "Bond", he: "אג״ח" },
-  "eod.marketTypeTaseUp": { en: "TASE UP Stock", he: "מניית TASE UP" },
-  "eod.marketTypeLoan": { en: "Loan", he: "הלוואה" },
 
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },

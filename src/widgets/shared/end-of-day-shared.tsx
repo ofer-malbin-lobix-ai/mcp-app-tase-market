@@ -46,11 +46,11 @@ export interface StockData {
   companyName: string | null;
   sector: string | null;
   subSector: string | null;
+  indices: number[] | null;
 }
 
 export interface EndOfDayWidgetData {
   tradeDate?: string;
-  marketType?: string | null;
   symbols?: string[];
   count?: number;
   dateFrom?: string | null;

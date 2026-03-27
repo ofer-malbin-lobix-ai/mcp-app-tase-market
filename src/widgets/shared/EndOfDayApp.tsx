@@ -4,13 +4,15 @@
  */
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
-import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
+import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
 import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
+import { SearchableSelect } from "../../components/SearchableSelect";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
+import indicesData from "../../data/indices.json";
 import styles from "./end-of-day-widget.module.css";
 
 import type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
@@ -138,7 +140,8 @@ function EndOfDayInner({
 }) {
   const { language, dir, toggle, t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedMarketType, setSelectedMarketType] = useState("");
+  const hasDateSynced = useRef(false);
+  const [selectedIndexId, setSelectedIndexId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
@@ -150,13 +153,20 @@ function EndOfDayInner({
   // Sync date from data
   const dateValue = data?.tradeDate || data?.dateFrom || "";
   useEffect(() => {
-    if (dateValue && !selectedDate) setSelectedDate(dateValue);
+    if (dateValue && !selectedDate) {
+      setSelectedDate(dateValue);
+      hasDateSynced.current = true;
+    }
   }, [dateValue, selectedDate]);
 
-  // Sync market type from data (market widget only)
+  // Auto-refresh when user changes the date
   useEffect(() => {
-    if (data?.marketType && !selectedMarketType) setSelectedMarketType(data.marketType);
-  }, [data?.marketType, selectedMarketType]);
+    if (!hasDateSynced.current) {
+      hasDateSynced.current = true;
+      return;
+    }
+    if (selectedDate) handleRefresh();
+  }, [selectedDate]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -164,7 +174,6 @@ function EndOfDayInner({
     try {
       const args: Record<string, unknown> = {};
       if (selectedDate) args.tradeDate = selectedDate;
-      if (config.isMarketView && selectedMarketType) args.marketType = selectedMarketType;
       if (config.passSymbolsOnRefresh && data?.symbols?.length) args.symbols = data.symbols;
       const result = await app.callServerTool({ name: config.toolName, arguments: args });
       if (handleSubscriptionRedirect(result, app)) return;
@@ -180,7 +189,7 @@ function EndOfDayInner({
     } finally {
       setIsRefreshing(false);
     }
-  }, [app, config, data, selectedDate, selectedMarketType, setData]);
+  }, [app, config, data, selectedDate, setData]);
 
   // CRITICAL: Memoize columns to prevent infinite re-renders
   const columns = useMemo(
@@ -191,14 +200,35 @@ function EndOfDayInner({
   // CRITICAL: Memoize rows to prevent infinite re-renders
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
+  // Index filter options (sorted, language-aware)
+  const indexOptions = useMemo(() => {
+    const list = indicesData[language as "en" | "he"] as Array<{ index: number; indexName: string }>;
+    return list.sort((a, b) => a.indexName.localeCompare(b.indexName));
+  }, [language]);
+
+  // Index select options for SearchableSelect
+  const indexSelectOptions = useMemo(() => [
+    { value: "", label: t("eod.allIndices") },
+    ...indexOptions.map((idx) => ({ value: String(idx.index), label: idx.indexName })),
+  ], [indexOptions, t]);
+
+  // Filter rows by selected index
+  const indexFilteredRows = useMemo(() => {
+    if (selectedIndexId === null) return rows;
+    return rows.filter((row) => row.indices != null && row.indices.includes(selectedIndexId));
+  }, [rows, selectedIndexId]);
+
+  // Reset index filter when data changes
+  useEffect(() => { setSelectedIndexId(null); }, [data]);
+
   // Track filtered rows from DataTable for summary
   const [filteredRows, setFilteredRows] = useState<StockData[]>([]);
   const handleFilteredRowsChange = useCallback((rows: StockData[]) => {
     setFilteredRows(rows);
   }, []);
 
-  // Calculate market summary from filtered rows (falls back to all rows)
-  const summaryRows = filteredRows.length > 0 ? filteredRows : rows;
+  // Calculate market summary from filtered rows (falls back to index-filtered rows)
+  const summaryRows = filteredRows.length > 0 ? filteredRows : indexFilteredRows;
   const marketSummary = useMemo(() => ({
     totalStocks: summaryRows.length,
     gainers: summaryRows.filter(row => (row.changeValue ?? 0) > 0).length,
@@ -208,7 +238,7 @@ function EndOfDayInner({
 
   const subtitle = data
     ? config.isMarketView
-      ? `${data.tradeDate}${data.marketType ? ` \u00b7 ${data.marketType}` : ""}`
+      ? data.tradeDate
       : `${data.symbols?.length ? data.symbols.join(", ") : t("eod.allSymbols")} \u00b7 ${data.dateFrom ?? ""}`
     : undefined;
 
@@ -248,22 +278,6 @@ function EndOfDayInner({
             onChange={(e) => setSelectedDate(e.target.value)}
           />
         </label>
-        {config.isMarketView && (
-          <label className={styles.dateLabel}>
-            {t("eod.marketType")}
-            <select
-              className={styles.dateInput}
-              value={selectedMarketType}
-              onChange={(e) => setSelectedMarketType(e.target.value)}
-            >
-              <option value="">{"\u2014"}</option>
-              <option value="STOCK">{t("eod.marketTypeStock")}</option>
-              <option value="BOND">{t("eod.marketTypeBond")}</option>
-              <option value="TASE UP STOCK">{t("eod.marketTypeTaseUp")}</option>
-              <option value="LOAN">{t("eod.marketTypeLoan")}</option>
-            </select>
-          </label>
-        )}
         <button
           className={styles.refreshButton}
           onClick={handleRefresh}
@@ -275,16 +289,22 @@ function EndOfDayInner({
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}
 
-      {data && rows.length === 0 ? (
-        <div className={styles.loading}>{t("eod.noRowsFound")}</div>
-      ) : data ? (
+      {data ? (
         <DataTable
-          data={rows}
+          data={indexFilteredRows}
           columns={columns}
           initialPageSize={50}
           storageKey={`tase-${config.toolName.replace(/^get-/, "").replace(/-data$/, "")}-column-visibility`}
           initialColumnVisibility={INITIAL_COLUMN_VISIBILITY}
           onFilteredRowsChange={handleFilteredRowsChange}
+          toolbarExtra={config.isMarketView ? (
+            <SearchableSelect
+              options={indexSelectOptions}
+              value={selectedIndexId != null ? String(selectedIndexId) : ""}
+              onChange={(v) => setSelectedIndexId(v === "" ? null : Number(v))}
+              placeholder={t("eod.allIndices")}
+            />
+          ) : undefined}
         />
       ) : null}
     </WidgetLayout>
