@@ -1404,7 +1404,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppTool(server,
     "show-tase-market-home-widget",
     {
-      title: "Show TASE Market Tools",
+      title: "Show TASE Market Home",
       description: "Displays the TASE Data Hub home page with available tools and a subscribe button.",
       annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
