@@ -693,7 +693,11 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       });
       if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
       const fetched = extractCandlestickData(result);
-      if (fetched) setChartData(fetched);
+      if (fetched) {
+        setChartData(fetched);
+        if (fetched.dateFrom) setSelectedDateFrom(fetched.dateFrom);
+        if (fetched.dateTo) setSelectedDateTo(fetched.dateTo);
+      }
     } catch (e) {
       console.error("Failed to fetch candlestick:", e);
     } finally {
@@ -722,8 +726,11 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       });
       if (handleSubscriptionRedirect(result, app!, setSubscribeUrl)) return;
       const fetched = extractCandlestickData(result);
-      if (fetched) setChartData(fetched);
-      else setRefreshError("No data found");
+      if (fetched) {
+        setChartData(fetched);
+        if (fetched.dateFrom) setSelectedDateFrom(fetched.dateFrom);
+        if (fetched.dateTo) setSelectedDateTo(fetched.dateTo);
+      } else setRefreshError("No data found");
     } catch (e) {
       console.error("Failed to refresh:", e);
       setRefreshError("Failed to fetch data");
@@ -759,12 +766,9 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   // Index change handler — re-fetch sidebar data with new indexId
   const handleIndexChange = useCallback(async (val: string) => {
     setSelectedIndexId(val);
-    setEodData(null);
     setChartData(null);
     setSelectedSymbol(null);
     setSidebarItems(null);
-    setSelectedDateFrom("");
-    setSelectedDateTo("");
     if (!app || typeof app.callServerTool !== "function") return;
     try {
       const result = await app.callServerTool({
