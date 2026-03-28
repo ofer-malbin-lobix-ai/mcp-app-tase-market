@@ -293,15 +293,14 @@ function EndOfDayInner({
 
       <div className={styles.controls}>
         {config.showIndexFilter && (
-          <label className={styles.dateLabel}>
-            {t("indexEod.selectIndex")}
+          <div style={{ minWidth: 180, maxWidth: 260 }}>
             <SearchableSelect
               options={indexSelectOptions}
               value={selectedIndexId}
               onChange={handleIndexChange}
               placeholder={t("indexEod.selectIndex")}
             />
-          </label>
+          </div>
         )}
         <label className={styles.dateLabel}>
           {config.isMarketView ? t("eod.tradeDate") : t("eod.date")}
