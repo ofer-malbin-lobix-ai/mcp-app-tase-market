@@ -813,7 +813,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       {eodData && (
         <div className={styles.controls}>
           {config.showIndexFilter && (
-            <div style={{ minWidth: 180, maxWidth: 260 }}>
+            <div>
               <SearchableSelect
                 options={indexSelectOptions}
                 value={selectedIndexId}

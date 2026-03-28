@@ -529,7 +529,7 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             {/* Index selector */}
-            <div style={{ minWidth: 140, maxWidth: 200 }}>
+            <div>
               <SearchableSelect
                 options={indexSelectOptions}
                 value={selectedIndexId}
