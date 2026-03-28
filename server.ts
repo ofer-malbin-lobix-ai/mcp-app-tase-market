@@ -330,6 +330,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const watchlistEndOfDayResourceUri = `ui://tase-end-of-day/watchlist-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const watchlistCandlestickResourceUri = `ui://tase-end-of-day/watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const indexSectorBreakdownResourceUri = `ui://tase-end-of-day/index-sector-breakdown-widget-ver-${WIDGET_VERSION}.html`;
+  const indexEndOfDayResourceUri = `ui://tase-end-of-day/index-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1496,6 +1497,31 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // UI tool: Show Index End of Day widget
+  registerAppTool(server,
+    "show-index-end-of-day-widget",
+    {
+      title: "Show Index End of Day",
+      description: "Displays TASE index constituents in a flat DataTable with index selector dropdown.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexSectorBreakdownSchema,
+      _meta: { ui: { resourceUri: indexEndOfDayResourceUri } },
+    },
+    async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const data = await providers.fetchEndOfDay(args.tradeDate);
+      const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Displaying ${filtered.length} stocks in index ${indexId} for ${data.tradeDate}`,
+          },
+        ],
+      };
+    },
+  );
+
   // Data-only tool: Get indices list data
   registerAppTool(server,
     "get-indices-list-data",
@@ -1561,6 +1587,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day/watchlist-end-of-day-widget.html"));
   registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick/watchlist-candlestick-widget.html"));
   registerAppResource(server, indexSectorBreakdownResourceUri, indexSectorBreakdownResourceUri, RESOURCE_CONFIG, readWidget(indexSectorBreakdownResourceUri, "index-sector-breakdown/index-sector-breakdown-widget.html"));
+  registerAppResource(server, indexEndOfDayResourceUri, indexEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(indexEndOfDayResourceUri, "index-end-of-day/index-end-of-day-widget.html"));
 
   return server;
 }

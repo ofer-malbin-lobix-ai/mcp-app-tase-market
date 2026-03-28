@@ -253,6 +253,8 @@ const t = {
 
   "home.tool.indexSectorBreakdown": { en: "Index Sector Breakdown", he: "פירוט מגזרי מדד" },
   "home.desc.indexSectorBreakdown": { en: "Index constituents grouped by sector with summary cards and accordion layout", he: "מרכיבי מדד מקובצים לפי מגזר עם כרטיסי סיכום ופריסת אקורדיון" },
+  "home.tool.indexEndOfDay": { en: "Index End of Day", he: "סוף יום מדד" },
+  "home.desc.indexEndOfDay": { en: "Full DataTable for index constituents on a single date", he: "טבלת נתונים מלאה למרכיבי מדד בתאריך בודד" },
 
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },
