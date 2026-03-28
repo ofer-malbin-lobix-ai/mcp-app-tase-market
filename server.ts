@@ -120,7 +120,7 @@ const getIntradayCandlestickSchema = {
   securityIdOrSymbol: z.union([z.string(), z.number()]).describe("Stock symbol (e.g. 'TEVA') or securityId (e.g. 22)"),
 };
 
-const getIndexEndOfDaySchema = {
+const getIndexSectorBreakdownSchema = {
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
   indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
 };
@@ -329,7 +329,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const watchlistTableResourceUri = `ui://tase-end-of-day/watchlist-table-widget-ver-${WIDGET_VERSION}.html`;
   const watchlistEndOfDayResourceUri = `ui://tase-end-of-day/watchlist-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const watchlistCandlestickResourceUri = `ui://tase-end-of-day/watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
-  const indexEndOfDayResourceUri = `ui://tase-end-of-day/index-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
+  const indexSectorBreakdownResourceUri = `ui://tase-end-of-day/index-sector-breakdown-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1441,14 +1441,14 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // Data-only tool: Get Index End of Day data
+  // Data-only tool: Get Index Sector Breakdown data
   registerAppTool(server,
-    "get-index-end-of-day-data",
+    "get-index-sector-breakdown-data",
     {
-      title: "Get Index End of Day Data",
-      description: "Returns TASE end of day data for all stocks in a specific index, filtered by index ID. Data only - use show-index-end-of-day-widget for visualization.",
+      title: "Get Index Sector Breakdown Data",
+      description: "Returns TASE index constituents grouped by sector for a specific index, filtered by index ID. Data only - use show-index-sector-breakdown-widget for visualization.",
       annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getIndexEndOfDaySchema,
+      inputSchema: getIndexSectorBreakdownSchema,
       _meta: { ui: { visibility: ["model", "app"] } },
     },
     async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
@@ -1471,15 +1471,15 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show Index End of Day widget
+  // UI tool: Show Index Sector Breakdown widget
   registerAppTool(server,
-    "show-index-end-of-day-widget",
+    "show-index-sector-breakdown-widget",
     {
-      title: "Show Index End of Day",
+      title: "Show Index Sector Breakdown",
       description: "Displays TASE index constituents grouped by sector with summary cards and accordion layout.",
       annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: getIndexEndOfDaySchema,
-      _meta: { ui: { resourceUri: indexEndOfDayResourceUri } },
+      inputSchema: getIndexSectorBreakdownSchema,
+      _meta: { ui: { resourceUri: indexSectorBreakdownResourceUri } },
     },
     async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
       const indexId = args.indexId ?? 137;
@@ -1560,7 +1560,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, watchlistTableResourceUri, watchlistTableResourceUri, RESOURCE_CONFIG, readWidget(watchlistTableResourceUri, "watchlist-table/watchlist-table-widget.html"));
   registerAppResource(server, watchlistEndOfDayResourceUri, watchlistEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(watchlistEndOfDayResourceUri, "watchlist-end-of-day/watchlist-end-of-day-widget.html"));
   registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick/watchlist-candlestick-widget.html"));
-  registerAppResource(server, indexEndOfDayResourceUri, indexEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(indexEndOfDayResourceUri, "index-end-of-day/index-end-of-day-widget.html"));
+  registerAppResource(server, indexSectorBreakdownResourceUri, indexSectorBreakdownResourceUri, RESOURCE_CONFIG, readWidget(indexSectorBreakdownResourceUri, "index-sector-breakdown/index-sector-breakdown-widget.html"));
 
   return server;
 }

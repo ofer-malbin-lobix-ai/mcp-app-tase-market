@@ -1,6 +1,6 @@
 /**
  * Sector Grouped Table — Accordion layout grouping stocks by sector.
- * Extracted from the original standalone index-end-of-day widget.
+ * Extracted from the original standalone index-sector-breakdown widget.
  */
 import type { App } from "@modelcontextprotocol/ext-apps";
 import { useCallback, useEffect, useMemo, useState } from "react";

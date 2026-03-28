@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscription - TASE Market</title>
+  <title>Subscription - Lobix TASE Market</title>
   <script>
     (function() {
       var theme = 'light';
@@ -71,35 +71,47 @@
       background: var(--t-bg-primary);
       min-height: 100vh;
       color: var(--t-text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 2rem;
     }
 
     .container {
-      text-align: center;
-      max-width: 500px;
-      width: 100%;
+      max-width: 768px;
+      margin: 0 auto;
     }
 
-    .page-header {
+    header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 2rem;
     }
 
-    .page-title {
-      font-size: 1.8rem;
-      font-weight: 700;
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .theme-toggle {
+    .subtitle {
+      color: var(--t-text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-toggle, .lang-toggle {
       background: var(--t-bg-secondary);
       border: 1px solid var(--t-border);
       border-radius: 8px;
@@ -112,36 +124,15 @@
       justify-content: center;
       transition: background 0.2s;
       flex-shrink: 0;
-    }
-
-    .theme-toggle:hover {
-      background: var(--t-bg-tertiary);
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .lang-toggle {
-      background: var(--t-bg-secondary);
-      border: 1px solid var(--t-border);
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      flex-shrink: 0;
       color: var(--t-text-primary);
     }
 
-    .lang-toggle:hover {
+    .lang-toggle {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .theme-toggle:hover, .lang-toggle:hover {
       background: var(--t-bg-tertiary);
     }
 
@@ -150,6 +141,7 @@
       border: 1px solid var(--t-border);
       border-radius: 16px;
       padding: 3rem 2rem;
+      text-align: center;
     }
 
     .icon {
@@ -161,10 +153,14 @@
     .icon.cancelled { color: var(--t-warning-text); }
     .icon.error { color: var(--t-error-text); }
 
-    h1 {
+    .card h1 {
       font-size: 1.8rem;
       margin-bottom: 1rem;
       color: var(--t-text-primary);
+      background: none;
+      -webkit-background-clip: unset;
+      -webkit-text-fill-color: unset;
+      background-clip: unset;
     }
 
     .message {
@@ -197,14 +193,16 @@
     }
 
     footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--t-border);
       text-align: center;
-      margin-top: 2rem;
       color: var(--t-text-secondary);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     footer a {
-      color: #3b82f6;
+      color: var(--t-accent);
       text-decoration: none;
     }
 
@@ -215,13 +213,16 @@
 </head>
 <body>
   <div class="container">
-    <div class="page-header">
-      <span class="page-title">TASE Market</span>
+    <header>
+      <div class="header-left">
+        <h1>Lobix TASE Market</h1>
+        <p class="subtitle" id="page-subtitle">Subscription</p>
+      </div>
       <div class="header-controls">
         <button class="lang-toggle" id="lang-toggle" title="Switch language"></button>
         <button class="theme-toggle" id="theme-toggle" title="Toggle theme"></button>
       </div>
-    </div>
+    </header>
     <div class="card">
       <div id="content">
         <!-- Content will be injected by JavaScript -->
@@ -229,7 +230,11 @@
     </div>
     <footer>
       <p><a href="https://www.lobix.ai" target="_blank">www.lobix.ai</a></p>
-      <p style="margin-top: 0.5rem;">You can close this window.</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="/terms" id="footer-terms-link">Terms of Service</a> &middot;
+        <a href="/privacy" id="footer-privacy-link">Privacy Policy</a>
+      </p>
+      <p id="footer-copyright" style="margin-top: 0.5rem;">&copy; 2026 Lobix.AI. All rights reserved.</p>
     </footer>
   </div>
 
@@ -271,7 +276,11 @@
         errorInstructions: 'Please try again or <a href="mailto:contact@lobix.ai" style="color: var(--t-accent); text-decoration: underline;">contact support</a> if the issue persists.',
         pageNotFound: 'Page Not Found',
         pageNotFoundMessage: 'This page should only be accessed after a PayPal checkout.',
-        closeWindow: 'You can close this window.',
+        pageSubtitle: 'Subscription',
+
+        footerTerms: 'Terms of Service',
+        footerPrivacy: 'Privacy Policy',
+        footerCopyright: '\u00A9 2026 Lobix.AI. All rights reserved.',
         switchLang: 'Switch to \u05E2\u05D1\u05E8\u05D9\u05EA'
       },
       he: {
@@ -290,7 +299,10 @@
         errorInstructions: '\u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1 \u05D0\u05D5 <a href="mailto:contact@lobix.ai" style="color: var(--t-accent); text-decoration: underline;">\u05E6\u05D5\u05E8 \u05E7\u05E9\u05E8 \u05E2\u05DD \u05D4\u05EA\u05DE\u05D9\u05DB\u05D4</a> \u05D0\u05DD \u05D4\u05D1\u05E2\u05D9\u05D4 \u05E0\u05DE\u05E9\u05DB\u05EA.',
         pageNotFound: '\u05D4\u05D3\u05E3 \u05DC\u05D0 \u05E0\u05DE\u05E6\u05D0',
         pageNotFoundMessage: '\u05D3\u05E3 \u05D6\u05D4 \u05E0\u05D2\u05D9\u05E9 \u05E8\u05E7 \u05DC\u05D0\u05D7\u05E8 \u05EA\u05E9\u05DC\u05D5\u05DD \u05D1-PayPal.',
-        closeWindow: '\u05E0\u05D9\u05EA\u05DF \u05DC\u05E1\u05D2\u05D5\u05E8 \u05D7\u05DC\u05D5\u05DF \u05D6\u05D4.',
+        pageSubtitle: '\u05DE\u05E0\u05D5\u05D9',
+        footerTerms: '\u05EA\u05E0\u05D0\u05D9 \u05E9\u05D9\u05DE\u05D5\u05E9',
+        footerPrivacy: '\u05DE\u05D3\u05D9\u05E0\u05D9\u05D5\u05EA \u05E4\u05E8\u05D8\u05D9\u05D5\u05EA',
+        footerCopyright: '\u00A9 2026 Lobix.AI. \u05DB\u05DC \u05D4\u05D6\u05DB\u05D5\u05D9\u05D5\u05EA \u05E9\u05DE\u05D5\u05E8\u05D5\u05EA.',
         switchLang: 'Switch to English'
       }
     };
@@ -334,8 +346,13 @@
     const contentDiv = document.getElementById('content');
 
     function renderContent() {
+      // Update subtitle
+      document.getElementById('page-subtitle').textContent = T('pageSubtitle');
+
       // Update footer
-      document.querySelector('footer > p:last-child').textContent = T('closeWindow');
+      document.getElementById('footer-terms-link').textContent = T('footerTerms');
+      document.getElementById('footer-privacy-link').textContent = T('footerPrivacy');
+      document.getElementById('footer-copyright').textContent = T('footerCopyright');
 
       if (urlParams.get('success') === 'true') {
         const plan = urlParams.get('plan') || 'subscription';

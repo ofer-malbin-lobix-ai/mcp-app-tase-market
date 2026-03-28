@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscribe - TASE Market</title>
+  <title>Subscribe - Lobix TASE Market</title>
   <script>
     (function() {
       var theme = 'light';
@@ -75,7 +75,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 768px;
       margin: 0 auto;
     }
 
@@ -83,7 +83,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
 
     .header-left {
@@ -92,7 +92,7 @@
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
       margin-bottom: 0.25rem;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       -webkit-background-clip: text;
@@ -102,10 +102,10 @@
 
     .subtitle {
       color: var(--t-text-secondary);
-      font-size: 1.1rem;
+      font-size: 0.95rem;
     }
 
-    .theme-toggle {
+    .theme-toggle, .lang-toggle {
       background: var(--t-bg-secondary);
       border: 1px solid var(--t-border);
       border-radius: 8px;
@@ -118,10 +118,22 @@
       justify-content: center;
       transition: background 0.2s;
       flex-shrink: 0;
+      color: var(--t-text-primary);
     }
 
-    .theme-toggle:hover {
+    .lang-toggle {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .theme-toggle:hover, .lang-toggle:hover {
       background: var(--t-bg-tertiary);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .alert {
@@ -364,48 +376,21 @@
     }
 
     footer {
-      text-align: center;
       margin-top: 3rem;
-      padding-top: 2rem;
+      padding-top: 1.5rem;
       border-top: 1px solid var(--t-border);
+      text-align: center;
       color: var(--t-text-secondary);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     footer a {
-      color: #3b82f6;
+      color: var(--t-accent);
       text-decoration: none;
     }
 
     footer a:hover {
       text-decoration: underline;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .lang-toggle {
-      background: var(--t-bg-secondary);
-      border: 1px solid var(--t-border);
-      border-radius: 8px;
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      flex-shrink: 0;
-      color: var(--t-text-primary);
-    }
-
-    .lang-toggle:hover {
-      background: var(--t-bg-tertiary);
     }
 
     [dir="rtl"] .plan-features {
@@ -421,7 +406,7 @@
   <div class="container">
     <header>
       <div class="header-left">
-        <h1>TASE Market</h1>
+        <h1>Lobix TASE Market</h1>
         <p class="subtitle">Tel Aviv Stock Exchange (TASE) market data</p>
       </div>
       <div class="header-controls">
@@ -504,7 +489,6 @@
               <li>Full tools access</li>
               <li>Daily market data</li>
               <li>Technical indicators</li>
-              <li>Priority support</li>
             </ul>
           </div>
         </div>
@@ -516,9 +500,13 @@
     </div>
 
     <footer>
-      <p>Secure payments powered by PayPal</p>
       <p><a href="https://www.lobix.ai" target="_blank">www.lobix.ai</a></p>
-      <p style="margin-top: 1rem;">You can close this window.</p>
+      <p id="secure-payments-msg" style="margin-top: 0.5rem;">Secure payments powered by PayPal</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="/terms" id="footer-terms-link">Terms of Service</a> &middot;
+        <a href="/privacy" id="footer-privacy-link">Privacy Policy</a>
+      </p>
+      <p id="footer-copyright" style="margin-top: 0.5rem;">&copy; 2026 Lobix.AI. All rights reserved.</p>
     </footer>
   </div>
 
@@ -545,7 +533,7 @@
     // Translations
     var TEXTS = {
       en: {
-        title: 'TASE Market',
+        title: 'Lobix TASE Market',
         subtitle: 'Tel Aviv Stock Exchange (TASE) market data',
         yourSubscription: 'Your Subscription',
         noActivePlan: 'No Active Plan',
@@ -563,7 +551,6 @@
         dailyData: 'Daily market data',
         technicalIndicators: 'Technical indicators',
         cancelAnytime: 'Cancel anytime',
-        prioritySupport: 'Priority support',
         oneTimeTrial: 'One-time trial',
         selectPlan: 'Select a plan to continue',
         subscribeTo: 'Subscribe to {plan} Plan',
@@ -588,10 +575,13 @@
         nextBilling: 'Next billing date: {date}',
         confirmCancel: 'Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.',
         failedLoadStatus: 'Failed to load subscription status',
-        switchLang: 'Switch to \u05E2\u05D1\u05E8\u05D9\u05EA'
+        switchLang: 'Switch to \u05E2\u05D1\u05E8\u05D9\u05EA',
+        footerTerms: 'Terms of Service',
+        footerPrivacy: 'Privacy Policy',
+        footerCopyright: '\u00A9 2026 Lobix.AI. All rights reserved.'
       },
       he: {
-        title: 'TASE Market',
+        title: 'Lobix TASE Market',
         subtitle: '\u05E0\u05EA\u05D5\u05E0\u05D9 \u05E9\u05D5\u05E7 \u05D4\u05D1\u05D5\u05E8\u05E1\u05D4 \u05DC\u05E0\u05D9\u05D9\u05E8\u05D5\u05EA \u05E2\u05E8\u05DA \u05D1\u05EA\u05DC \u05D0\u05D1\u05D9\u05D1',
         yourSubscription: '\u05D4\u05DE\u05E0\u05D5\u05D9 \u05E9\u05DC\u05DA',
         noActivePlan: '\u05D0\u05D9\u05DF \u05DE\u05E0\u05D5\u05D9 \u05E4\u05E2\u05D9\u05DC',
@@ -609,7 +599,6 @@
         dailyData: '\u05E0\u05EA\u05D5\u05E0\u05D9 \u05E9\u05D5\u05E7 \u05D9\u05D5\u05DE\u05D9\u05D9\u05DD',
         technicalIndicators: '\u05D0\u05D9\u05E0\u05D3\u05D9\u05E7\u05D8\u05D5\u05E8\u05D9\u05DD \u05D8\u05DB\u05E0\u05D9\u05D9\u05DD',
         cancelAnytime: '\u05D1\u05D9\u05D8\u05D5\u05DC \u05D1\u05DB\u05DC \u05E2\u05EA',
-        prioritySupport: '\u05EA\u05DE\u05D9\u05DB\u05D4 \u05DE\u05D5\u05E2\u05D3\u05E4\u05EA',
         oneTimeTrial: '\u05E0\u05D9\u05E1\u05D9\u05D5\u05DF \u05D7\u05D3-\u05E4\u05E2\u05DE\u05D9',
         selectPlan: '\u05D1\u05D7\u05E8 \u05DE\u05E1\u05DC\u05D5\u05DC \u05DC\u05D4\u05DE\u05E9\u05DA',
         subscribeTo: '\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05DE\u05E1\u05DC\u05D5\u05DC {plan}',
@@ -634,7 +623,10 @@
         nextBilling: '\u05EA\u05D0\u05E8\u05D9\u05DA \u05D7\u05D9\u05D5\u05D1 \u05D4\u05D1\u05D0: {date}',
         confirmCancel: '\u05D4\u05D0\u05DD \u05D0\u05EA\u05D4 \u05D1\u05D8\u05D5\u05D7 \u05E9\u05D1\u05E8\u05E6\u05D5\u05E0\u05DA \u05DC\u05D1\u05D8\u05DC \u05D0\u05EA \u05D4\u05DE\u05E0\u05D5\u05D9? \u05EA\u05D9\u05E9\u05D0\u05E8 \u05DC\u05DA \u05D2\u05D9\u05E9\u05D4 \u05E2\u05D3 \u05E1\u05D5\u05E3 \u05EA\u05E7\u05D5\u05E4\u05EA \u05D4\u05D7\u05D9\u05D5\u05D1.',
         failedLoadStatus: '\u05E0\u05DB\u05E9\u05DC \u05D1\u05D8\u05E2\u05D9\u05E0\u05EA \u05E1\u05D8\u05D8\u05D5\u05E1 \u05D4\u05DE\u05E0\u05D5\u05D9',
-        switchLang: 'Switch to English'
+        switchLang: 'Switch to English',
+        footerTerms: '\u05EA\u05E0\u05D0\u05D9 \u05E9\u05D9\u05DE\u05D5\u05E9',
+        footerPrivacy: '\u05DE\u05D3\u05D9\u05E0\u05D9\u05D5\u05EA \u05E4\u05E8\u05D8\u05D9\u05D5\u05EA',
+        footerCopyright: '\u00A9 2026 Lobix.AI. \u05DB\u05DC \u05D4\u05D6\u05DB\u05D5\u05D9\u05D5\u05EA \u05E9\u05DE\u05D5\u05E8\u05D5\u05EA.'
       }
     };
 
@@ -728,7 +720,6 @@
       yearlyFeatures[0].textContent = T('fullAccess');
       yearlyFeatures[1].textContent = T('dailyData');
       yearlyFeatures[2].textContent = T('technicalIndicators');
-      yearlyFeatures[3].textContent = T('prioritySupport');
 
       // Subscribe button
       var subBtn = document.getElementById('subscribe-btn');
@@ -740,8 +731,10 @@
       }
 
       // Footer
-      document.querySelector('footer > p:first-child').textContent = T('securePayments');
-      document.querySelector('footer > p:last-child').textContent = T('closeWindow');
+      document.getElementById('secure-payments-msg').textContent = T('securePayments');
+      document.getElementById('footer-terms-link').textContent = T('footerTerms');
+      document.getElementById('footer-privacy-link').textContent = T('footerPrivacy');
+      document.getElementById('footer-copyright').textContent = T('footerCopyright');
 
       // Re-apply status text if loaded
       if (currentStatus) {

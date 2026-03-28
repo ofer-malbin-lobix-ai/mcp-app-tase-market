@@ -20,6 +20,7 @@ import type { Request, Response, NextFunction } from "express";
 import { createServer } from "./server.js";
 import type { TaseDataProviders } from "./src/types.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
+import { createLegalRouter } from "./src/legal/legal-routes.js";
 import { checkSubscription, clearSubscriptionCache } from "./src/paypal/subscription-check.js";
 import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -147,6 +148,9 @@ export async function startStreamableHTTPServer(
 
   // Mount subscription routes
   app.use(createSubscriptionRouter());
+
+  // Mount legal pages (terms, privacy)
+  app.use(createLegalRouter());
 
   // Mount fetch-end-of-day-from-tase-data-hub route (backend API, no auth — callable by cron or direct URL)
   app.use(createFetchEndOfDayFromTaseDataHubRouter());

@@ -36,6 +36,7 @@ const t = {
   "home.group.market": { en: "Market", he: "שוק" },
   "home.group.myPosition": { en: "My Position", he: "תיק שלי" },
   "home.group.watchlist": { en: "Watchlist", he: "רשימת מעקב" },
+  "home.group.index": { en: "Index", he: "מדד" },
   "home.group.symbols": { en: "Symbols", he: "מניות" },
 
   // Home — tool names
@@ -238,7 +239,7 @@ const t = {
   "eod.subSector": { en: "Sub-Sector:", he: ":תת-מגזר" },
   "eod.allSymbols": { en: "All symbols", he: "כל המניות" },
 
-  // ── Index End of Day ──────────────────────────────────────
+  // ── Index Sector Breakdown ──────────────────────────────────────
   "indexEod.selectIndex": { en: "Select Index", he: "בחר מדד" },
   "indexEod.searchPlaceholder": { en: "Search all columns...", he: "...חיפוש בכל העמודות" },
   "indexEod.otherSector": { en: "Other", he: "אחר" },
@@ -250,8 +251,8 @@ const t = {
   "indexEod.expandAll": { en: "Expand All", he: "פתח הכל" },
   "indexEod.collapseAll": { en: "Collapse All", he: "סגור הכל" },
 
-  "home.tool.indexEndOfDay": { en: "Index End of Day", he: "סוף יום מדד" },
-  "home.desc.indexEndOfDay": { en: "Index constituents grouped by sector with summary cards and accordion layout", he: "מרכיבי מדד מקובצים לפי מגזר עם כרטיסי סיכום ופריסת אקורדיון" },
+  "home.tool.indexSectorBreakdown": { en: "Index Sector Breakdown", he: "פירוט מגזרי מדד" },
+  "home.desc.indexSectorBreakdown": { en: "Index constituents grouped by sector with summary cards and accordion layout", he: "מרכיבי מדד מקובצים לפי מגזר עם כרטיסי סיכום ופריסת אקורדיון" },
 
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },

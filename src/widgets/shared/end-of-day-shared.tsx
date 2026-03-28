@@ -66,7 +66,7 @@ export const TOOL_TITLE_KEYS: Record<string, string> = {
   "get-my-position-end-of-day-data": "home.tool.myPositionEndOfDay",
   "get-watchlist-end-of-day-data": "home.tool.watchlistEndOfDay",
   "get-symbol-end-of-days-data": "home.tool.symbolEndOfDays",
-  "get-index-end-of-day-data": "home.tool.marketEndOfDay",
+  "get-index-sector-breakdown-data": "home.tool.indexSectorBreakdown",
 };
 
 export function deriveTitle(toolName: string): string {
