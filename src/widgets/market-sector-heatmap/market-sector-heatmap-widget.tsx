@@ -356,6 +356,7 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedPeriod, setSelectedPeriod] = useState<HeatmapPeriod>("1D");
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasDateSynced = useRef(false);
   const [svgWidth, setSvgWidth] = useState(800);
 
   // Read container width once on mount (safe — no ongoing loop/observer)
@@ -370,6 +371,15 @@ function HeatmapInner({ app, data, setData, hostContext }: HeatmapInnerProps) {
   useEffect(() => {
     if (data?.tradeDate && !selectedDate) setSelectedDate(data.tradeDate);
   }, [data?.tradeDate, selectedDate]);
+
+  // Auto-refresh when user changes the date
+  useEffect(() => {
+    if (!hasDateSynced.current) {
+      hasDateSynced.current = true;
+      return;
+    }
+    if (selectedDate) handleRefresh(selectedDate, selectedPeriod);
+  }, [selectedDate]);
 
   useEffect(() => {
     if (data?.period) setSelectedPeriod(data.period);

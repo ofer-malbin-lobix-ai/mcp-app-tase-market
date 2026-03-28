@@ -364,6 +364,7 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
     toolInput.indexId != null ? String(toolInput.indexId) : "137"
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasDateSynced = useRef(false);
   const [svgWidth, setSvgWidth] = useState(800);
 
   // Index selector options (language-aware, stock indices only)
@@ -387,6 +388,15 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
   useEffect(() => {
     if (data?.tradeDate && !selectedDate) setSelectedDate(data.tradeDate);
   }, [data?.tradeDate, selectedDate]);
+
+  // Auto-refresh when user changes the date
+  useEffect(() => {
+    if (!hasDateSynced.current) {
+      hasDateSynced.current = true;
+      return;
+    }
+    if (selectedDate) handleRefresh(selectedDate, selectedPeriod);
+  }, [selectedDate]);
 
   useEffect(() => {
     if (data?.period) setSelectedPeriod(data.period);
