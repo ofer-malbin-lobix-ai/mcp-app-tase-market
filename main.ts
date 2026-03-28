@@ -43,7 +43,7 @@ const WIDGET_VERSION = JSON.parse(readFileSync(path.join(__main_dirname, "dist",
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
  */
 export async function startStreamableHTTPServer(
-  createServer: (options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string }) => McpServer,
+  createServer: (options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string; logoutUrl?: string }) => McpServer,
 ): Promise<void> {
   const port = parseInt(process.env.PORT ?? "3001", 10);
 
@@ -89,6 +89,7 @@ export async function startStreamableHTTPServer(
   // Auth0 configuration
   const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
   const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE ?? baseUrl;
+  const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
 
   // Auth0 JWT validation middleware
   const auth0Middleware = AUTH0_DOMAIN
@@ -263,7 +264,10 @@ export async function startStreamableHTTPServer(
     // ChatGPT sends "openai-mcp/1.0.0" user-agent; others (Claude Desktop) get no domain
     const isChatGPT = req.headers["user-agent"]?.includes("openai-mcp");
     const domain = isChatGPT ? "tase-market-mcp-apps-lobix-ai.oaiusercontent.com" : undefined;
-    const server = createServer({ subscribeUrl, providers: dbProviders, domain });
+    const logoutUrl = AUTH0_DOMAIN && AUTH0_CLIENT_ID
+      ? `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&returnTo=${encodeURIComponent(baseUrl)}`
+      : undefined;
+    const server = createServer({ subscribeUrl, providers: dbProviders, domain, logoutUrl });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });

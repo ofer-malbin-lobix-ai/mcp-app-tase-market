@@ -14,6 +14,7 @@ import styles from "./tase-market-settings-widget.module.css";
 interface SubscriptionData {
   subscribeUrl: string;
   needsSubscription?: boolean;
+  logoutUrl?: string;
 }
 
 function extractSubscriptionData(callToolResult: CallToolResult | null | undefined): SubscriptionData | null {
@@ -113,6 +114,7 @@ interface SettingsInnerProps {
 
 function SettingsInner({ data, hostContext, app }: SettingsInnerProps) {
   const [copied, setCopied] = useState(false);
+  const [logoutCopied, setLogoutCopied] = useState(false);
   const { language, t, dir, toggle } = useLanguage();
 
   const connectedUrl = hasToken(data?.subscribeUrl) ? data!.subscribeUrl : null;
@@ -152,6 +154,30 @@ function SettingsInner({ data, hostContext, app }: SettingsInnerProps) {
           >
             {copied ? t("settings.copied") : data?.needsSubscription ? t("settings.subscribeNow") : t("settings.subscription")}
           </button>
+          {data?.logoutUrl && (
+            <button
+              className={styles.logoutButton}
+              onClick={async () => {
+                const url = data.logoutUrl!;
+                try {
+                  const result = await app.openLink({ url });
+                  if (result?.isError) {
+                    await navigator.clipboard.writeText(url);
+                    setLogoutCopied(true);
+                    setTimeout(() => setLogoutCopied(false), 2000);
+                  }
+                } catch {
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    setLogoutCopied(true);
+                    setTimeout(() => setLogoutCopied(false), 2000);
+                  } catch { /* ignore */ }
+                }
+              }}
+            >
+              {logoutCopied ? t("settings.copied") : t("settings.logout")}
+            </button>
+          )}
         </div>
       ) : (
         <div className={styles.notConnected}>

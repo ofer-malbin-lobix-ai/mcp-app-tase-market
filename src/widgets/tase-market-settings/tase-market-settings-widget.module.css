@@ -41,6 +41,31 @@
   transform: translateY(0);
 }
 
+.logoutButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 2rem;
+  border-radius: var(--border-radius-md, 0.5rem);
+  border: 1px solid var(--t-border, #d1d5db);
+  background: transparent;
+  color: var(--t-text-primary, #374151);
+  font-size: var(--font-text-sm-size, 0.875rem);
+  font-weight: var(--font-weight-medium, 500);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.logoutButton:hover {
+  background: var(--t-bg-secondary, #f3f4f6);
+  border-color: var(--t-text-secondary, #9ca3af);
+}
+
+.logoutButton:active {
+  transform: translateY(0);
+}
+
 .notConnected {
   text-align: center;
   color: var(--t-text-secondary);

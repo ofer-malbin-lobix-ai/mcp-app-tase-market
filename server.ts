@@ -267,7 +267,7 @@ function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
  * Creates a new MCP server instance.
  * Requires a `providers` object for data fetching (use dbProviders from src/db-api.ts).
  */
-export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string }): McpServer {
+export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string; logoutUrl?: string }): McpServer {
   const { providers } = options;
 
   // Initialize resource UI metadata with optional domain
@@ -1455,7 +1455,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (): Promise<CallToolResult> => {
       const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
       return {
-        content: [{ type: "text", text: JSON.stringify({ subscribeUrl }) }],
+        content: [{ type: "text", text: JSON.stringify({ subscribeUrl, logoutUrl: options?.logoutUrl }) }],
       };
     },
   );
@@ -1800,7 +1800,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (): Promise<CallToolResult> => {
       const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
       return {
-        content: [{ type: "text", text: JSON.stringify({ subscribeUrl }) }],
+        content: [{ type: "text", text: JSON.stringify({ subscribeUrl, logoutUrl: options?.logoutUrl }) }],
       };
     },
   );

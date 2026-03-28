@@ -175,6 +175,7 @@ const t = {
   "settings.subscription": { en: "Subscription", he: "מנוי" },
   "settings.copied": { en: "Copied!", he: "הועתק!" },
   "settings.notConnected": { en: "Go to the server to subscribe and access all tools.", he: "עבור לשרת כדי להירשם ולגשת לכל הכלים." },
+  "settings.logout": { en: "Log Out", he: "התנתק" },
 
   // ── Common UI ──────────────────────────────────────────────
   "common.symbol": { en: "Symbol:", he: ":סימול" },
