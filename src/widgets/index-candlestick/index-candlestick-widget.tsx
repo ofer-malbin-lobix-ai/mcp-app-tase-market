@@ -12,6 +12,7 @@ const config: SymbolsCandlestickConfig = {
   navButtons: [
     { label: "Sector Breakdown", prompt: "call show-index-sector-breakdown-widget" },
     { label: "End of Day", prompt: "call show-index-end-of-day-widget" },
+    { label: "Last Update", prompt: "call show-index-last-update-widget" },
     { label: "Sector Heatmap", prompt: "call show-index-sector-heatmap-widget" },
   ],
 };

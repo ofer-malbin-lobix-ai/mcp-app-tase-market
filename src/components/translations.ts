@@ -259,6 +259,8 @@ const t = {
   "home.desc.indexSectorHeatmap": { en: "Treemap heatmap of index constituents by sector", he: "מפת חום למרכיבי מדד לפי מגזר" },
   "home.tool.indexCandlestick": { en: "Index Candlestick", he: "גרף נרות מדד" },
   "home.desc.indexCandlestick": { en: "Candlestick chart for index constituents with sidebar", he: "גרף נרות למרכיבי מדד עם סרגל צד" },
+  "home.tool.indexLastUpdate": { en: "Index Last Update", he: "עדכון אחרון מדד" },
+  "home.desc.indexLastUpdate": { en: "Real-time last-update trading data for index constituents", he: "נתוני מסחר בזמן אמת למרכיבי מדד" },
 
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },
