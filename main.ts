@@ -74,6 +74,30 @@ export async function startStreamableHTTPServer(
     res.status(200).json({ status: "ok" });
   });
 
+  // Landing page — shown after Auth0 logout redirect
+  app.get("/", (_req: Request, res: Response) => {
+    res.type("html").send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TASE Market – Logged Out</title>
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; color: #333; }
+    .card { text-align: center; padding: 2rem; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    p { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>You've been logged out</h1>
+    <p>You can close this tab or reconnect from your MCP client.</p>
+  </div>
+</body>
+</html>`);
+  });
+
   // OpenAI domain verification for ChatGPT app submission
   app.get("/.well-known/openai-apps-challenge", (_req: Request, res: Response) => {
     const token = process.env.OPENAI_APPS_CHALLENGE_TOKEN;
