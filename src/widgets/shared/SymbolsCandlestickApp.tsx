@@ -763,6 +763,8 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     setChartData(null);
     setSelectedSymbol(null);
     setSidebarItems(null);
+    setSelectedDateFrom("");
+    setSelectedDateTo("");
     if (!app || typeof app.callServerTool !== "function") return;
     try {
       const result = await app.callServerTool({
