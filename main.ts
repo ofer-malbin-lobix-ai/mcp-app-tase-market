@@ -173,6 +173,11 @@ export async function startStreamableHTTPServer(
     return null;
   };
 
+  // Build logout URL once — used by both requireSubscription and mcpHandler
+  const logoutUrl = AUTH0_DOMAIN && AUTH0_CLIENT_ID
+    ? `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&returnTo=${encodeURIComponent(baseUrl)}`
+    : undefined;
+
   // Subscription check middleware - only checks on tools/call requests
   const requireSubscription = async (req: Request, res: Response, next: NextFunction) => {
     // Check if this is a tools/call request (MCP JSON-RPC)
@@ -235,7 +240,7 @@ export async function startStreamableHTTPServer(
           content: [
             {
               type: "text",
-              text: JSON.stringify({ subscribeUrl, needsSubscription: true }),
+              text: JSON.stringify({ subscribeUrl, needsSubscription: true, logoutUrl }),
             },
           ],
           _meta: {
@@ -264,9 +269,6 @@ export async function startStreamableHTTPServer(
     // ChatGPT sends "openai-mcp/1.0.0" user-agent; others (Claude Desktop) get no domain
     const isChatGPT = req.headers["user-agent"]?.includes("openai-mcp");
     const domain = isChatGPT ? "tase-market-mcp-apps-lobix-ai.oaiusercontent.com" : undefined;
-    const logoutUrl = AUTH0_DOMAIN && AUTH0_CLIENT_ID
-      ? `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&returnTo=${encodeURIComponent(baseUrl)}`
-      : undefined;
     const server = createServer({ subscribeUrl, providers: dbProviders, domain, logoutUrl });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
