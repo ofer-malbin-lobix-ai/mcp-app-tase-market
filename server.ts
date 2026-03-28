@@ -125,6 +125,12 @@ const getIndexSectorBreakdownSchema = {
   indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
 };
 
+const getIndexSectorHeatmapSchema = {
+  tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
+  period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly, 1M=monthly, 3M=quarterly. Default: 1D"),
+  indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
+};
+
 // Score descriptions for Market Spirit
 const SCORE_DESCRIPTIONS: Record<string, string> = {
   Defense: "Bearish market conditions - consider defensive positions",
@@ -331,6 +337,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const watchlistCandlestickResourceUri = `ui://tase-end-of-day/watchlist-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const indexSectorBreakdownResourceUri = `ui://tase-end-of-day/index-sector-breakdown-widget-ver-${WIDGET_VERSION}.html`;
   const indexEndOfDayResourceUri = `ui://tase-end-of-day/index-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
+  const indexSectorHeatmapResourceUri = `ui://tase-end-of-day/index-sector-heatmap-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1522,6 +1529,74 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // Data-only tool: Get Index Sector Heatmap data
+  registerAppTool(server,
+    "get-index-sector-heatmap-data",
+    {
+      title: "Get Index Sector Heatmap Data",
+      description: "Returns TASE index constituents with heatmap data (marketCap, change %) filtered by index ID for treemap visualization. Data only - use show-index-sector-heatmap-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexSectorHeatmapSchema,
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args: { tradeDate?: string; indexId?: number; period?: string }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const [heatmapData, eodData] = await Promise.all([
+        providers.fetchSectorHeatmap(args.tradeDate, args.period as HeatmapPeriod | undefined),
+        providers.fetchEndOfDay(args.tradeDate),
+      ]);
+      const indexSymbols = new Set(
+        eodData.items.filter((item: StockData) => item.indices?.includes(indexId)).map((item: StockData) => item.symbol)
+      );
+      const filtered = heatmapData.items.filter((item: any) => indexSymbols.has(item.symbol));
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              tradeDate: heatmapData.tradeDate,
+              indexId,
+              period: args.period ?? "1D",
+              count: filtered.length,
+              items: filtered,
+            }),
+          },
+        ],
+      };
+    },
+  );
+
+  // UI tool: Show Index Sector Heatmap widget
+  registerAppTool(server,
+    "show-index-sector-heatmap-widget",
+    {
+      title: "Show Index Sector Heatmap",
+      description: "Displays TASE index constituents as a nested treemap heatmap: sectors -> sub-sectors -> symbols. Rectangles sized by market cap, colored by change %. Click to drill down. Includes index selector dropdown.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexSectorHeatmapSchema,
+      _meta: { ui: { resourceUri: indexSectorHeatmapResourceUri } },
+    },
+    async (args: { tradeDate?: string; indexId?: number; period?: string }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const [heatmapData, eodData] = await Promise.all([
+        providers.fetchSectorHeatmap(args.tradeDate, args.period as HeatmapPeriod | undefined),
+        providers.fetchEndOfDay(args.tradeDate),
+      ]);
+      const indexSymbols = new Set(
+        eodData.items.filter((item: StockData) => item.indices?.includes(indexId)).map((item: StockData) => item.symbol)
+      );
+      const filtered = heatmapData.items.filter((item: any) => indexSymbols.has(item.symbol));
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Index sector heatmap: ${filtered.length} stocks in index ${indexId} for ${heatmapData.tradeDate}`,
+          },
+        ],
+      };
+    },
+  );
+
   // Data-only tool: Get indices list data
   registerAppTool(server,
     "get-indices-list-data",
@@ -1588,6 +1663,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, watchlistCandlestickResourceUri, watchlistCandlestickResourceUri, RESOURCE_CONFIG, readWidget(watchlistCandlestickResourceUri, "watchlist-candlestick/watchlist-candlestick-widget.html"));
   registerAppResource(server, indexSectorBreakdownResourceUri, indexSectorBreakdownResourceUri, RESOURCE_CONFIG, readWidget(indexSectorBreakdownResourceUri, "index-sector-breakdown/index-sector-breakdown-widget.html"));
   registerAppResource(server, indexEndOfDayResourceUri, indexEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(indexEndOfDayResourceUri, "index-end-of-day/index-end-of-day-widget.html"));
+  registerAppResource(server, indexSectorHeatmapResourceUri, indexSectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(indexSectorHeatmapResourceUri, "index-sector-heatmap/index-sector-heatmap-widget.html"));
 
   return server;
 }

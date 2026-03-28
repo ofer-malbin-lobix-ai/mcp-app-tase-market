@@ -255,6 +255,8 @@ const t = {
   "home.desc.indexSectorBreakdown": { en: "Index constituents grouped by sector with summary cards and accordion layout", he: "מרכיבי מדד מקובצים לפי מגזר עם כרטיסי סיכום ופריסת אקורדיון" },
   "home.tool.indexEndOfDay": { en: "Index End of Day", he: "סוף יום מדד" },
   "home.desc.indexEndOfDay": { en: "Full DataTable for index constituents on a single date", he: "טבלת נתונים מלאה למרכיבי מדד בתאריך בודד" },
+  "home.tool.indexSectorHeatmap": { en: "Index Sector Heatmap", he: "מפת חום מגזרית מדד" },
+  "home.desc.indexSectorHeatmap": { en: "Treemap heatmap of index constituents by sector", he: "מפת חום למרכיבי מדד לפי מגזר" },
 
   // ── Home page table headers ─────────────────────────────
   "home.col.widget": { en: "Widget", he: "ווידג׳ט" },

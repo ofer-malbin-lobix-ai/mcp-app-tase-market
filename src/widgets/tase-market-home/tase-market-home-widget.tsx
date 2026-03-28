@@ -36,6 +36,7 @@ const WIDGET_REFERENCE = [
   { n: 22, widget: "home", showTool: "show-tase-market-home-widget", showParams: "none", dataTools: ["none (static)"], dataParams: ["\u2014"] },
   { n: 23, widget: "index-sector-breakdown", showTool: "show-index-sector-breakdown-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-sector-breakdown-data"], dataParams: ["tradeDate?, indexId?"] },
   { n: 24, widget: "index-end-of-day", showTool: "show-index-end-of-day-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-sector-breakdown-data"], dataParams: ["tradeDate?, indexId?"] },
+  { n: 25, widget: "index-sector-heatmap", showTool: "show-index-sector-heatmap-widget", showParams: "tradeDate?, period?, indexId?", dataTools: ["get-index-sector-heatmap-data"], dataParams: ["tradeDate?, period?, indexId?"] },
 ];
 
 const DATA_TOOL_REFERENCE = [
@@ -67,6 +68,7 @@ const DATA_TOOL_REFERENCE = [
   { n: 26, tool: "get-tase-market-settings-data", params: "none", visibility: "model, app", usedBy: "settings" },
   { n: 27, tool: "get-indices-list-data", params: "language?", visibility: "model, app", usedBy: "standalone" },
   { n: 28, tool: "get-index-sector-breakdown-data", params: "tradeDate?, indexId?", visibility: "model, app", usedBy: "index-sector-breakdown, index-end-of-day" },
+  { n: 29, tool: "get-index-sector-heatmap-data", params: "tradeDate?, period?, indexId?", visibility: "model, app", usedBy: "index-sector-heatmap" },
 ];
 
 interface ToolItem {
@@ -98,6 +100,7 @@ const TOOL_GROUPS: ToolGroup[] = [
     tools: [
       { icon: "\u{1F4CA}", nameKey: "home.tool.indexSectorBreakdown", descKey: "home.desc.indexSectorBreakdown", prompt: "call show-index-sector-breakdown-widget" },
       { icon: "\u{1F4C8}", nameKey: "home.tool.indexEndOfDay", descKey: "home.desc.indexEndOfDay", prompt: "call show-index-end-of-day-widget" },
+      { icon: "\u{1F5FA}\u{FE0F}", nameKey: "home.tool.indexSectorHeatmap", descKey: "home.desc.indexSectorHeatmap", prompt: "call show-index-sector-heatmap-widget" },
     ],
   },
   {
@@ -141,13 +144,13 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          {t("home.widgets")} (23)
+          {t("home.widgets")} (24)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("data")}
         >
-          {t("home.dataTools")} (26)
+          {t("home.dataTools")} (27)
         </button>
       </div>
 
