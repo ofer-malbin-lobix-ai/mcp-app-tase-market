@@ -1686,17 +1686,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       const indexId = args.indexId ?? 137;
       const data = await providers.fetchEndOfDay(args.tradeDate);
       const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
-      const symbols = filtered.map((item: StockData) => item.symbol);
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({
-            symbols,
-            count: filtered.length,
-            dateFrom: null,
-            dateTo: data.tradeDate,
-            items: filtered,
-          }),
+          text: `Displaying ${filtered.length} index constituents for ${data.tradeDate}`,
         }],
       };
     },
