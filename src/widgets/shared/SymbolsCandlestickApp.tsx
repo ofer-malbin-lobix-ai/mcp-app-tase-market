@@ -20,6 +20,9 @@ import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
+import { SearchableSelect } from "../../components/SearchableSelect";
+// @ts-ignore — JSON import
+import indicesData from "../../data/indices.json";
 import styles from "./symbols-candlestick-widget.module.css";
 
 // --- Config ---
@@ -28,6 +31,8 @@ export interface SymbolsCandlestickConfig {
   toolName: string; // auto-fetch tool, e.g. "get-symbols-end-of-days-data"
   symbolDatesToolName?: string; // "get-my-positions" or "get-watchlist" — fetches per-symbol startDate
   navButtons?: NavItem[];
+  showIndexFilter?: boolean;    // show index selector dropdown
+  defaultIndexId?: number;      // default index ID (default: 137 = TA-125)
 }
 
 function deriveTitle(toolName: string): string {
@@ -505,6 +510,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     "get-symbols-end-of-days-data": "home.tool.symbolsCandlestick",
     "get-my-position-end-of-day-data": "home.tool.myPositionCandlestick",
     "get-watchlist-end-of-day-data": "home.tool.watchlistCandlestick",
+    "get-index-end-of-day-data": "home.tool.indexCandlestick",
   };
   const titleKey = CANDLESTICK_TITLE_KEYS[config.toolName];
   const title = (titleKey ? t(titleKey as any) : "") || deriveTitle(config.toolName);
@@ -523,6 +529,17 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   const [sidebarPeriod, setSidebarPeriod] = useState<HeatmapPeriod>("1D");
   const [sidebarItems, setSidebarItems] = useState<StockData[] | null>(null);
   const [isFetchingPeriod, setIsFetchingPeriod] = useState(false);
+  const [selectedIndexId, setSelectedIndexId] = useState(String(config.defaultIndexId ?? 137));
+
+  // Index selector options (language-aware, stock indices only)
+  const indexSelectOptions = useMemo(() => {
+    if (!config.showIndexFilter) return [];
+    const lang = language as "en" | "he";
+    const list = (indicesData as Record<string, { index: number; indexName: string }[]>)[lang] ?? (indicesData as any).en;
+    return list
+      .filter((idx: { index: number }) => idx.index < 500)
+      .map((idx: { index: number; indexName: string }) => ({ value: String(idx.index), label: idx.indexName }));
+  }, [config.showIndexFilter, language]);
   const [showCandles, setShowCandles] = useState(true);
   const [showVolume, setShowVolume] = useState(true);
   const [showSma20, setShowSma20] = useState(false);
@@ -570,14 +587,16 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     if (!needsAutoFetch || !app) return;
     setNeedsAutoFetch(false);
     if (typeof app.callServerTool !== "function") return;
-    app.callServerTool({ name: config.toolName, arguments: {} })
+    const args: Record<string, unknown> = {};
+    if (config.showIndexFilter) args.indexId = Number(selectedIndexId);
+    app.callServerTool({ name: config.toolName, arguments: args })
       .then((result) => {
         if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const fetched = extractEndOfDaySymbolsData(result);
         if (fetched) setEodData(fetched);
       })
       .catch((e) => console.error("Auto-fetch failed:", e));
-  }, [needsAutoFetch, app]);
+  }, [needsAutoFetch, app, config.showIndexFilter, selectedIndexId]);
 
   // Fetch per-symbol dates (positions/watchlist startDate) on mount
   useEffect(() => {
@@ -725,6 +744,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     try {
       const args: Record<string, unknown> = { symbols: eodData.symbols, period: p };
       if (eodData.dateTo) args.tradeDate = eodData.dateTo;
+      if (config.showIndexFilter) args.indexId = Number(selectedIndexId);
       const result = await app.callServerTool({ name: periodToolName, arguments: args });
       if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
       const fetched = extractEndOfDaySymbolsData(result);
@@ -734,7 +754,28 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     } finally {
       setIsFetchingPeriod(false);
     }
-  }, [app, eodData, periodToolName]);
+  }, [app, eodData, periodToolName, config.showIndexFilter, selectedIndexId]);
+
+  // Index change handler — re-fetch sidebar data with new indexId
+  const handleIndexChange = useCallback(async (val: string) => {
+    setSelectedIndexId(val);
+    setEodData(null);
+    setChartData(null);
+    setSelectedSymbol(null);
+    setSidebarItems(null);
+    if (!app || typeof app.callServerTool !== "function") return;
+    try {
+      const result = await app.callServerTool({
+        name: config.toolName,
+        arguments: { indexId: Number(val) },
+      });
+      if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
+      const fetched = extractEndOfDaySymbolsData(result);
+      if (fetched) setEodData(fetched);
+    } catch (e) {
+      console.error("Failed to fetch index data:", e);
+    }
+  }, [app, config.toolName]);
 
   // Auto-select first symbol when sidebar data loads
   // When symbolDatesToolName is set, wait for symbolDates to be populated before auto-selecting
@@ -765,6 +806,19 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     >
       {config.navButtons && config.navButtons.length > 0 && (
         <NavRow app={app} items={config.navButtons} />
+      )}
+
+      {config.showIndexFilter && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px" }}>
+          <div style={{ minWidth: 180, maxWidth: 260 }}>
+            <SearchableSelect
+              options={indexSelectOptions}
+              value={selectedIndexId}
+              onChange={handleIndexChange}
+              placeholder={t("indexEod.selectIndex" as any)}
+            />
+          </div>
+        </div>
       )}
 
       {eodData && (

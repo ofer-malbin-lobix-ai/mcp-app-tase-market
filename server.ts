@@ -125,6 +125,11 @@ const getIndexSectorBreakdownSchema = {
   indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
 };
 
+const getIndexEndOfDaySchema = {
+  tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
+  indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
+};
+
 const getIndexSectorHeatmapSchema = {
   tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format. If not provided, returns the last available trading day."),
   period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly, 1M=monthly, 3M=quarterly. Default: 1D"),
@@ -338,6 +343,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const indexSectorBreakdownResourceUri = `ui://tase-end-of-day/index-sector-breakdown-widget-ver-${WIDGET_VERSION}.html`;
   const indexEndOfDayResourceUri = `ui://tase-end-of-day/index-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const indexSectorHeatmapResourceUri = `ui://tase-end-of-day/index-sector-heatmap-widget-ver-${WIDGET_VERSION}.html`;
+  const indexCandlestickResourceUri = `ui://tase-end-of-day/index-candlestick-widget-ver-${WIDGET_VERSION}.html`;
 
   // Data-only tool: Get TASE end of day data
   registerAppTool(server,
@@ -1597,6 +1603,100 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
+  // ─── Index Candlestick tools ──────────────────────────────────────
+
+  // Data-only tool: Get Index End of Day Data (sidebar data for index candlestick)
+  registerAppTool(server,
+    "get-index-end-of-day-data",
+    {
+      title: "Get Index End of Day Data",
+      description: "Returns EOD data for all constituents of a TASE index. Data only - use show-index-candlestick-widget for visualization.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexEndOfDaySchema,
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const data = await providers.fetchEndOfDay(args.tradeDate);
+      const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
+      const symbols = filtered.map((item: StockData) => item.symbol);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            symbols,
+            count: filtered.length,
+            dateFrom: null,
+            dateTo: data.tradeDate,
+            items: filtered,
+          }),
+        }],
+      };
+    },
+  );
+
+  // Data-only tool: Get Index Period Data (sidebar period change)
+  registerAppTool(server,
+    "get-index-period-data",
+    {
+      title: "Get Index Period Data",
+      description: "Returns last price and period change % for index constituents. Used by the index candlestick widget sidebar.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: {
+        tradeDate: z.string().optional().describe("Trade date in YYYY-MM-DD format (default: last trading day)"),
+        period: z.enum(["1D", "1W", "1M", "3M"]).optional().describe("Change period: 1D=daily, 1W=weekly (5 days), 1M=monthly (21 days), 3M=quarterly (63 days). Default: 1D"),
+        indexId: z.number().optional().describe("TASE index ID (e.g. 137 for TA-125, 142 for TA-35). Default: 137 (TA-125)."),
+        symbols: z.array(z.string()).optional().describe("List of symbols. If provided, uses these directly instead of resolving from index."),
+      },
+      _meta: { ui: { visibility: ["model", "app"] } },
+    },
+    async (args: { tradeDate?: string; period?: string; indexId?: number; symbols?: string[] }): Promise<CallToolResult> => {
+      let symbols = args.symbols;
+      if (!symbols?.length) {
+        const indexId = args.indexId ?? 137;
+        const data = await providers.fetchEndOfDay(args.tradeDate);
+        symbols = data.items.filter((item: StockData) => item.indices?.includes(indexId)).map((item: StockData) => item.symbol);
+      }
+      const data = await providers.fetchEndOfDaySymbolsByDate(symbols, args.tradeDate, args.period as HeatmapPeriod | undefined);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+        }],
+      };
+    },
+  );
+
+  // UI tool: Show Index Candlestick widget
+  registerAppTool(server,
+    "show-index-candlestick-widget",
+    {
+      title: "Show Index Candlestick",
+      description: "Displays a candlestick view for TASE index constituents: sidebar with symbol table (Last, Chg%) and chart area. Click a symbol to view its candlestick chart. Includes index selector dropdown.",
+      annotations: READ_ONLY_ANNOTATIONS,
+      inputSchema: getIndexEndOfDaySchema,
+      _meta: { ui: { resourceUri: indexCandlestickResourceUri } },
+    },
+    async (args: { tradeDate?: string; indexId?: number }): Promise<CallToolResult> => {
+      const indexId = args.indexId ?? 137;
+      const data = await providers.fetchEndOfDay(args.tradeDate);
+      const filtered = data.items.filter((item: StockData) => item.indices?.includes(indexId));
+      const symbols = filtered.map((item: StockData) => item.symbol);
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            symbols,
+            count: filtered.length,
+            dateFrom: null,
+            dateTo: data.tradeDate,
+            items: filtered,
+          }),
+        }],
+      };
+    },
+  );
+
   // Data-only tool: Get indices list data
   registerAppTool(server,
     "get-indices-list-data",
@@ -1664,6 +1764,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, indexSectorBreakdownResourceUri, indexSectorBreakdownResourceUri, RESOURCE_CONFIG, readWidget(indexSectorBreakdownResourceUri, "index-sector-breakdown/index-sector-breakdown-widget.html"));
   registerAppResource(server, indexEndOfDayResourceUri, indexEndOfDayResourceUri, RESOURCE_CONFIG, readWidget(indexEndOfDayResourceUri, "index-end-of-day/index-end-of-day-widget.html"));
   registerAppResource(server, indexSectorHeatmapResourceUri, indexSectorHeatmapResourceUri, RESOURCE_CONFIG, readWidget(indexSectorHeatmapResourceUri, "index-sector-heatmap/index-sector-heatmap-widget.html"));
+  registerAppResource(server, indexCandlestickResourceUri, indexCandlestickResourceUri, RESOURCE_CONFIG, readWidget(indexCandlestickResourceUri, "index-candlestick/index-candlestick-widget.html"));
 
   return server;
 }

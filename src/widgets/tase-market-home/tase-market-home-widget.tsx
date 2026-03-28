@@ -37,6 +37,7 @@ const WIDGET_REFERENCE = [
   { n: 23, widget: "index-sector-breakdown", showTool: "show-index-sector-breakdown-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-sector-breakdown-data"], dataParams: ["tradeDate?, indexId?"] },
   { n: 24, widget: "index-end-of-day", showTool: "show-index-end-of-day-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-sector-breakdown-data"], dataParams: ["tradeDate?, indexId?"] },
   { n: 25, widget: "index-sector-heatmap", showTool: "show-index-sector-heatmap-widget", showParams: "tradeDate?, period?, indexId?", dataTools: ["get-index-sector-heatmap-data"], dataParams: ["tradeDate?, period?, indexId?"] },
+  { n: 26, widget: "index-candlestick", showTool: "show-index-candlestick-widget", showParams: "tradeDate?, indexId?", dataTools: ["get-index-end-of-day-data", "get-symbol-candlestick-data", "get-index-period-data"], dataParams: ["tradeDate?, indexId?", "symbol, dateFrom?, dateTo?, timeframe?", "tradeDate?, period?, indexId?, symbols?"] },
 ];
 
 const DATA_TOOL_REFERENCE = [
@@ -69,6 +70,8 @@ const DATA_TOOL_REFERENCE = [
   { n: 27, tool: "get-indices-list-data", params: "language?", visibility: "model, app", usedBy: "standalone" },
   { n: 28, tool: "get-index-sector-breakdown-data", params: "tradeDate?, indexId?", visibility: "model, app", usedBy: "index-sector-breakdown, index-end-of-day" },
   { n: 29, tool: "get-index-sector-heatmap-data", params: "tradeDate?, period?, indexId?", visibility: "model, app", usedBy: "index-sector-heatmap" },
+  { n: 30, tool: "get-index-end-of-day-data", params: "tradeDate?, indexId?", visibility: "model, app", usedBy: "index-candlestick" },
+  { n: 31, tool: "get-index-period-data", params: "tradeDate?, period?, indexId?, symbols?", visibility: "model, app", usedBy: "index-candlestick" },
 ];
 
 interface ToolItem {
@@ -101,6 +104,7 @@ const TOOL_GROUPS: ToolGroup[] = [
       { icon: "\u{1F4CA}", nameKey: "home.tool.indexSectorBreakdown", descKey: "home.desc.indexSectorBreakdown", prompt: "call show-index-sector-breakdown-widget" },
       { icon: "\u{1F4C8}", nameKey: "home.tool.indexEndOfDay", descKey: "home.desc.indexEndOfDay", prompt: "call show-index-end-of-day-widget" },
       { icon: "\u{1F5FA}\u{FE0F}", nameKey: "home.tool.indexSectorHeatmap", descKey: "home.desc.indexSectorHeatmap", prompt: "call show-index-sector-heatmap-widget" },
+      { icon: "\u{1F56F}\u{FE0F}", nameKey: "home.tool.indexCandlestick", descKey: "home.desc.indexCandlestick", prompt: "call show-index-candlestick-widget" },
     ],
   },
   {
@@ -144,13 +148,13 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          {t("home.widgets")} (24)
+          {t("home.widgets")} (25)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("data")}
         >
-          {t("home.dataTools")} (27)
+          {t("home.dataTools")} (29)
         </button>
       </div>
 
