@@ -151,13 +151,13 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
           className={`${styles.refSubTab} ${subTab === "widgets" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("widgets")}
         >
-          {t("home.widgets")} (26)
+          {t("home.widgets")} (27)
         </button>
         <button
           className={`${styles.refSubTab} ${subTab === "data" ? styles.refSubTabActive : ""}`}
           onClick={() => setSubTab("data")}
         >
-          {t("home.dataTools")} (30)
+          {t("home.dataTools")} (32)
         </button>
       </div>
 

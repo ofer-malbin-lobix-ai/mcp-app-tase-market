@@ -20,12 +20,11 @@ Use this skill when the user wants to:
 - View candlestick charts or end-of-day trading data
 - Compare multiple symbols or analyze a single stock
 
-## Available Tools (24 data + 22 widgets)
+## Available Tools (32 data + 27 widgets)
 
 ### Market Overview
 | Goal | Data Tool | Widget Tool |
 |------|-----------|-------------|
-| Dashboard (spirit + EOD combined) | — | `show-market-dashboard-widget` |
 | Market breadth & sentiment | `get-market-spirit-data` | `show-market-spirit-widget` |
 | End-of-day for all symbols | `get-market-end-of-day-data` | `show-market-end-of-day-widget` |
 | Sector heatmap | `get-market-sector-heatmap-data` | `show-market-sector-heatmap-widget` |
@@ -59,6 +58,16 @@ Use this skill when the user wants to:
 | Watchlist EOD data | `get-watchlist-end-of-day-data` | `show-watchlist-end-of-day-widget` |
 | Watchlist candlestick | `get-watchlist-period-data` | `show-watchlist-candlestick-widget` |
 
+### Index
+| Goal | Data Tool | Widget Tool |
+|------|-----------|-------------|
+| List available indices | `get-indices-list-data` | — |
+| Index sector breakdown | `get-index-sector-breakdown-data` | `show-index-sector-breakdown-widget` |
+| Index end-of-day | `get-index-end-of-day-data` | `show-index-end-of-day-widget` |
+| Index sector heatmap | `get-index-sector-heatmap-data` | `show-index-sector-heatmap-widget` |
+| Index candlestick chart | `get-index-end-of-day-data`, `get-symbol-candlestick-data`, `get-index-period-data` | `show-index-candlestick-widget` |
+| Index live last-update | `get-index-last-update-data` | `show-index-last-update-widget` |
+
 ### Settings & Home
 | Goal | Widget Tool |
 |------|-------------|
@@ -67,11 +76,11 @@ Use this skill when the user wants to:
 
 ## Decision Guide
 
-### "Show me the market" → Start with the dashboard
+### "Show me the market" → Start with the home widget
 ```
-show-market-dashboard-widget
+show-tase-market-home-widget
 ```
-Combines market spirit and end-of-day summary in one view.
+Overview of all available tools and widgets with quick-launch links.
 
 ### "How is sector X doing?" → Sector heatmap
 ```
