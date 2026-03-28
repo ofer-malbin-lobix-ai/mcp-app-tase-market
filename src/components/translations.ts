@@ -31,6 +31,47 @@ const t = {
   "home.settings": { en: "Settings", he: "הגדרות" },
   "home.widgets": { en: "Widgets", he: "ווידג'טים" },
   "home.dataTools": { en: "Data Tools", he: "כלי נתונים" },
+  "home.guide": { en: "Guide", he: "מדריך" },
+
+  // Guide scenarios
+  "home.guide.scenario1": { en: "Show me the market", he: "הראה לי את השוק" },
+  "home.guide.scenario1.desc": { en: "Get a quick pulse on market conditions and today's full data.", he: "קבל תמונת מצב מהירה על תנאי השוק ונתוני היום." },
+  "home.guide.scenario1.step1": { en: "Market Spirit", he: "רוח השוק" },
+  "home.guide.scenario1.step2": { en: "Market End of Day", he: "סוף יום שוק" },
+
+  "home.guide.scenario2": { en: "How is sector X doing?", he: "מה המצב במגזר X?" },
+  "home.guide.scenario2.desc": { en: "Visualize sector performance with a treemap heatmap.", he: "צפה בביצועי מגזרים באמצעות מפת חום." },
+  "home.guide.scenario2.step1": { en: "Market Sector Heatmap", he: "מפת חום מגזרית" },
+
+  "home.guide.scenario3": { en: "Analyze a single symbol", he: "ניתוח מניה בודדת" },
+  "home.guide.scenario3.desc": { en: "Deep-dive into one symbol: EOD data, candlestick chart, and intraday view.", he: "צלילה לעומק למניה בודדת: נתוני סוף יום, גרף נרות ותצוגה תוך-יומית." },
+  "home.guide.scenario3.step1": { en: "Symbol End of Days", he: "סוף יום מניה" },
+  "home.guide.scenario3.step2": { en: "Symbol Candlestick", he: "גרף נרות מניה" },
+  "home.guide.scenario3.step3": { en: "Symbol Intraday", he: "תוך-יומי מניה" },
+
+  "home.guide.scenario4": { en: "Compare multiple symbols", he: "השוואת מספר מניות" },
+  "home.guide.scenario4.desc": { en: "View EOD data and candlestick charts for several symbols side by side.", he: "צפה בנתוני סוף יום וגרפי נרות למספר מניות זו לצד זו." },
+  "home.guide.scenario4.step1": { en: "Symbols End of Day", he: "סוף יום מניות" },
+  "home.guide.scenario4.step2": { en: "Symbols Candlestick", he: "גרף נרות מניות" },
+
+  "home.guide.scenario5": { en: "How's my portfolio?", he: "מה המצב בתיק שלי?" },
+  "home.guide.scenario5.desc": { en: "Review your positions, manage holdings, and chart portfolio performance.", he: "בדוק את הפוזיציות שלך, נהל אחזקות וצפה בביצועי התיק." },
+  "home.guide.scenario5.step1": { en: "Position Table", he: "טבלת תיק" },
+  "home.guide.scenario5.step2": { en: "Positions Manager", he: "ניהול תיק" },
+  "home.guide.scenario5.step3": { en: "Position Candlestick", he: "גרף נרות תיק" },
+
+  "home.guide.scenario6": { en: "What's trending up?", he: "מה במגמת עלייה?" },
+  "home.guide.scenario6.desc": { en: "Scan for pre-uptrend setups using Stochastic anticipation signals.", he: "סרוק מצבי טרום-מגמה באמצעות אותות סטוכסטיים." },
+  "home.guide.scenario6.step1": { en: "Anticipation Scanner", he: "סורק צפי" },
+
+  "home.guide.scenario7": { en: "Show momentum leaders", he: "הראה מובילי מומנטום" },
+  "home.guide.scenario7.desc": { en: "Find momentum leaders with scored rankings and persistence filters.", he: "מצא מובילי מומנטום עם דירוג ניקוד וסינון עקביות." },
+  "home.guide.scenario7.step1": { en: "Momentum Expert System", he: "מערכת מומנטום" },
+
+  "home.guide.scenario8": { en: "Explore an index", he: "חקור מדד" },
+  "home.guide.scenario8.desc": { en: "Break down an index by sector, then chart its constituents.", he: "פרק מדד לפי מגזרים, ואז צפה בגרפי מרכיביו." },
+  "home.guide.scenario8.step1": { en: "Index Sector Breakdown", he: "פירוט מגזרי מדד" },
+  "home.guide.scenario8.step2": { en: "Index Candlestick", he: "גרף נרות מדד" },
 
   // Home — group titles
   "home.group.market": { en: "Market", he: "שוק" },

@@ -88,6 +88,75 @@ interface ToolGroup {
   tools: ToolItem[];
 }
 
+interface GuideStep {
+  labelKey: TranslationKey;
+  prompt: string;
+}
+
+interface GuideScenario {
+  titleKey: TranslationKey;
+  descKey: TranslationKey;
+  steps: GuideStep[];
+}
+
+const GUIDE_SCENARIOS: GuideScenario[] = [
+  {
+    titleKey: "home.guide.scenario1", descKey: "home.guide.scenario1.desc",
+    steps: [
+      { labelKey: "home.guide.scenario1.step1", prompt: "call show-market-spirit-widget" },
+      { labelKey: "home.guide.scenario1.step2", prompt: "call show-market-end-of-day-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario2", descKey: "home.guide.scenario2.desc",
+    steps: [
+      { labelKey: "home.guide.scenario2.step1", prompt: "call show-market-sector-heatmap-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario3", descKey: "home.guide.scenario3.desc",
+    steps: [
+      { labelKey: "home.guide.scenario3.step1", prompt: "call show-symbol-end-of-days-widget" },
+      { labelKey: "home.guide.scenario3.step2", prompt: "call show-symbol-candlestick-widget" },
+      { labelKey: "home.guide.scenario3.step3", prompt: "call show-symbol-intraday-candlestick-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario4", descKey: "home.guide.scenario4.desc",
+    steps: [
+      { labelKey: "home.guide.scenario4.step1", prompt: "call show-symbols-end-of-day-widget" },
+      { labelKey: "home.guide.scenario4.step2", prompt: "call show-symbols-candlestick-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario5", descKey: "home.guide.scenario5.desc",
+    steps: [
+      { labelKey: "home.guide.scenario5.step1", prompt: "call show-my-position-table-widget" },
+      { labelKey: "home.guide.scenario5.step2", prompt: "call show-my-positions-manager-widget" },
+      { labelKey: "home.guide.scenario5.step3", prompt: "call show-my-position-candlestick-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario6", descKey: "home.guide.scenario6.desc",
+    steps: [
+      { labelKey: "home.guide.scenario6.step1", prompt: "call show-market-anticipation-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario7", descKey: "home.guide.scenario7.desc",
+    steps: [
+      { labelKey: "home.guide.scenario7.step1", prompt: "call show-market-momentum-widget" },
+    ],
+  },
+  {
+    titleKey: "home.guide.scenario8", descKey: "home.guide.scenario8.desc",
+    steps: [
+      { labelKey: "home.guide.scenario8.step1", prompt: "call show-index-sector-breakdown-widget" },
+      { labelKey: "home.guide.scenario8.step2", prompt: "call show-index-candlestick-widget" },
+    ],
+  },
+];
+
 const TOOL_GROUPS: ToolGroup[] = [
   {
     titleKey: "home.group.market",
@@ -141,8 +210,8 @@ const TOOL_GROUPS: ToolGroup[] = [
   },
 ];
 
-function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
-  const [subTab, setSubTab] = useState<"widgets" | "data">("widgets");
+function ReferencePanel({ t, app }: { t: (key: TranslationKey) => string; app: NonNullable<ReturnType<typeof useApp>["app"]> }) {
+  const [subTab, setSubTab] = useState<"widgets" | "data" | "guide">("widgets");
 
   return (
     <div className={styles.referencePanel}>
@@ -158,6 +227,12 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
           onClick={() => setSubTab("data")}
         >
           {t("home.dataTools")} (32)
+        </button>
+        <button
+          className={`${styles.refSubTab} ${subTab === "guide" ? styles.refSubTabActive : ""}`}
+          onClick={() => setSubTab("guide")}
+        >
+          {t("home.guide")}
         </button>
       </div>
 
@@ -196,7 +271,7 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : subTab === "data" ? (
         <div className={styles.refTableWrap}>
           <table className={styles.refTable}>
             <thead>
@@ -220,6 +295,35 @@ function ReferencePanel({ t }: { t: (key: TranslationKey) => string }) {
               ))}
             </tbody>
           </table>
+        </div>
+      ) : (
+        <div className={styles.guideList}>
+          {GUIDE_SCENARIOS.map((scenario) => (
+            <div key={scenario.titleKey} className={styles.guideCard}>
+              <div className={styles.guideTitle}>{t(scenario.titleKey)}</div>
+              <div className={styles.guideDesc}>{t(scenario.descKey)}</div>
+              <div className={styles.guideSteps}>
+                {scenario.steps.map((step, i) => (
+                  <button
+                    key={i}
+                    className={styles.guideStep}
+                    onClick={async () => {
+                      try {
+                        await app.sendMessage({
+                          role: "user",
+                          content: [{ type: "text", text: step.prompt }],
+                        });
+                      } catch (e) {
+                        console.error("sendMessage failed:", e);
+                      }
+                    }}
+                  >
+                    {t(step.labelKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -333,7 +437,7 @@ function HomeInner({ hostContext, app }: HomeInnerProps) {
           {t("home.settings")}
         </button>
       </div>
-      {refOpen && <div className={styles.referenceContent}><ReferencePanel t={t} /></div>}
+      {refOpen && <div className={styles.referenceContent}><ReferencePanel t={t} app={app} /></div>}
 
       </div>
     </WidgetLayout>
