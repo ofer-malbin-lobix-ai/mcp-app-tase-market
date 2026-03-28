@@ -7,6 +7,7 @@ import { renderEndOfDayApp } from "../shared/EndOfDayApp";
 
 const config: EndOfDayAppConfig = {
   toolName: "get-index-sector-breakdown-data",
+  titleKey: "home.tool.indexEndOfDay",
   showIndexFilter: true,
   defaultIndexId: 137, // TA-125
   navButtons: [

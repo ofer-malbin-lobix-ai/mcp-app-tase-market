@@ -33,6 +33,7 @@ export type { EndOfDayWidgetData, StockData } from "./end-of-day-shared";
 
 export interface EndOfDayAppConfig {
   toolName: string;
+  titleKey?: string;
   isMarketView?: boolean;
   showIndexFilter?: boolean;
   defaultIndexId?: number;
@@ -262,7 +263,7 @@ function EndOfDayInner({
     : undefined;
 
   return (
-    <WidgetLayout title={(TOOL_TITLE_KEYS[config.toolName] ? t(TOOL_TITLE_KEYS[config.toolName] as any) : "") || deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
+    <WidgetLayout title={(config.titleKey ? t(config.titleKey as any) : "") || (TOOL_TITLE_KEYS[config.toolName] ? t(TOOL_TITLE_KEYS[config.toolName] as any) : "") || deriveTitle(config.toolName)} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       {config.navButtons && config.navButtons.length > 0 && (
         <NavRow app={app} items={config.navButtons} />
       )}
