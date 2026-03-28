@@ -797,7 +797,7 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   return (
     <WidgetLayout
       title={title}
-      subtitle={eodData ? eodData.symbols.join(", ") : undefined}
+      subtitle={undefined}
       app={app}
       hostContext={hostContext}
       language={language}
