@@ -808,21 +808,18 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
         <NavRow app={app} items={config.navButtons} />
       )}
 
-      {config.showIndexFilter && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px" }}>
-          <div style={{ minWidth: 180, maxWidth: 260 }}>
-            <SearchableSelect
-              options={indexSelectOptions}
-              value={selectedIndexId}
-              onChange={handleIndexChange}
-              placeholder={t("indexEod.selectIndex" as any)}
-            />
-          </div>
-        </div>
-      )}
-
       {eodData && (
         <div className={styles.controls}>
+          {config.showIndexFilter && (
+            <div style={{ minWidth: 180, maxWidth: 260 }}>
+              <SearchableSelect
+                options={indexSelectOptions}
+                value={selectedIndexId}
+                onChange={handleIndexChange}
+                placeholder={t("indexEod.selectIndex" as any)}
+              />
+            </div>
+          )}
           <label className={styles.dateLabel}>
             From:
             <input
