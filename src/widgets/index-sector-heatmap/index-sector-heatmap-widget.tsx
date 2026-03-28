@@ -10,6 +10,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { SearchableSelect } from "../../components/SearchableSelect";
+import { NavRow } from "../../components/NavRow";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 // @ts-ignore — JSON import
@@ -491,6 +492,12 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
   return (
     <WidgetLayout title={t("home.tool.indexSectorHeatmap")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
+      <NavRow app={app} items={[
+        { label: "Candlestick", prompt: "call show-index-candlestick-widget" },
+        { label: "Sector Breakdown", prompt: "call show-index-sector-breakdown-widget" },
+        { label: "End of Day", prompt: "call show-index-end-of-day-widget" },
+        { label: "Last Update", prompt: "call show-index-last-update-widget" },
+      ]} />
       <div
         style={{
           fontFamily: "'Inter', system-ui, sans-serif",

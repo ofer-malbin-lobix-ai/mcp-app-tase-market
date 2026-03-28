@@ -9,6 +9,12 @@ const config: EndOfDayAppConfig = {
   toolName: "get-index-sector-breakdown-data",
   showIndexFilter: true,
   defaultIndexId: 137, // TA-125
+  navButtons: [
+    { label: "Candlestick", prompt: "call show-index-candlestick-widget" },
+    { label: "Sector Breakdown", prompt: "call show-index-sector-breakdown-widget" },
+    { label: "Last Update", prompt: "call show-index-last-update-widget" },
+    { label: "Sector Heatmap", prompt: "call show-index-sector-heatmap-widget" },
+  ],
 };
 
 renderEndOfDayApp(config);
