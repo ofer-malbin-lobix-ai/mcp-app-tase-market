@@ -187,7 +187,7 @@ export function WidgetLayout({
           )}
         </div>
       </div>
-      {children}
+      <div className={styles.content}>{children}</div>
     </main>
   );
 }
