@@ -1,7 +1,7 @@
 const t = {
   // ── Layout ────────────────────────────────────────────────
   "layout.subscriptionRequired": { en: "Subscription Required", he: "נדרש מנוי" },
-  "layout.subscriptionDescription": { en: "Subscribe to access all TASE Market tools and data.", he: "הירשם למנוי כדי לגשת לכל כלי ונתוני שוק ת\"א." },
+  "layout.subscriptionDescription": { en: "Subscribe to access all Phenomen Investment - TASE Market tools and data.", he: "הירשם למנוי כדי לגשת לכל כלי ונתוני שוק ת\"א." },
   "layout.subscribe": { en: "Subscribe", he: "הרשמה" },
   "layout.linkCopied": { en: "Link Copied!", he: "הקישור הועתק!" },
   "layout.switchToLight": { en: "Switch to light mode", he: "מעבר למצב בהיר" },
