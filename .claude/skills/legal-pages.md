@@ -94,7 +94,7 @@ Both pages also include a lobix.ai link and copyright line.
 |--------|-------------|----------------|
 | Page title (EN) | Terms of Service | Privacy Policy |
 | Page title (HE) | תנאי שימוש | מדיניות פרטיות |
-| `<title>` tag | Terms of Service — Phenomen TASE Market | Privacy Policy — Phenomen TASE Market |
+| `<title>` tag | Terms of Service — Phenomen Investment TASE Market | Privacy Policy — Phenomen Investment TASE Market |
 | Section count | 10 sections (EN + HE) | 7 sections (EN + HE) |
 | Footer cross-link | Links to `/privacy` | Links to `/terms` |
 
