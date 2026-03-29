@@ -6,8 +6,8 @@
 }
 
 .title {
-  font-size: var(--font-heading-xl-size, 2rem);
-  font-weight: var(--font-weight-bold, 700);
+  font-size: var(--font-heading-lg-size, 1.5rem);
+  font-weight: var(--font-weight-semibold, 600);
   margin: 0;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
