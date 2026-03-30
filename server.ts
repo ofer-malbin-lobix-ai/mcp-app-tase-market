@@ -19,7 +19,6 @@ import type {
   SectorHeatmapResponse,
   SymbolHeatmapItem,
   TaseDataProviders,
-  IntradayCandlestickResponse,
   IntradayItem,
 } from "./src/types.js";
 
@@ -611,7 +610,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (args): Promise<CallToolResult> => {
       const { symbol, securityId } = await providers.resolveSymbol(args.securityIdOrSymbol);
       const items = await fetchIntraday(securityId);
-      const response: IntradayCandlestickResponse = { symbol, securityId, count: items.length, items };
+      const trimmedItems = items.map(({ date, lastSaleTime, securityLastRate, lastSaleVolume }: IntradayItem) => ({
+        date, lastSaleTime, securityLastRate, lastSaleVolume,
+      }));
+      const response = { symbol, securityId, count: trimmedItems.length, items: trimmedItems };
       return { content: [{ type: "text", text: JSON.stringify(response) }] };
     },
   );
@@ -748,7 +750,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: trimSidebarItems(data.items) }),
         }],
       };
     },
@@ -903,7 +905,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: trimSidebarItems(data.items) }),
         }],
       };
     },
@@ -1395,7 +1397,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: trimSidebarItems(data.items) }),
         }],
       };
     },
@@ -1677,7 +1679,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: data.items }),
+          text: JSON.stringify({ symbols: data.symbols, count: data.count, dateFrom: data.dateFrom, dateTo: data.dateTo, items: trimSidebarItems(data.items) }),
         }],
       };
     },
