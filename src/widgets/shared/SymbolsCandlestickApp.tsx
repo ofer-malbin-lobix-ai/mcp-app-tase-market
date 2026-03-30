@@ -397,13 +397,15 @@ function ChartPanel({ data, isFullscreen, showCandles, onShowCandlesChange, show
             SMA200
           </label>
         )}
-        {ezData.length > 0 && (
+      </div>
+      {ezData.length > 0 && (
+        <div className={styles.overlays}>
           <label className={styles.checkboxLabel}>
             <input type="checkbox" checked={showEz} onChange={(e) => onShowEzChange(e.target.checked)} />
-            EZ
+            Escaped
           </label>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className={styles.chartContainer} ref={chartContainerRef}>
         {legendValues && (

@@ -509,17 +509,19 @@ function CandlestickAppInner({ app, data, setData, toolInput, hostContext }: Can
             SMA200
           </label>
         )}
-        {ezData.length > 0 && (
+      </div>
+      {ezData.length > 0 && (
+        <div className={styles.overlays}>
           <label className={styles.checkboxLabel}>
             <input
               type="checkbox"
               checked={showEz}
               onChange={(e) => setShowEz(e.target.checked)}
             />
-            EZ
+            Escaped
           </label>
-        )}
-      </div>
+        </div>
+      )}
 
       {refreshError && (
         <div className={styles.loading}>{refreshError}</div>
