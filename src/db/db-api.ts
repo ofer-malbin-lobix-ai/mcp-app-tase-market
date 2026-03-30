@@ -1145,7 +1145,7 @@ export async function fetchCandlestick(
   const to = dateTo ? new Date(dateTo) : lastDate;
   const from = dateFrom
     ? new Date(dateFrom)
-    : new Date(new Date(to).setFullYear(to.getFullYear() - 1));
+    : new Date(new Date(to).setMonth(to.getMonth() - 1));
 
   let items: StockData[];
 

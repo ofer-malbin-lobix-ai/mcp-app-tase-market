@@ -20,6 +20,7 @@ import type {
   SymbolHeatmapItem,
   TaseDataProviders,
   IntradayCandlestickResponse,
+  IntradayItem,
 } from "./src/types.js";
 
 // Re-export types for consumers
@@ -246,7 +247,14 @@ function formatEndOfDaySymbolsResult(data: EndOfDaySymbolsResponse): CallToolRes
   };
 }
 
+function trimSidebarItems(items: StockData[]) {
+  return items.map(({ symbol, closingPrice, change }) => ({ symbol, closingPrice, change }));
+}
+
 function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
+  const trimmedItems = data.items.map(({ tradeDate, openingPrice, high, low, closingPrice, volume, ez, sma20, sma50, sma200 }) => ({
+    tradeDate, openingPrice, high, low, closingPrice, volume, ez, sma20, sma50, sma200,
+  }));
   return {
     content: [
       {
@@ -256,7 +264,7 @@ function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
           count: data.count,
           dateFrom: data.dateFrom,
           dateTo: data.dateTo,
-          items: data.items,
+          items: trimmedItems,
         }),
       },
     ],
@@ -621,7 +629,10 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     async (args): Promise<CallToolResult> => {
       const { symbol, securityId } = await providers.resolveSymbol(args.securityIdOrSymbol);
       const items = await fetchIntraday(securityId);
-      const response: IntradayCandlestickResponse = { symbol, securityId, count: items.length, items };
+      const trimmedItems = items.map(({ date, lastSaleTime, securityLastRate, lastSaleVolume }: IntradayItem) => ({
+        date, lastSaleTime, securityLastRate, lastSaleVolume,
+      }));
+      const response = { symbol, securityId, count: trimmedItems.length, items: trimmedItems };
       return { content: [{ type: "text", text: JSON.stringify(response) }] };
     },
   );
@@ -708,7 +719,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
               count: data.count,
               dateFrom: args.dateFrom,
               dateTo: args.dateTo ?? data.dateTo,
-              items: data.items,
+              items: trimSidebarItems(data.items),
             }),
           },
         ],
@@ -923,7 +934,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
               count: data.count,
               dateFrom: args.dateFrom,
               dateTo: args.dateTo ?? data.dateTo,
-              items: data.items,
+              items: trimSidebarItems(data.items),
             }),
           },
         ],
@@ -1417,7 +1428,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
               count: data.count,
               dateFrom: args.dateFrom,
               dateTo: args.dateTo ?? data.dateTo,
-              items: data.items,
+              items: trimSidebarItems(data.items),
             }),
           },
         ],
