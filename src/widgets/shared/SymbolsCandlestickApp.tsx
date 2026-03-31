@@ -18,6 +18,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { createRoot } from "react-dom/client";
 import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import { SearchableSelect } from "../../components/SearchableSelect";
@@ -846,13 +847,11 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
               onChange={(e) => setSelectedDateTo(e.target.value)}
             />
           </label>
-          <button
-            className={styles.refreshButton}
+          <RefreshButton
             onClick={handleRefresh}
-            disabled={isRefreshing || isChartLoading || !selectedSymbol}
-          >
-            {isRefreshing ? "Loading..." : "Refresh"}
-          </button>
+            isRefreshing={isRefreshing}
+            disabled={isChartLoading || !selectedSymbol}
+          />
         </div>
       )}
       {refreshError && <div className={styles.refreshError}>{refreshError}</div>}

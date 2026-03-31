@@ -10,6 +10,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import styles from "./market-last-update-widget.module.css";
@@ -386,13 +387,12 @@ function LastUpdateAppInner({
       )}
 
       <div className={styles.controls}>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={handleRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
       </div>
 
       {refreshError && (

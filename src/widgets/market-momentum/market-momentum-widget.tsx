@@ -6,6 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import { createRoot } from "react-dom/client";
@@ -376,13 +377,12 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
             onChange={(e) => setSelectedDate(e.target.value)}
           />
         </label>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={() => handleRefresh(selectedDate || undefined)}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
       </div>
     </WidgetLayout>
   );

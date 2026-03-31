@@ -6,6 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import { useLanguage } from "../../components/useLanguage";
@@ -382,13 +383,12 @@ function MarketSpiritInner({ app, data, setData, hostContext }: MarketSpiritInne
             onChange={(e) => setSelectedDate(e.target.value)}
           />
         </label>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={() => handleRefresh(selectedDate || undefined)}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
       </div>
 
       <div className={styles.legend}>

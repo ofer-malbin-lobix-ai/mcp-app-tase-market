@@ -7,6 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import styles from "./end-of-day-widget.module.css";
@@ -274,13 +275,12 @@ function EndOfDaysInner({
             onChange={(e) => setSelectedDateTo(e.target.value)}
           />
         </label>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={handleRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
       </div>
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}

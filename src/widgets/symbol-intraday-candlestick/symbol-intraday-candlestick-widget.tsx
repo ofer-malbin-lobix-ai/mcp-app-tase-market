@@ -7,6 +7,7 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import type { CandlestickData, HistogramData, MouseEventParams, Time } from "lightweight-charts";
@@ -447,13 +448,12 @@ function IntradayAppInner({ app, data, setData, toolInput: _toolInput, hostConte
             style={{ minWidth: "100px" }}
           />
         </label>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={handleRefreshClick}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
         <label className={styles.checkboxLabel}>
           <input
             type="checkbox"

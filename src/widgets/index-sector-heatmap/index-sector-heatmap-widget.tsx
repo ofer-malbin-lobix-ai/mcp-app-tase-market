@@ -11,6 +11,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { createRoot } from "react-dom/client";
 import { SearchableSelect } from "../../components/SearchableSelect";
 import { NavRow } from "../../components/NavRow";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 // @ts-ignore — JSON import
@@ -347,11 +348,6 @@ interface IndexHeatmapInnerProps {
   toolInput: Record<string, unknown>;
 }
 
-const heatmapSpinnerStyle = `
-@keyframes heatmapRefreshSpin {
-  to { transform: rotate(360deg); }
-}
-`;
 
 function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: IndexHeatmapInnerProps) {
   const { language, dir, toggle, t } = useLanguage();
@@ -491,7 +487,6 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
 
   return (
     <WidgetLayout title={t("home.tool.indexSectorHeatmap")} subtitle={subtitle} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
-      <style dangerouslySetInnerHTML={{ __html: heatmapSpinnerStyle }} />
       <NavRow app={app} items={[
         { label: "Candlestick", prompt: "call show-index-candlestick-widget" },
         { label: "Sector Breakdown", prompt: "call show-index-sector-breakdown-widget" },
@@ -594,40 +589,12 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
                 cursor: "pointer",
               }}
             />
-            <button
+            <RefreshButton
               onClick={() => handleRefresh(selectedDate || undefined, selectedPeriod)}
-              disabled={isRefreshing}
-              className="heatmap-refresh-btn"
-              style={{
-                background: "var(--t-bg-secondary)",
-                color: "var(--t-text-secondary)",
-                border: "none",
-                borderRadius: 4,
-                padding: "4px 10px",
-                cursor: isRefreshing ? "not-allowed" : "pointer",
-                fontSize: 12,
-                opacity: isRefreshing ? 0.7 : 1,
-                lineHeight: 1,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: isRefreshing ? 4 : 0,
-              }}
-            >
-              {isRefreshing && (
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "0.85em",
-                    height: "0.85em",
-                    border: "2px solid rgba(255, 255, 255, 0.3)",
-                    borderTopColor: "var(--t-text-secondary)",
-                    borderRadius: "50%",
-                    animation: "heatmapRefreshSpin 0.6s linear infinite",
-                  }}
-                />
-              )}
-              {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-            </button>
+              isRefreshing={isRefreshing}
+              label={t("eod.refresh")}
+              loadingLabel={t("eod.loading")}
+            />
           </div>
         </div>
 

@@ -11,6 +11,7 @@ import type { NavItem } from "../../components/NavRow";
 import { SectorGroupedTable } from "../../components/SectorGroupedTable";
 import { NavRow } from "../../components/NavRow";
 import { SearchableSelect } from "../../components/SearchableSelect";
+import { RefreshButton } from "../../components/RefreshButton";
 import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 // @ts-ignore — JSON import
@@ -312,13 +313,12 @@ function EndOfDayInner({
             onChange={(e) => setSelectedDate(e.target.value)}
           />
         </label>
-        <button
-          className={styles.refreshButton}
+        <RefreshButton
           onClick={() => handleRefresh()}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? t("eod.loading") : t("eod.refresh")}
-        </button>
+          isRefreshing={isRefreshing}
+          label={t("eod.refresh")}
+          loadingLabel={t("eod.loading")}
+        />
       </div>
 
       {refreshError && <div className={styles.loading}>{refreshError}</div>}
