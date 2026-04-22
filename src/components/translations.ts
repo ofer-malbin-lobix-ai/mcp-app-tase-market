@@ -171,10 +171,9 @@ const t = {
 
   // ── Settings ──────────────────────────────────────────────
   "settings.title": { en: "TASE Market Settings", he: "הגדרות שוק ת\"א" },
-  "settings.subscribeNow": { en: "Subscribe Now", he: "הרשמה עכשיו" },
-  "settings.subscription": { en: "Subscription", he: "מנוי" },
+  "settings.manageSubscription": { en: "Manage Subscription", he: "ניהול מנוי" },
   "settings.copied": { en: "Copied!", he: "הועתק!" },
-  "settings.notConnected": { en: "Go to the server to subscribe and access all tools.", he: "עבור לשרת כדי להירשם ולגשת לכל הכלים." },
+  "settings.notConnected": { en: "Visit our website to manage your subscription.", he: "בקר באתר שלנו לניהול המנוי." },
   "settings.logout": { en: "Log Out", he: "התנתק" },
 
   // ── Common UI ──────────────────────────────────────────────

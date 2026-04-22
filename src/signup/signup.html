@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - TASE Market</title>
+  <script>
+    (function() {
+      var theme = 'light';
+      try {
+        var stored = localStorage.getItem('tase-theme');
+        if (stored === 'light' || stored === 'dark') { theme = stored; }
+        else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { theme = 'dark'; }
+      } catch(e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+
+      var lang = 'en';
+      try {
+        var storedLang = localStorage.getItem('tase-language');
+        if (storedLang === 'he' || storedLang === 'en') lang = storedLang;
+      } catch(e) {}
+      document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', lang);
+    })();
+  </script>
+  <style>
+    [data-theme="light"] {
+      --t-bg-primary: #ffffff;
+      --t-bg-secondary: #f5f5f5;
+      --t-bg-tertiary: #eeeeee;
+      --t-text-primary: #1a1a1a;
+      --t-text-secondary: #666666;
+      --t-border: #e5e5e5;
+      --t-accent: #2563eb;
+      --t-error-bg: #fef2f2;
+      --t-error-text: #dc2626;
+      --t-success-bg: #f0fdf4;
+      --t-success-text: #16a34a;
+    }
+
+    [data-theme="dark"] {
+      --t-bg-primary: #0f172a;
+      --t-bg-secondary: #1e293b;
+      --t-bg-tertiary: #334155;
+      --t-text-primary: #e2e8f0;
+      --t-text-secondary: #94a3b8;
+      --t-border: #334155;
+      --t-accent: #3b82f6;
+      --t-error-bg: #450a0a;
+      --t-error-text: #fca5a5;
+      --t-success-bg: #052e16;
+      --t-success-text: #86efac;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--t-bg-primary);
+      min-height: 100vh;
+      color: var(--t-text-primary);
+      padding: 2rem;
+    }
+
+    .container { max-width: 768px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle { color: var(--t-text-secondary); font-size: 0.95rem; }
+
+    .header-controls { display: flex; align-items: center; gap: 0.5rem; }
+
+    .theme-toggle, .lang-toggle {
+      background: var(--t-bg-secondary);
+      border: 1px solid var(--t-border);
+      border-radius: 8px;
+      width: 36px; height: 36px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--t-text-primary);
+    }
+
+    .lang-toggle { font-size: 0.85rem; font-weight: 600; }
+    .theme-toggle:hover, .lang-toggle:hover { background: var(--t-bg-tertiary); }
+
+    /* Steps indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--t-text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .step.active { color: var(--t-accent); font-weight: 600; }
+    .step.completed { color: var(--t-success-text); }
+
+    .step-number {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 2px solid var(--t-border);
+      color: var(--t-text-secondary);
+    }
+
+    .step.active .step-number {
+      border-color: var(--t-accent);
+      background: var(--t-accent);
+      color: #fff;
+    }
+
+    .step.completed .step-number {
+      border-color: var(--t-success-text);
+      background: var(--t-success-text);
+      color: #fff;
+    }
+
+    .step-connector {
+      width: 40px;
+      height: 2px;
+      background: var(--t-border);
+    }
+
+    /* Form */
+    .form-card {
+      background: var(--t-bg-secondary);
+      border: 1px solid var(--t-border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      color: var(--t-text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--t-text-primary);
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--t-border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: var(--t-bg-primary);
+      color: var(--t-text-primary);
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--t-accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .password-hint {
+      font-size: 0.8rem;
+      color: var(--t-text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .alert {
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .alert-error {
+      background: var(--t-error-bg);
+      border: 1px solid var(--t-error-text);
+      color: var(--t-error-text);
+    }
+
+    .alert-success {
+      background: var(--t-success-bg);
+      border: 1px solid var(--t-success-text);
+      color: var(--t-success-text);
+    }
+
+    /* Plan cards */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .plan-card {
+      background: var(--t-bg-secondary);
+      border: 2px solid var(--t-border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .plan-card:hover { border-color: #3b82f6; transform: translateY(-4px); }
+    .plan-card.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+
+    .plan-card.recommended::before {
+      content: attr(data-label);
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: #000;
+      padding: 0.25rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .plan-name { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+    .plan-price {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .plan-price span {
+      font-size: 1rem;
+      color: var(--t-text-secondary);
+      -webkit-text-fill-color: var(--t-text-secondary);
+    }
+
+    .plan-savings {
+      color: var(--t-success-text);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      min-height: 1.3rem;
+    }
+
+    .plan-features { list-style: none; text-align: left; margin-top: 1.5rem; }
+
+    .plan-features li {
+      padding: 0.5rem 0;
+      color: var(--t-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .plan-features li::before { content: '\2713'; color: #3b82f6; font-weight: bold; }
+
+    [dir="rtl"] .plan-features { text-align: right; }
+    [dir="rtl"] .plan-features li { flex-direction: row-reverse; }
+
+    /* Buttons */
+    .primary-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1rem;
+      color: var(--t-text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .login-link a {
+      color: var(--t-accent);
+      text-decoration: none;
+    }
+
+    .login-link a:hover { text-decoration: underline; }
+
+    .hidden { display: none !important; }
+
+    .money-back {
+      text-align: center;
+      color: var(--t-text-secondary);
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--t-border);
+      text-align: center;
+      color: var(--t-text-secondary);
+      font-size: 0.85rem;
+    }
+
+    footer a { color: var(--t-accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1 id="page-title">TASE Market</h1>
+        <p class="subtitle" id="page-subtitle">Tel Aviv Stock Exchange market data for AI assistants</p>
+      </div>
+      <div class="header-controls">
+        <button class="lang-toggle" id="lang-toggle"></button>
+        <button class="theme-toggle" id="theme-toggle"></button>
+      </div>
+    </header>
+
+    <!-- Step indicator -->
+    <div class="steps">
+      <div class="step active" id="step1-indicator">
+        <span class="step-number">1</span>
+        <span id="step1-label">Create Account</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" id="step2-indicator">
+        <span class="step-number">2</span>
+        <span id="step2-label">Choose Plan</span>
+      </div>
+    </div>
+
+    <div id="alert-error" class="alert alert-error">
+      <span id="error-message"></span>
+    </div>
+
+    <div id="alert-success" class="alert alert-success">
+      <span id="success-message"></span>
+    </div>
+
+    <!-- Step 1: Create Account -->
+    <div id="step1-content">
+      <div class="form-card">
+        <h2 id="step1-title">Create your account</h2>
+        <form id="signup-form">
+          <div class="form-group">
+            <label for="email" id="email-label">Email</label>
+            <input type="email" id="email" required autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label for="password" id="password-label">Password</label>
+            <input type="password" id="password" required autocomplete="new-password" minlength="8">
+            <p class="password-hint" id="password-hint">At least 8 characters</p>
+          </div>
+          <button type="submit" class="primary-btn" id="create-account-btn">Create Account</button>
+        </form>
+        <p class="login-link" id="login-link-text">
+          Already have an account? <a href="/subscribe" id="login-link">Manage subscription</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 2: Choose Plan -->
+    <div id="step2-content" class="hidden">
+      <div class="plans-grid">
+        <div class="plan-card" data-plan="monthly">
+          <div class="plan-name" id="monthly-name">Monthly</div>
+          <div class="plan-price">&#8362;<span id="monthly-price">35</span><span id="monthly-interval">/month</span></div>
+          <div class="plan-savings">&nbsp;</div>
+          <ul class="plan-features">
+            <li id="feat-m1">Full tools access</li>
+            <li id="feat-m2">Daily market data</li>
+            <li id="feat-m3">Technical indicators</li>
+            <li id="feat-m4">Cancel anytime</li>
+          </ul>
+        </div>
+
+        <div class="plan-card recommended" data-plan="yearly" data-label="Best Value">
+          <div class="plan-name" id="yearly-name">Yearly</div>
+          <div class="plan-price">&#8362;<span id="yearly-price">350</span><span id="yearly-interval">/year</span></div>
+          <div class="plan-savings" id="yearly-savings">Save &#8362;70 per year</div>
+          <ul class="plan-features">
+            <li id="feat-y1">Full tools access</li>
+            <li id="feat-y2">Daily market data</li>
+            <li id="feat-y3">Technical indicators</li>
+          </ul>
+        </div>
+      </div>
+
+      <button id="subscribe-btn" class="primary-btn" disabled>Select a plan to continue</button>
+      <p class="money-back" id="money-back-text">7-day money-back guarantee. Cancel within 7 days for a full refund.</p>
+    </div>
+
+    <!-- Success -->
+    <div id="success-content" class="hidden">
+      <div class="form-card" style="text-align: center;">
+        <h2 id="success-title" style="color: var(--t-success-text);">You're all set!</h2>
+        <p style="color: var(--t-text-secondary); margin-top: 1rem; line-height: 1.6;" id="success-description">
+          Your account has been created and your subscription is active.<br>
+          You can now sign in from ChatGPT or Claude Desktop to start using TASE Market tools.
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      <p><a href="https://www.lobix.ai" target="_blank">www.lobix.ai</a></p>
+      <p style="margin-top: 0.5rem;" id="secure-msg">Secure payments powered by PayPal</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="/terms" id="footer-terms">Terms of Service</a> &middot;
+        <a href="/privacy" id="footer-privacy">Privacy Policy</a>
+      </p>
+      <p style="margin-top: 0.5rem;" id="footer-copyright">&copy; 2026 Lobix.AI. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Config injected by server
+    var CONFIG = window.SIGNUP_CONFIG || {};
+
+    // Theme
+    function getTheme() { return document.documentElement.getAttribute('data-theme') || 'light'; }
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      try { localStorage.setItem('tase-theme', t); } catch(e) {}
+      document.getElementById('theme-toggle').textContent = t === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    }
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      setTheme(getTheme() === 'light' ? 'dark' : 'light');
+    });
+    setTheme(getTheme());
+
+    // Language
+    var TEXTS = {
+      en: {
+        title: 'TASE Market',
+        subtitle: 'Tel Aviv Stock Exchange market data for AI assistants',
+        step1: 'Create Account',
+        step2: 'Choose Plan',
+        createAccount: 'Create your account',
+        email: 'Email',
+        password: 'Password',
+        passwordHint: 'At least 8 characters',
+        createAccountBtn: 'Create Account',
+        creating: 'Creating...',
+        alreadyHaveAccount: 'Already have an account?',
+        manageSubscription: 'Manage subscription',
+        monthly: 'Monthly',
+        yearly: 'Yearly',
+        perMonth: '/month',
+        perYear: '/year',
+        save70: 'Save \u20AA70 per year',
+        bestValue: 'Best Value',
+        fullAccess: 'Full tools access',
+        dailyData: 'Daily market data',
+        technicalIndicators: 'Technical indicators',
+        cancelAnytime: 'Cancel anytime',
+        selectPlan: 'Select a plan to continue',
+        subscribeTo: 'Subscribe to {plan} Plan',
+        processing: 'Processing...',
+        moneyBack: '7-day money-back guarantee. Cancel within 7 days for a full refund.',
+        successTitle: "You're all set!",
+        successDesc: 'Your account has been created and your subscription is active.<br>You can now sign in from ChatGPT or Claude Desktop to start using TASE Market tools.',
+        securePayments: 'Secure payments powered by PayPal',
+        terms: 'Terms of Service',
+        privacy: 'Privacy Policy',
+        copyright: '\u00A9 2026 Lobix.AI. All rights reserved.',
+        switchLang: 'Switch to \u05E2\u05D1\u05E8\u05D9\u05EA',
+        errorDefault: 'An error occurred. Please try again.'
+      },
+      he: {
+        title: 'TASE Market',
+        subtitle: '\u05E0\u05EA\u05D5\u05E0\u05D9 \u05E9\u05D5\u05E7 \u05D4\u05D1\u05D5\u05E8\u05E1\u05D4 \u05DC\u05E0\u05D9\u05D9\u05E8\u05D5\u05EA \u05E2\u05E8\u05DA \u05D1\u05EA\u05DC \u05D0\u05D1\u05D9\u05D1 \u05DC\u05E2\u05D5\u05D6\u05E8\u05D9 AI',
+        step1: '\u05D9\u05E6\u05D9\u05E8\u05EA \u05D7\u05E9\u05D1\u05D5\u05DF',
+        step2: '\u05D1\u05D7\u05D9\u05E8\u05EA \u05DE\u05E1\u05DC\u05D5\u05DC',
+        createAccount: '\u05E6\u05D5\u05E8 \u05D0\u05EA \u05D4\u05D7\u05E9\u05D1\u05D5\u05DF \u05E9\u05DC\u05DA',
+        email: '\u05D0\u05D9\u05DE\u05D9\u05D9\u05DC',
+        password: '\u05E1\u05D9\u05E1\u05DE\u05D4',
+        passwordHint: '\u05DC\u05E4\u05D7\u05D5\u05EA 8 \u05EA\u05D5\u05D5\u05D9\u05DD',
+        createAccountBtn: '\u05E6\u05D5\u05E8 \u05D7\u05E9\u05D1\u05D5\u05DF',
+        creating: '\u05D9\u05D5\u05E6\u05E8...',
+        alreadyHaveAccount: '\u05DB\u05D1\u05E8 \u05D9\u05E9 \u05DC\u05DA \u05D7\u05E9\u05D1\u05D5\u05DF?',
+        manageSubscription: '\u05E0\u05D9\u05D4\u05D5\u05DC \u05DE\u05E0\u05D5\u05D9',
+        monthly: '\u05D7\u05D5\u05D3\u05E9\u05D9',
+        yearly: '\u05E9\u05E0\u05EA\u05D9',
+        perMonth: '/\u05D7\u05D5\u05D3\u05E9',
+        perYear: '/\u05E9\u05E0\u05D4',
+        save70: '\u05D7\u05D9\u05E1\u05DB\u05D5\u05DF \u05E9\u05DC \u20AA70 \u05D1\u05E9\u05E0\u05D4',
+        bestValue: '\u05D4\u05DB\u05D9 \u05DE\u05E9\u05EA\u05DC\u05DD',
+        fullAccess: '\u05D2\u05D9\u05E9\u05D4 \u05DE\u05DC\u05D0\u05D4 \u05DC\u05DB\u05DC\u05D9\u05DD',
+        dailyData: '\u05E0\u05EA\u05D5\u05E0\u05D9 \u05E9\u05D5\u05E7 \u05D9\u05D5\u05DE\u05D9\u05D9\u05DD',
+        technicalIndicators: '\u05D0\u05D9\u05E0\u05D3\u05D9\u05E7\u05D8\u05D5\u05E8\u05D9\u05DD \u05D8\u05DB\u05E0\u05D9\u05D9\u05DD',
+        cancelAnytime: '\u05D1\u05D9\u05D8\u05D5\u05DC \u05D1\u05DB\u05DC \u05E2\u05EA',
+        selectPlan: '\u05D1\u05D7\u05E8 \u05DE\u05E1\u05DC\u05D5\u05DC \u05DC\u05D4\u05DE\u05E9\u05DA',
+        subscribeTo: '\u05D4\u05E8\u05E9\u05DE\u05D4 \u05DC\u05DE\u05E1\u05DC\u05D5\u05DC {plan}',
+        processing: '\u05DE\u05E2\u05D1\u05D3...',
+        moneyBack: '\u05D0\u05D7\u05E8\u05D9\u05D5\u05EA \u05D4\u05D7\u05D6\u05E8 \u05DB\u05E1\u05E4\u05D9 \u05EA\u05D5\u05DA 7 \u05D9\u05DE\u05D9\u05DD. \u05D1\u05D8\u05DC \u05EA\u05D5\u05DA 7 \u05D9\u05DE\u05D9\u05DD \u05DC\u05D4\u05D7\u05D6\u05E8 \u05DB\u05E1\u05E4\u05D9 \u05DE\u05DC\u05D0.',
+        successTitle: '\u05D4\u05DB\u05DC \u05DE\u05D5\u05DB\u05DF!',
+        successDesc: '\u05D4\u05D7\u05E9\u05D1\u05D5\u05DF \u05E0\u05D5\u05E6\u05E8 \u05D5\u05D4\u05DE\u05E0\u05D5\u05D9 \u05E4\u05E2\u05D9\u05DC.<br>\u05DB\u05E2\u05EA \u05E0\u05D9\u05EA\u05DF \u05DC\u05D4\u05EA\u05D7\u05D1\u05E8 \u05DE-ChatGPT \u05D0\u05D5 Claude Desktop \u05D5\u05DC\u05D4\u05EA\u05D7\u05D9\u05DC \u05DC\u05D4\u05E9\u05EA\u05DE\u05E9 \u05D1\u05DB\u05DC\u05D9 TASE Market.',
+        securePayments: '\u05EA\u05E9\u05DC\u05D5\u05DE\u05D9\u05DD \u05DE\u05D0\u05D5\u05D1\u05D8\u05D7\u05D9\u05DD \u05D1\u05D0\u05DE\u05E6\u05E2\u05D5\u05EA PayPal',
+        terms: '\u05EA\u05E0\u05D0\u05D9 \u05E9\u05D9\u05DE\u05D5\u05E9',
+        privacy: '\u05DE\u05D3\u05D9\u05E0\u05D9\u05D5\u05EA \u05E4\u05E8\u05D8\u05D9\u05D5\u05EA',
+        copyright: '\u00A9 2026 Lobix.AI. \u05DB\u05DC \u05D4\u05D6\u05DB\u05D5\u05D9\u05D5\u05EA \u05E9\u05DE\u05D5\u05E8\u05D5\u05EA.',
+        switchLang: 'Switch to English',
+        errorDefault: '\u05D0\u05D9\u05E8\u05E2\u05D4 \u05E9\u05D2\u05D9\u05D0\u05D4. \u05E0\u05E1\u05D4 \u05E9\u05D5\u05D1.'
+      }
+    };
+
+    var currentLang = document.documentElement.getAttribute('lang') || 'en';
+
+    function T(key) { return TEXTS[currentLang][key] || TEXTS['en'][key] || key; }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+      document.documentElement.setAttribute('lang', lang);
+      try { localStorage.setItem('tase-language', lang); } catch(e) {}
+      applyLanguage();
+    }
+
+    document.getElementById('lang-toggle').addEventListener('click', function() {
+      setLanguage(currentLang === 'en' ? 'he' : 'en');
+    });
+
+    function applyLanguage() {
+      document.getElementById('lang-toggle').textContent = currentLang === 'en' ? '\u05E2\u05D1' : 'EN';
+      document.getElementById('page-title').textContent = T('title');
+      document.getElementById('page-subtitle').textContent = T('subtitle');
+      document.getElementById('step1-label').textContent = T('step1');
+      document.getElementById('step2-label').textContent = T('step2');
+      document.getElementById('step1-title').textContent = T('createAccount');
+      document.getElementById('email-label').textContent = T('email');
+      document.getElementById('password-label').textContent = T('password');
+      document.getElementById('password-hint').textContent = T('passwordHint');
+      var btn = document.getElementById('create-account-btn');
+      if (!btn.disabled) btn.textContent = T('createAccountBtn');
+      document.getElementById('login-link-text').innerHTML =
+        T('alreadyHaveAccount') + ' <a href="/subscribe">' + T('manageSubscription') + '</a>';
+
+      // Plan cards
+      document.getElementById('monthly-name').textContent = T('monthly');
+      document.getElementById('monthly-interval').textContent = T('perMonth');
+      document.getElementById('yearly-name').textContent = T('yearly');
+      document.getElementById('yearly-interval').textContent = T('perYear');
+      document.getElementById('yearly-savings').textContent = T('save70');
+      document.querySelector('[data-plan="yearly"]').setAttribute('data-label', T('bestValue'));
+
+      document.getElementById('feat-m1').textContent = T('fullAccess');
+      document.getElementById('feat-m2').textContent = T('dailyData');
+      document.getElementById('feat-m3').textContent = T('technicalIndicators');
+      document.getElementById('feat-m4').textContent = T('cancelAnytime');
+      document.getElementById('feat-y1').textContent = T('fullAccess');
+      document.getElementById('feat-y2').textContent = T('dailyData');
+      document.getElementById('feat-y3').textContent = T('technicalIndicators');
+
+      var subBtn = document.getElementById('subscribe-btn');
+      if (!selectedPlan) {
+        subBtn.textContent = T('selectPlan');
+      } else if (!subBtn.disabled) {
+        subBtn.textContent = T('subscribeTo').replace('{plan}', T(selectedPlan));
+      }
+
+      document.getElementById('money-back-text').textContent = T('moneyBack');
+      document.getElementById('success-title').textContent = T('successTitle');
+      document.getElementById('success-description').innerHTML = T('successDesc');
+      document.getElementById('secure-msg').textContent = T('securePayments');
+      document.getElementById('footer-terms').textContent = T('terms');
+      document.getElementById('footer-privacy').textContent = T('privacy');
+      document.getElementById('footer-copyright').textContent = T('copyright');
+    }
+
+    applyLanguage();
+
+    // Inject plan prices from config
+    if (CONFIG.plans) {
+      if (CONFIG.plans.monthly) document.getElementById('monthly-price').textContent = CONFIG.plans.monthly.price;
+      if (CONFIG.plans.yearly) document.getElementById('yearly-price').textContent = CONFIG.plans.yearly.price;
+    }
+
+    // State
+    var auth0UserId = null;
+    var userEmail = null;
+    var selectedPlan = null;
+
+    // Step 1: Account creation
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideAlerts();
+
+      var email = document.getElementById('email').value.trim();
+      var password = document.getElementById('password').value;
+
+      if (!email || !password) return;
+
+      var btn = document.getElementById('create-account-btn');
+      btn.disabled = true;
+      btn.textContent = T('creating');
+
+      try {
+        // Create account via server (uses Auth0 Management API)
+        var response = await fetch('/api/signup/create-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
+        });
+
+        if (!response.ok) {
+          var error = await response.json();
+          showError(error.error || T('errorDefault'));
+          btn.disabled = false;
+          btn.textContent = T('createAccountBtn');
+          return;
+        }
+
+        var data = await response.json();
+        auth0UserId = data.auth0UserId;
+        userEmail = email;
+
+        // Move to step 2
+        document.getElementById('step1-content').classList.add('hidden');
+        document.getElementById('step2-content').classList.remove('hidden');
+        document.getElementById('step1-indicator').classList.remove('active');
+        document.getElementById('step1-indicator').classList.add('completed');
+        document.getElementById('step1-indicator').querySelector('.step-number').textContent = '\u2713';
+        document.getElementById('step2-indicator').classList.add('active');
+
+      } catch (err) {
+        showError(err.message || T('errorDefault'));
+        btn.disabled = false;
+        btn.textContent = T('createAccountBtn');
+      }
+    });
+
+    // Step 2: Plan selection
+    document.querySelectorAll('.plan-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.plan-card').forEach(function(c) { c.classList.remove('selected'); });
+        card.classList.add('selected');
+        selectedPlan = card.getAttribute('data-plan');
+
+        var btn = document.getElementById('subscribe-btn');
+        btn.disabled = false;
+        btn.textContent = T('subscribeTo').replace('{plan}', T(selectedPlan));
+      });
+    });
+
+    document.getElementById('subscribe-btn').addEventListener('click', async function() {
+      if (!selectedPlan || !auth0UserId || !userEmail) return;
+      hideAlerts();
+
+      var btn = document.getElementById('subscribe-btn');
+      btn.disabled = true;
+      btn.textContent = T('processing');
+
+      try {
+        var response = await fetch('/api/signup/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            auth0UserId: auth0UserId,
+            email: userEmail,
+            planType: selectedPlan
+          })
+        });
+
+        if (!response.ok) {
+          var error = await response.json();
+          showError(error.error || T('errorDefault'));
+          btn.disabled = false;
+          btn.textContent = T('subscribeTo').replace('{plan}', T(selectedPlan));
+          return;
+        }
+
+        var data = await response.json();
+
+        if (data.approvalUrl) {
+          // Redirect to PayPal for payment approval
+          window.location.href = data.approvalUrl;
+        } else {
+          showError('No approval URL received');
+          btn.disabled = false;
+          btn.textContent = T('subscribeTo').replace('{plan}', T(selectedPlan));
+        }
+
+      } catch (err) {
+        showError(err.message || T('errorDefault'));
+        btn.disabled = false;
+        btn.textContent = T('subscribeTo').replace('{plan}', T(selectedPlan));
+      }
+    });
+
+    // Check URL params for PayPal return
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      document.getElementById('step1-content').classList.add('hidden');
+      document.getElementById('step2-content').classList.add('hidden');
+      document.getElementById('success-content').classList.remove('hidden');
+      document.getElementById('step1-indicator').classList.remove('active');
+      document.getElementById('step1-indicator').classList.add('completed');
+      document.getElementById('step1-indicator').querySelector('.step-number').textContent = '\u2713';
+      document.getElementById('step2-indicator').classList.remove('active');
+      document.getElementById('step2-indicator').classList.add('completed');
+      document.getElementById('step2-indicator').querySelector('.step-number').textContent = '\u2713';
+    }
+
+    // Helpers
+    function showError(msg) {
+      var el = document.getElementById('alert-error');
+      document.getElementById('error-message').textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideAlerts() {
+      document.getElementById('alert-error').style.display = 'none';
+      document.getElementById('alert-success').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

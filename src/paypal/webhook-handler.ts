@@ -2,6 +2,7 @@ import { getUserSubscription, upsertSubscription } from '../db/user-db.js';
 import type { PayPalWebhookEvent } from './types.js';
 import { getSubscription, getPlanTypeFromPlanId, verifyWebhookSignature } from './paypal-service.js';
 import { clearSubscriptionCache } from './subscription-check.js';
+import { blockUser, unblockUser } from '../auth0/auth0-management.js';
 
 export async function handleWebhook(
   headers: Record<string, string>,
@@ -80,6 +81,14 @@ async function handleSubscriptionActivated(
     expiresAt,
   });
   clearSubscriptionCache(userId);
+
+  // Unblock Auth0 account so user can sign in from ChatGPT
+  try {
+    await unblockUser(userId);
+  } catch (error) {
+    console.error(`Failed to unblock Auth0 user ${userId}:`, error);
+  }
+
   console.log(`Subscription activated for user ${userId}: ${planType}`);
 }
 
@@ -101,6 +110,14 @@ async function handleSubscriptionCancelled(
     expiresAt: sub.expiresAt ?? new Date().toISOString().split('T')[0],
   });
   clearSubscriptionCache(userId);
+
+  // Block Auth0 account so ChatGPT triggers re-login (which will fail)
+  try {
+    await blockUser(userId);
+  } catch (error) {
+    console.error(`Failed to block Auth0 user ${userId}:`, error);
+  }
+
   console.log(`Subscription cancelled for user ${userId}`);
 }
 
@@ -122,6 +139,13 @@ async function handleSubscriptionSuspended(
     expiresAt: sub.expiresAt ?? new Date().toISOString().split('T')[0],
   });
   clearSubscriptionCache(userId);
+
+  try {
+    await blockUser(userId);
+  } catch (error) {
+    console.error(`Failed to block Auth0 user ${userId}:`, error);
+  }
+
   console.log(`Subscription suspended for user ${userId}`);
 }
 
@@ -143,6 +167,13 @@ async function handleSubscriptionExpired(
     expiresAt: new Date().toISOString().split('T')[0],
   });
   clearSubscriptionCache(userId);
+
+  try {
+    await blockUser(userId);
+  } catch (error) {
+    console.error(`Failed to block Auth0 user ${userId}:`, error);
+  }
+
   console.log(`Subscription expired for user ${userId}`);
 }
 

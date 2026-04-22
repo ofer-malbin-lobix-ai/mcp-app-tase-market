@@ -11,7 +11,6 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { auth } from "express-oauth2-jwt-bearer";
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cors from "cors";
@@ -20,11 +19,11 @@ import type { Request, Response, NextFunction } from "express";
 import { createServer } from "./server.js";
 import type { TaseDataProviders } from "./src/types.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
+import { createSignupRouter } from "./src/signup/signup-routes.js";
 import { createLegalRouter } from "./src/legal/legal-routes.js";
-import { checkSubscription, clearSubscriptionCache } from "./src/paypal/subscription-check.js";
-import { generateSubscribeToken } from "./src/paypal/subscribe-token.js";
+import { checkSubscription } from "./src/paypal/subscription-check.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { ensureUser, getUserSubscription, upsertSubscription } from "./src/db/user-db.js";
+import { ensureUser } from "./src/db/user-db.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { createFetchEndOfDayFromTaseDataHubRouter } from "./src/tase-data-hub/fetch-end-of-day-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -37,7 +36,6 @@ import { createFetchLastUpdateFromTaseDataHubRouter } from "./src/tase-data-hub/
 import { dbProviders } from "./src/db/db-api.js";
 
 const __main_dirname = path.dirname(fileURLToPath(import.meta.url));
-const WIDGET_VERSION = JSON.parse(readFileSync(path.join(__main_dirname, "dist", "widget-version.json"), "utf-8")).version;
 
 /**
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
@@ -74,25 +72,35 @@ export async function startStreamableHTTPServer(
     res.status(200).json({ status: "ok" });
   });
 
-  // Landing page — shown after Auth0 logout redirect
+  // Landing page
   app.get("/", (_req: Request, res: Response) => {
     res.type("html").send(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TASE Market – Logged Out</title>
+  <title>TASE Market</title>
   <style>
     body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; color: #333; }
-    .card { text-align: center; padding: 2rem; }
-    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-    p { color: #666; }
+    .card { text-align: center; padding: 2rem; max-width: 480px; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p { color: #666; margin-top: 0.5rem; line-height: 1.6; }
+    .links { margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    a { color: #3b82f6; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid #3b82f6; border-radius: 8px; font-size: 0.9rem; }
+    a:hover { background: #3b82f6; color: #fff; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>You've been logged out</h1>
-    <p>You can close this tab or reconnect from your MCP client.</p>
+    <h1>TASE Market</h1>
+    <p>Tel Aviv Stock Exchange market data for AI assistants.</p>
+    <div class="links">
+      <a href="/signup">Sign Up</a>
+      <a href="/subscribe">Manage Subscription</a>
+    </div>
+    <p style="font-size: 0.85rem; margin-top: 1.5rem;">
+      <a href="https://www.lobix.ai" style="border: none; padding: 0;">www.lobix.ai</a>
+    </p>
   </div>
 </body>
 </html>`);
@@ -174,6 +182,9 @@ export async function startStreamableHTTPServer(
   // Mount subscription routes
   app.use(createSubscriptionRouter());
 
+  // Mount signup routes (web pages for account creation + subscription — NOT part of MCP)
+  app.use(createSignupRouter());
+
   // Mount legal pages (terms, privacy)
   app.use(createLegalRouter());
 
@@ -240,41 +251,12 @@ export async function startStreamableHTTPServer(
     const hasSubscription = await checkSubscription(userId);
 
     if (!hasSubscription) {
-      // Auto-grant 7-day free trial on first tool call (no subscription record yet)
-      const existingSub = await getUserSubscription(userId);
-      if (!existingSub) {
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
-        await upsertSubscription(userId, {
-          freeTrial: true,
-          freeTrialUsed: true,
-          expiresAt: expiresAt.toISOString().split('T')[0],
-        });
-        clearSubscriptionCache(userId);
-        next();
-        return;
-      }
-
-      const token = generateSubscribeToken(userId);
-      const subscribeUrl = `${baseUrl}/subscribe?token=${token}`;
-
-      res.status(200).json({
-        jsonrpc: "2.0",
-        result: {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ subscribeUrl, needsSubscription: true, logoutUrl }),
-            },
-          ],
-          _meta: {
-            ui: {
-              resourceUri: `ui://tase-end-of-day/tase-market-settings-widget-ver-${WIDGET_VERSION}.html`,
-            },
-          },
-        },
-        id: body?.id ?? null,
-      });
+      // No active subscription — return 401 to trigger re-auth.
+      // The user's Auth0 account should be blocked, so re-login will show "Account suspended".
+      const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
+      res.status(401).set({
+        "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", error="invalid_token", scope="openid email profile"`,
+      }).json({ error: "Subscription not active" });
       return;
     }
 
@@ -283,12 +265,7 @@ export async function startStreamableHTTPServer(
 
   // MCP endpoint handler
   const mcpHandler = async (req: Request, res: Response) => {
-    const userId = resolveUserId(req);
-    let subscribeUrl = `${baseUrl}/subscribe`;
-    if (userId) {
-      const token = generateSubscribeToken(userId);
-      subscribeUrl += `?token=${token}`;
-    }
+    const subscribeUrl = `${baseUrl}/signup`;
     // Detect host to set correct widget domain format
     // ChatGPT sends "openai-mcp/1.0.0" user-agent; others (Claude Desktop) get no domain
     const isChatGPT = req.headers["user-agent"]?.includes("openai-mcp");

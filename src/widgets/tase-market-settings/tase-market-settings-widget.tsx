@@ -11,13 +11,12 @@ import { useLanguage } from "../../components/useLanguage";
 import { createRoot } from "react-dom/client";
 import styles from "./tase-market-settings-widget.module.css";
 
-interface SubscriptionData {
+interface SettingsData {
   subscribeUrl: string;
-  needsSubscription?: boolean;
   logoutUrl?: string;
 }
 
-function extractSubscriptionData(callToolResult: CallToolResult | null | undefined): SubscriptionData | null {
+function extractSettingsData(callToolResult: CallToolResult | null | undefined): SettingsData | null {
   try {
     if (!callToolResult) return null;
     const textContent = callToolResult.content?.find((c) => c.type === "text");
@@ -27,25 +26,16 @@ function extractSubscriptionData(callToolResult: CallToolResult | null | undefin
     if (parsed && typeof parsed.text === "string" && !parsed.subscribeUrl) {
       parsed = JSON.parse(parsed.text);
     }
-    if (parsed?.subscribeUrl) return parsed as SubscriptionData;
+    if (parsed?.subscribeUrl) return parsed as SettingsData;
     return null;
   } catch {
     return null;
-  }
-}
-
-function hasToken(url: string | undefined): boolean {
-  if (!url) return false;
-  try {
-    return new URL(url).searchParams.has("token");
-  } catch {
-    return false;
   }
 }
 
 function SettingsApp() {
   const { t } = useLanguage();
-  const [data, setData] = useState<SubscriptionData | null>(null);
+  const [data, setData] = useState<SettingsData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
@@ -57,9 +47,9 @@ function SettingsApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          const subData = extractSubscriptionData(result);
-          if (subData) {
-            setData(subData);
+          const settingsData = extractSettingsData(result);
+          if (settingsData) {
+            setData(settingsData);
           } else {
             setNeedsAutoFetch(true);
           }
@@ -92,8 +82,8 @@ function SettingsApp() {
     (async () => {
       try {
         const result = await app.callServerTool({ name: "get-tase-market-settings-data", arguments: {} });
-        const subData = extractSubscriptionData(result as CallToolResult);
-        if (subData) setData(subData);
+        const settingsData = extractSettingsData(result as CallToolResult);
+        if (settingsData) setData(settingsData);
       } catch (e) {
         console.error("auto-fetch settings failed:", e);
       }
@@ -107,7 +97,7 @@ function SettingsApp() {
 }
 
 interface SettingsInnerProps {
-  data: SubscriptionData | null;
+  data: SettingsData | null;
   hostContext?: McpUiHostContext;
   app: NonNullable<ReturnType<typeof useApp>["app"]>;
 }
@@ -117,42 +107,33 @@ function SettingsInner({ data, hostContext, app }: SettingsInnerProps) {
   const [logoutCopied, setLogoutCopied] = useState(false);
   const { language, t, dir, toggle } = useLanguage();
 
-  const connectedUrl = hasToken(data?.subscribeUrl) ? data!.subscribeUrl : null;
+  const manageUrl = data?.subscribeUrl;
 
   return (
     <WidgetLayout title={t("settings.title")} app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
       <div className={styles.content}>
-      {connectedUrl ? (
+      {manageUrl ? (
         <div className={styles.cta}>
           <button
             className={styles.subscribeButton}
             onClick={async () => {
               try {
-                const result = await app.openLink({ url: connectedUrl });
+                const result = await app.openLink({ url: manageUrl });
                 if (result?.isError) {
-                  await navigator.clipboard.writeText(connectedUrl);
+                  await navigator.clipboard.writeText(manageUrl);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }
               } catch {
                 try {
-                  await navigator.clipboard.writeText(connectedUrl);
+                  await navigator.clipboard.writeText(manageUrl);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
-                } catch {
-                  const el = document.getElementById("subscribe-url");
-                  if (el) {
-                    const range = document.createRange();
-                    range.selectNodeContents(el);
-                    const sel = window.getSelection();
-                    sel?.removeAllRanges();
-                    sel?.addRange(range);
-                  }
-                }
+                } catch { /* ignore */ }
               }
             }}
           >
-            {copied ? t("settings.copied") : data?.needsSubscription ? t("settings.subscribeNow") : t("settings.subscription")}
+            {copied ? t("settings.copied") : t("settings.manageSubscription")}
           </button>
           {data?.logoutUrl && (
             <button
