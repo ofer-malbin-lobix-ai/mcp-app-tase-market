@@ -124,11 +124,65 @@ A successful response returns a `client_id` and `client_secret`. Then connect fr
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `AUTH0_DOMAIN` | Auth0 tenant domain (no `https://`) | `auth.lobix.ai` |
+| `AUTH0_DOMAIN` | Auth0 custom domain (no `https://`) | `auth.lobix.ai` |
 | `AUTH0_AUDIENCE` | API identifier — must match Auth0 API exactly | `https://tase-market.mcp-apps.lobix.ai` |
+| `AUTH0_CLIENT_ID` | Default App client ID | `2MYlg6Ed1NysOV4jH8DSKoA9ScFxyPgc` |
+| `AUTH0_MGMT_DOMAIN` | Actual tenant domain for Management API | `lobix-ai.us.auth0.com` |
+| `AUTH0_MGMT_CLIENT_ID` | M2M app client ID for Management API | `UlUezCWZXz576VvoK6dL7nGzmDWiLsp7` |
+| `AUTH0_MGMT_CLIENT_SECRET` | M2M app client secret | (stored in .env.local and Railway) |
+| `AUTH0_DB_CONNECTION` | Database connection name | `Username-Password-Authentication` |
 | `APP_URL` | Public URL of this app (used for metadata endpoints) | `https://tase-market.mcp-apps.lobix.ai` |
 
+**Important:** `AUTH0_MGMT_DOMAIN` must be the actual tenant domain (`lobix-ai.us.auth0.com`), NOT the custom domain (`auth.lobix.ai`). The Management API returns 403 with custom domains.
+
 When `AUTH0_DOMAIN` is unset, auth is disabled entirely (local dev mode).
+
+## Auth0 Management API
+
+**File:** `src/auth0/auth0-management.ts`
+
+Used for server-side user management (signup flow + subscription lifecycle):
+
+| Function | Purpose | API Endpoint |
+|----------|---------|--------------|
+| `createUser(email, password, connection)` | Create new user during signup | `POST /api/v2/users` |
+| `blockUser(auth0UserId)` | Block user on subscription cancel/suspend/expire | `PATCH /api/v2/users/{id}` |
+| `unblockUser(auth0UserId)` | Unblock user on subscription activate | `PATCH /api/v2/users/{id}` |
+
+**M2M app scopes:** `read:clients`, `update:clients`, `read:connections`, `update:connections`, `create:users`, `read:users`, `update:users`
+
+**Token caching:** Management API tokens are cached with 60-second safety margin before expiry.
+
+### Signup Flow (Disable Sign Ups is ON)
+
+Auth0's "Disable Sign Ups" toggle is ON on the database connection. This means:
+- ChatGPT/Claude OAuth flow → sign-in only, no account creation
+- `/api/signup/create-account` → creates users via Management API (bypasses the restriction)
+
+### User Blocking for Subscription Enforcement
+
+When a subscription is cancelled/suspended/expired, the PayPal webhook handler calls `blockUser()`. This:
+- Prevents the user from logging in via Auth0
+- ChatGPT sees auth failure → triggers re-auth → login fails
+- No subscription UI needed inside the MCP flow
+
+## DCR App Flooding
+
+Auth0 dynamic client registration creates a new app per MCP session. The tenant fills to 100 apps quickly.
+
+**Cleanup:**
+```bash
+auth0 tenants use lobix-ai.us.auth0.com
+auth0 apps list --json | python3 -c "
+import json, sys
+apps = json.load(sys.stdin)
+for a in apps:
+    if a['name'] in ('Claude', 'ChatGPT'):
+        print(a.get('client_id',''))
+" | while read id; do auth0 apps delete "$id" --force; done
+```
+
+Industry is moving to CIMD (Client ID Metadata Documents) to solve this.
 
 ## Server-Side Integration
 

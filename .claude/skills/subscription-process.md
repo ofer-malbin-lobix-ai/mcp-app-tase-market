@@ -4,53 +4,61 @@ disable-model-invocation: true
 
 # Subscription Process
 
-Reference for the full PayPal subscription system — plans, checkout, webhooks, free trials, middleware, and database.
+Reference for the full subscription system — signup, PayPal checkout, webhooks, Auth0 user management, and middleware.
 
 ## Architecture Overview
 
+The subscription system is split into two completely separate concerns:
+
+1. **Web pages** (regular Express routes) — account creation, PayPal subscription, management
+2. **MCP server** (`/mcp` endpoint) — sign-in via OAuth, subscription check, market data tools
+
+**ChatGPT/Claude never touches commerce.** Signup and subscription are a "preliminary stage" — like Google Workspace signup happens before using a Google connector.
+
 ```
-Claude Desktop / MCP Client
+Web Browser (preliminary stage)
         │
         ▼
-  main.ts middleware (requireSubscription)
-   ├─ tools/call only, exempt tools skip
-   ├─ auto-grants 7-day free trial on first call
-   └─ returns subscribeUrl if no active subscription
+  /signup page (signup.html)
+   ├─ Step 1: Create Auth0 account (via Management API)
+   └─ Step 2: Choose plan → PayPal checkout
         │
         ▼
-  subscribe.html (subscription management page)
-   ├─ shows plans, status, cancel button
-   └─ bilingual EN/HE
+  signup-routes.ts → auth0-management.ts → Auth0 Management API
+                   → paypal-service.ts → PayPal API
         │
         ▼
-  subscription-routes.ts → paypal-service.ts → PayPal API
-        │                                          │
-        ▼                                          ▼
-  success callback ──────────────────────── webhook-handler.ts
-        │                                          │
-        ▼                                          ▼
-  user-db.ts (upsert) ◄───────────────── user-db.ts (upsert)
+  PayPal success callback → webhook-handler.ts
+   ├─ upserts subscription in DB
+   └─ unblocks Auth0 account (on activate)
+       or blocks Auth0 account (on cancel/suspend/expire)
+
+ChatGPT / Claude Desktop (sign-in only)
         │
         ▼
-  subscription-check.ts (5-min cache)
+  main.ts middleware (mcpAuth → requireSubscription)
+   ├─ OAuth sign-in via Auth0
+   ├─ Subscription check (checkSubscription)
+   └─ Returns 401 if no active subscription
+       → ChatGPT triggers re-auth
+       → Blocked user sees "Account suspended"
 ```
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/paypal/paypal-service.ts` | PayPal API client — `createSubscription()`, `cancelSubscription()`, `getSubscription()`, `verifyWebhookSignature()`, token caching, plan config (`PLANS`) |
-| `src/paypal/subscription-routes.ts` | HTTP endpoints — subscribe page, status, create, cancel, success/cancel callbacks, webhook, free trial start |
-| `src/paypal/subscription-check.ts` | `checkSubscription()` with 5-min in-memory cache, checks manual → trial → PayPal subscriptions in order |
-| `src/paypal/webhook-handler.ts` | Handles `BILLING.SUBSCRIPTION.*` and `PAYMENT.SALE.COMPLETED` events with signature verification |
-| `src/paypal/subscribe-token.ts` | HMAC-SHA256 signed token generation/verification, 30-min expiry, base64url encoded |
-| `src/paypal/subscribe.html` | Subscription management page — plan cards, status display, cancel button, bilingual EN/HE |
-| `src/paypal/paypal-result.html` | Post-checkout result page — success/cancel/error messaging |
-| `src/paypal/types.ts` | Type definitions — `PlanConfig`, `PayPalSubscription`, `PayPalWebhookEvent`, `PayPalTokenResponse`, `CreateSubscriptionRequest` |
-| `src/db/user-db.ts` | `getUserSubscription()` (line ~110), `upsertSubscription()` (line ~115) — Prisma upsert with selective field updates |
-| `prisma/schema.prisma` | `UserSubscription` model (line ~114) |
-| `main.ts` | Subscription check middleware `requireSubscription` (line ~172), auto-trial logic, subscribeUrl response |
-| `server.ts` | Settings/home MCP tools (lines ~1410–1535) — `show-tase-market-home-widget`, `get-tase-market-settings-data`, `show-tase-market-settings-widget` |
+| `src/signup/signup-routes.ts` | `POST /api/signup/create-account` (Auth0 user creation), `POST /api/signup/subscribe` (PayPal subscription) |
+| `src/signup/signup.html` | Two-step signup page: create account → choose plan → PayPal checkout |
+| `src/auth0/auth0-management.ts` | Auth0 Management API — `createUser()`, `blockUser()`, `unblockUser()` with token caching |
+| `src/paypal/paypal-service.ts` | PayPal API client — `createSubscription()`, `cancelSubscription()`, `getSubscription()`, `verifyWebhookSignature()`, plan config |
+| `src/paypal/subscription-routes.ts` | Existing subscription management — subscribe page, status, cancel, PayPal callbacks, webhook |
+| `src/paypal/subscription-check.ts` | `checkSubscription()` with 5-min in-memory cache |
+| `src/paypal/webhook-handler.ts` | Handles PayPal events + blocks/unblocks Auth0 accounts |
+| `src/paypal/subscribe-token.ts` | HMAC-SHA256 signed token for subscribe page auth |
+| `src/paypal/subscribe.html` | Subscription management page (for existing users) |
+| `src/db/user-db.ts` | `ensureUser()`, `getUserSubscription()`, `upsertSubscription()` |
+| `main.ts` | `requireSubscription` middleware — returns 401 for unsubscribed users |
 
 ## Database Schema
 
@@ -59,15 +67,15 @@ model UserSubscription {
   id                   String   @id @default(cuid())
   userId               String   @unique
   plan                 String?          // "monthly" | "yearly"
-  paypalSubscriptionId String?          // PayPal subscription ID (e.g., "I-XXXXXXXXXX")
+  paypalSubscriptionId String?          // PayPal subscription ID
   subscriptionStatus   String?          // "active" | "cancelled" | "suspended" | "expired"
   expiresAt            String?          // ISO date string "YYYY-MM-DD"
-  manualSubscription   Boolean  @default(false)  // admin-granted prepaid subscription
-  freeTrial            Boolean  @default(false)  // currently on free trial
-  freeTrialUsed        Boolean  @default(false)  // prevents reuse of trial
+  manualSubscription   Boolean  @default(false)
+  freeTrial            Boolean  @default(false)
+  freeTrialUsed        Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  user                 AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 AppUser  @relation(...)
 }
 ```
 
@@ -78,129 +86,104 @@ model UserSubscription {
 | Monthly | 35 ILS | MONTH | `PAYPAL_PLAN_MONTHLY` |
 | Yearly | 350 ILS | YEAR | `PAYPAL_PLAN_YEARLY` |
 
-Plans are configured in `paypal-service.ts` via the `PLANS` object. Plan IDs come from PayPal billing plan setup.
+7-day money-back guarantee (cancel within 7 days for full refund). No free trial.
 
 ## End-to-End Flows
 
-### Free Trial (auto-granted)
-1. User makes first `tools/call` request via MCP
-2. `requireSubscription` middleware finds no subscription record
-3. Auto-creates `UserSubscription` with `freeTrial: true`, `freeTrialUsed: true`, `expiresAt` = now + 7 days
-4. Request proceeds; `freeTrialUsed` flag prevents reuse after expiry
+### New User Signup
+1. User visits `/signup` in browser
+2. Enters email + password → `POST /api/signup/create-account`
+3. Server creates Auth0 user via Management API (`createUser()`)
+4. Server creates DB user via `ensureUser()`
+5. User selects plan → `POST /api/signup/subscribe`
+6. Server creates PayPal subscription → returns approval URL
+7. User redirected to PayPal → approves payment
+8. PayPal redirects to `/api/paypal/success` → DB updated, cache cleared
+9. PayPal webhook `BILLING.SUBSCRIPTION.ACTIVATED` → unblocks Auth0 account
 
-### PayPal Subscription
-1. Settings/home widget shows subscribe link with HMAC token → `GET /subscribe?token=...`
-2. `subscribe.html` displays plan cards (monthly/yearly) with injected status
-3. User clicks plan → `POST /api/paypal/create-subscription` with `{ planType, token }`
-4. Server calls `paypal-service.createSubscription()` → returns PayPal approval URL
-5. User redirected to PayPal for approval
-6. PayPal redirects to `GET /api/paypal/success?subscription_id=...`
-7. Success callback fetches subscription from PayPal, upserts DB with `subscriptionStatus: 'active'`
-8. Clears subscription cache, redirects to `/paypal/result?success=true`
-9. Webhook `BILLING.SUBSCRIPTION.ACTIVATED` confirms (idempotent DB update)
+### Sign-in from ChatGPT/Claude
+1. MCP client connects to `/mcp`
+2. No auth header → 401 with PRM metadata → client initiates OAuth
+3. Auth0 login screen (signup disabled) → user logs in
+4. JWT validated → `requireSubscription` checks subscription
+5. Active subscription → tools work
+6. No subscription → 401 → re-auth triggered → blocked user sees "Account suspended"
 
-### Free Trial (via subscribe page)
-1. Subscribe page shows "Start Free Trial" button if `freeTrialUsed` is false
-2. `POST /api/paypal/start-free-trial` with token
-3. Sets `freeTrial: true`, `freeTrialUsed: true`, `expiresAt` = now + 7 days
-4. Clears subscription cache
+### Subscription Cancelled
+1. User cancels via `/subscribe` page or PayPal directly
+2. PayPal webhook `BILLING.SUBSCRIPTION.CANCELLED` fires
+3. DB updated with `subscriptionStatus: 'cancelled'`
+4. Auth0 account **blocked** via `blockUser()`
+5. Next ChatGPT tool call → JWT valid but subscription check fails → 401
+6. ChatGPT triggers re-auth → Auth0 login fails (account blocked)
 
-### Cancellation
-1. Subscribe page shows cancel button for active PayPal subscriptions
-2. `POST /api/paypal/cancel-subscription` with token
-3. Calls `paypal-service.cancelSubscription()` → PayPal API
-4. Updates DB with `subscriptionStatus: 'cancelled'`
-5. Webhook `BILLING.SUBSCRIPTION.CANCELLED` confirms
+### Resubscribe
+1. User goes to `/signup` or `/subscribe` on website
+2. Completes new PayPal subscription
+3. PayPal webhook `BILLING.SUBSCRIPTION.ACTIVATED` → DB updated, Auth0 account **unblocked**
+4. User can sign in from ChatGPT again
 
 ## Middleware Details
 
-**Location:** `main.ts` line ~172, applied to `/mcp` POST endpoint
+**Location:** `main.ts`, applied to `/mcp` POST endpoint
 
 **Behavior:**
 - Only triggers on `method: "tools/call"` (skips `initialize`, `tools/list`, etc.)
-- Exempt tools (no subscription needed): `get-tase-market-settings-data`, `show-tase-market-settings-widget`, `show-tase-market-home-widget`
-- If no userId (auth failed), passes through to let auth middleware handle 401
-- If no subscription exists at all, auto-grants 7-day free trial and continues
-- If subscription expired/cancelled, returns JSON-RPC response with `subscribeUrl` and settings widget UI resource URI
+- Exempt tools: `get-tase-market-settings-data`, `show-tase-market-settings-widget`, `show-tase-market-home-widget`
+- If no active subscription → returns 401 with `WWW-Authenticate` header
+- No auto-trial, no subscribe URL, no in-app commerce
 
-**Response when subscription required:**
-```json
-{
-  "jsonrpc": "2.0",
-  "result": {
-    "content": [{ "type": "text", "text": "{\"subscribeUrl\":\"...\",\"needsSubscription\":true}" }],
-    "_meta": { "ui": { "resourceUri": "ui://tase-end-of-day/tase-market-settings-widget-ver-X.html" } }
-  },
-  "id": "<request-id>"
-}
-```
+## Auth0 Management API
 
-## Subscription Check Priority
+**File:** `src/auth0/auth0-management.ts`
 
-`checkSubscription()` in `subscription-check.ts` checks in this order:
-1. **Cache** — 5-min TTL in-memory Map
-2. **Manual subscription** — `manualSubscription: true` + `expiresAt` in the future
-3. **Free trial** — `freeTrial: true` + `expiresAt` in the future
-4. **PayPal subscription** — `paypalSubscriptionId` exists + `subscriptionStatus === 'active'`
-5. **Optional PayPal verification** — if `VERIFY_SUBSCRIPTION_WITH_PAYPAL=true`, calls PayPal API to confirm
+**Important:** Uses `AUTH0_MGMT_DOMAIN` (actual tenant domain `lobix-ai.us.auth0.com`), NOT the custom domain `auth.lobix.ai`. The Management API doesn't work with custom domains.
+
+| Function | Purpose |
+|----------|---------|
+| `createUser(email, password, connection)` | Creates Auth0 user via `POST /api/v2/users` |
+| `blockUser(auth0UserId)` | Blocks user via `PATCH /api/v2/users/{id}` — prevents login |
+| `unblockUser(auth0UserId)` | Unblocks user — allows login again |
 
 ## Webhook Events
 
-| Event | Handler | Action |
-|-------|---------|--------|
-| `BILLING.SUBSCRIPTION.ACTIVATED` | `handleSubscriptionActivated` | Fetch subscription from PayPal, upsert with `active` status and expiry from `next_billing_time` |
-| `BILLING.SUBSCRIPTION.CANCELLED` | `handleSubscriptionCancelled` | Update status to `cancelled`, keep existing expiry |
-| `BILLING.SUBSCRIPTION.SUSPENDED` | `handleSubscriptionSuspended` | Update status to `suspended` |
-| `BILLING.SUBSCRIPTION.EXPIRED` | `handleSubscriptionExpired` | Update status to `expired`, set expiry to today |
-| `PAYMENT.SALE.COMPLETED` | `handlePaymentCompleted` | Renewal — fetch subscription for new `next_billing_time`, update expiry, confirm `active` |
-
-All handlers verify `custom_id` (userId) from the webhook payload and clear the subscription cache after updates.
-
-Webhook endpoint: `POST /api/paypal/webhook` — verifies signature via `paypal-service.verifyWebhookSignature()`.
-
-## Subscribe Token
-
-- Generated by `generateSubscribeToken(userId)` in `subscribe-token.ts`
-- Format: base64url(`JSON.stringify({userId, exp}).HMAC-SHA256-hex`)
-- 30-minute expiry (`TOKEN_EXPIRY_MS`)
-- Secret from `SUBSCRIBE_TOKEN_SECRET` env var (falls back to `'fallback-secret'`)
-- Used in query params (`?token=...`) and request bodies (`{ token }`)
-- `verifySubscribeToken(token)` returns `userId` or `null`
+| Event | Handler | DB Action | Auth0 Action |
+|-------|---------|-----------|--------------|
+| `BILLING.SUBSCRIPTION.ACTIVATED` | `handleSubscriptionActivated` | Set `active` | `unblockUser()` |
+| `BILLING.SUBSCRIPTION.CANCELLED` | `handleSubscriptionCancelled` | Set `cancelled` | `blockUser()` |
+| `BILLING.SUBSCRIPTION.SUSPENDED` | `handleSubscriptionSuspended` | Set `suspended` | `blockUser()` |
+| `BILLING.SUBSCRIPTION.EXPIRED` | `handleSubscriptionExpired` | Set `expired` | `blockUser()` |
+| `PAYMENT.SALE.COMPLETED` | `handlePaymentCompleted` | Update expiry | — |
 
 ## Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `PAYPAL_MODE` | `sandbox` or `live` — determines PayPal API base URL |
+| `AUTH0_MGMT_DOMAIN` | Auth0 tenant domain for Management API (NOT custom domain) |
+| `AUTH0_MGMT_CLIENT_ID` | M2M app client ID |
+| `AUTH0_MGMT_CLIENT_SECRET` | M2M app client secret |
+| `AUTH0_DB_CONNECTION` | Database connection name (default: `Username-Password-Authentication`) |
+| `PAYPAL_MODE` | `sandbox` or `live` |
 | `PAYPAL_CLIENT_ID` | PayPal app client ID |
 | `PAYPAL_CLIENT_SECRET` | PayPal app client secret |
-| `PAYPAL_PLAN_MONTHLY` | PayPal billing plan ID for monthly plan |
-| `PAYPAL_PLAN_YEARLY` | PayPal billing plan ID for yearly plan |
+| `PAYPAL_PLAN_MONTHLY` | PayPal billing plan ID for monthly |
+| `PAYPAL_PLAN_YEARLY` | PayPal billing plan ID for yearly |
 | `PAYPAL_WEBHOOK_ID` | PayPal webhook ID for signature verification |
-| `SUBSCRIBE_TOKEN_SECRET` | HMAC secret for subscribe tokens |
-| `VERIFY_SUBSCRIPTION_WITH_PAYPAL` | `true` to verify subscription status with PayPal API on each check |
-| `APP_URL` | Public app URL for callbacks and subscribe links |
+| `SUBSCRIBE_TOKEN_SECRET` | HMAC secret for subscribe page tokens |
+| `APP_URL` | Public app URL |
 
 ## HTTP Endpoints
 
 | Method | Path | Auth | Purpose |
 |--------|------|------|---------|
-| GET | `/subscribe` | Token (query) | Serve subscription management page |
-| GET | `/api/subscription/status` | Token (query) | Get user's subscription status JSON |
-| POST | `/api/paypal/create-subscription` | Token (body) | Create PayPal subscription, return approval URL |
-| POST | `/api/paypal/start-free-trial` | Token (body) | Start 7-day free trial |
-| GET | `/api/paypal/success` | Public | PayPal return URL after approval |
-| GET | `/api/paypal/cancel` | Public | PayPal return URL after cancellation |
-| GET | `/paypal/result` | Public | Result page (success/cancel/error) |
-| POST | `/api/paypal/cancel-subscription` | Token (body) | Cancel active PayPal subscription |
+| GET | `/signup` | Public | Signup + subscribe page |
+| POST | `/api/signup/create-account` | Public | Create Auth0 account |
+| POST | `/api/signup/subscribe` | Public | Start PayPal subscription |
+| GET | `/subscribe` | Token | Subscription management page |
+| GET | `/api/subscription/status` | Token | Subscription status JSON |
+| POST | `/api/paypal/create-subscription` | Token | Create PayPal subscription |
+| POST | `/api/paypal/cancel-subscription` | Token | Cancel subscription |
+| GET | `/api/paypal/success` | Public | PayPal return URL |
+| GET | `/api/paypal/cancel` | Public | PayPal cancel URL |
+| GET | `/paypal/result` | Public | Result page |
 | POST | `/api/paypal/webhook` | PayPal signature | Webhook receiver |
-
-## Debugging
-
-**Common issues:**
-- **Webhook signature failures** — Ensure `PAYPAL_WEBHOOK_ID` matches PayPal dashboard. Sandbox and live have different webhook IDs. Raw body must be preserved (not re-serialized).
-- **Token expiry** — Subscribe tokens expire in 30 minutes. If a user takes too long, the page API calls will fail with 401. Token is generated fresh each time the settings widget is loaded.
-- **Cache staleness** — Subscription cache is 5 minutes. After PayPal changes, `clearSubscriptionCache(userId)` must be called. If webhook is delayed, user may see stale status briefly.
-- **Sandbox vs live** — `PAYPAL_MODE` controls API base URL. Plan IDs are different between sandbox and live. Webhook IDs are different.
-- **"Already has active subscription"** — The create endpoint checks `subscriptionStatus === 'active'` before creating. If a previous subscription wasn't properly cancelled, this blocks new subscriptions.
-- **HTML file path resolution** — `subscription-routes.ts` resolves HTML files relative to source, handling both `src/` and `dist/` directory structures.
