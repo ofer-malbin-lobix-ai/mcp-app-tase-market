@@ -30,18 +30,17 @@ Web Browser (preliminary stage)
         ▼
   PayPal success callback → webhook-handler.ts
    ├─ upserts subscription in DB
-   └─ unblocks Auth0 account (on activate)
-       or blocks Auth0 account (on cancel/suspend/expire)
+   └─ addAppSubscription (on activate) with expiresAt
+       or removeAppSubscription (on cancel/suspend/expire)
 
 ChatGPT / Claude Desktop (sign-in only)
         │
         ▼
-  main.ts middleware (mcpAuth → requireSubscription)
+  main.ts middleware (mcpAuth)
    ├─ OAuth sign-in via Auth0
-   ├─ Subscription check (checkSubscription)
-   └─ Returns 401 if no active subscription
-       → ChatGPT triggers re-auth
-       → Blocked user sees "Account suspended"
+   ├─ JWT contains https://auth.lobix.ai/apps claim
+   └─ Checks "tase-market" is in apps claim → 403 if not
+       Auth0 Action filters expired apps at login time
 ```
 
 ## Key Files
@@ -50,15 +49,14 @@ ChatGPT / Claude Desktop (sign-in only)
 |------|---------|
 | `src/signup/signup-routes.ts` | `POST /api/signup/create-account` (Auth0 user creation), `POST /api/signup/subscribe` (PayPal subscription) |
 | `src/signup/signup.html` | Two-step signup page: create account → choose plan → PayPal checkout |
-| `src/auth0/auth0-management.ts` | Auth0 Management API — `createUser()`, `blockUser()`, `unblockUser()` with token caching |
+| `src/auth0/auth0-management.ts` | Auth0 Management API — `createUser()`, `addAppSubscription()`, `removeAppSubscription()` with token caching |
 | `src/paypal/paypal-service.ts` | PayPal API client — `createSubscription()`, `cancelSubscription()`, `getSubscription()`, `verifyWebhookSignature()`, plan config |
-| `src/paypal/subscription-routes.ts` | Existing subscription management — subscribe page, status, cancel, PayPal callbacks, webhook |
-| `src/paypal/subscription-check.ts` | `checkSubscription()` with 5-min in-memory cache |
-| `src/paypal/webhook-handler.ts` | Handles PayPal events + blocks/unblocks Auth0 accounts |
+| `src/paypal/subscription-routes.ts` | Subscription management web page — status, cancel, PayPal callbacks, webhook |
+| `src/paypal/webhook-handler.ts` | Handles PayPal events + manages per-app access in Auth0 |
 | `src/paypal/subscribe-token.ts` | HMAC-SHA256 signed token for subscribe page auth |
 | `src/paypal/subscribe.html` | Subscription management page (for existing users) |
 | `src/db/user-db.ts` | `ensureUser()`, `getUserSubscription()`, `upsertSubscription()` |
-| `main.ts` | `requireSubscription` middleware — returns 401 for unsubscribed users |
+| `main.ts` | `mcpAuth` middleware — JWT validation + per-app access check via custom claim |
 
 ## Database Schema
 
