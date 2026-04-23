@@ -10,7 +10,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import { SearchableSelect } from "../../components/SearchableSelect";
 import { NavRow } from "../../components/NavRow";
@@ -105,7 +105,6 @@ function IndexLastUpdateApp() {
   const { t } = useLanguage();
   const [data, setData] = useState<LastUpdateData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -123,7 +122,6 @@ function IndexLastUpdateApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const data = extractLastUpdateData(result);
           if (data) {
             setData(data);
@@ -155,7 +153,6 @@ function IndexLastUpdateApp() {
     try {
       app.callServerTool({ name: TOOL_NAME, arguments: { indexId: 137 } })
         .then((result) => {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const fetchedData = extractLastUpdateData(result);
           if (fetchedData) {
             setData(fetchedData);
@@ -179,11 +176,6 @@ function IndexLastUpdateApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   return (
     <IndexLastUpdateAppInner
@@ -236,7 +228,6 @@ function IndexLastUpdateAppInner({
         name: TOOL_NAME,
         arguments: { indexId: Number(idxId) },
       });
-      if (handleSubscriptionRedirect(result, app)) return;
       const data = extractLastUpdateData(result);
       if (data) {
         setData(data);

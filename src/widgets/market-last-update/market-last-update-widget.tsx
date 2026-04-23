@@ -11,7 +11,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DataTable } from "../../components/DataTable";
 import { RefreshButton } from "../../components/RefreshButton";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import styles from "./market-last-update-widget.module.css";
 
@@ -94,7 +94,6 @@ function LastUpdateApp() {
   const { t } = useLanguage();
   const [data, setData] = useState<LastUpdateData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -112,7 +111,6 @@ function LastUpdateApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const data = extractLastUpdateData(result);
           if (data) {
             setData(data);
@@ -144,7 +142,6 @@ function LastUpdateApp() {
     try {
       app.callServerTool({ name: "get-market-last-update-data", arguments: {} })
         .then((result) => {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const fetchedData = extractLastUpdateData(result);
           if (fetchedData) {
             setData(fetchedData);
@@ -168,11 +165,6 @@ function LastUpdateApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   return (
     <LastUpdateAppInner
@@ -214,7 +206,6 @@ function LastUpdateAppInner({
         name: "get-market-last-update-data",
         arguments: {},
       });
-      if (handleSubscriptionRedirect(result, app)) return;
       const data = extractLastUpdateData(result);
       if (data) {
         setData(data);

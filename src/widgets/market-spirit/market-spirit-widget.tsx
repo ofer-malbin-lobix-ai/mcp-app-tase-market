@@ -7,7 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { RefreshButton } from "../../components/RefreshButton";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { createRoot } from "react-dom/client";
 import { useLanguage } from "../../components/useLanguage";
 import styles from "./market-spirit-widget.module.css";
@@ -52,7 +52,6 @@ function MarketSpiritApp() {
   const [data, setData] = useState<MarketSpiritData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const { t } = useLanguage();
 
@@ -70,7 +69,6 @@ function MarketSpiritApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const spiritData = extractMarketSpiritData(result);
           if (spiritData) {
             setData(spiritData);
@@ -99,7 +97,6 @@ function MarketSpiritApp() {
     try {
       app.callServerTool({ name: "get-market-spirit-data", arguments: toolInput })
         .then((result) => {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const fetchedData = extractMarketSpiritData(result);
           if (fetchedData) {
             setData(fetchedData);
@@ -123,11 +120,6 @@ function MarketSpiritApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
   return (
     <MarketSpiritInner
       app={app}

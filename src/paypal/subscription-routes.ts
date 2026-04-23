@@ -11,7 +11,6 @@ import {
   getPlanTypeFromPlanId,
 } from './paypal-service.js';
 import { handleWebhook } from './webhook-handler.js';
-import { clearSubscriptionCache } from './subscription-check.js';
 import { verifySubscribeToken } from './subscribe-token.js';
 import { getUserSubscription, upsertSubscription } from '../db/user-db.js';
 import type { CreateSubscriptionRequest } from './types.js';
@@ -188,7 +187,7 @@ export function createSubscriptionRouter(): Router {
         expiresAt: expiresAtStr,
       });
 
-      clearSubscriptionCache(userId);
+
 
       console.log(`[Subscription] Free trial activated for user ${userId} until ${expiresAtStr}`);
       res.json({ success: true, expiresAt: expiresAtStr });
@@ -240,8 +239,7 @@ export function createSubscriptionRouter(): Router {
         expiresAt,
       });
 
-      // Clear subscription cache so MCP requests get fresh status
-      clearSubscriptionCache(userId);
+
 
       res.redirect(`/paypal/result?success=true&plan=${planType}`);
     } catch (error) {

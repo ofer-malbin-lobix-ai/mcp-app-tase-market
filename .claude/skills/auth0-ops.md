@@ -141,13 +141,15 @@ When `AUTH0_DOMAIN` is unset, auth is disabled entirely (local dev mode).
 
 **File:** `src/auth0/auth0-management.ts`
 
-Used for server-side user management (signup flow + subscription lifecycle):
+Used for server-side user management (signup flow + per-app subscription lifecycle):
 
 | Function | Purpose | API Endpoint |
 |----------|---------|--------------|
 | `createUser(email, password, connection)` | Create new user during signup | `POST /api/v2/users` |
-| `blockUser(auth0UserId)` | Block user on subscription cancel/suspend/expire | `PATCH /api/v2/users/{id}` |
-| `unblockUser(auth0UserId)` | Unblock user on subscription activate | `PATCH /api/v2/users/{id}` |
+| `addAppSubscription(userId, appId)` | Add app to `app_metadata.apps` array | `GET + PATCH /api/v2/users/{id}` |
+| `removeAppSubscription(userId, appId)` | Remove app from `app_metadata.apps` array | `GET + PATCH /api/v2/users/{id}` |
+| `blockUser(auth0UserId)` | Block user entirely (legacy, for admin use) | `PATCH /api/v2/users/{id}` |
+| `unblockUser(auth0UserId)` | Unblock user (legacy, for admin use) | `PATCH /api/v2/users/{id}` |
 
 **M2M app scopes:** `read:clients`, `update:clients`, `read:connections`, `update:connections`, `create:users`, `read:users`, `update:users`
 
@@ -159,12 +161,30 @@ Auth0's "Disable Sign Ups" toggle is ON on the database connection. This means:
 - ChatGPT/Claude OAuth flow → sign-in only, no account creation
 - `/api/signup/create-account` → creates users via Management API (bypasses the restriction)
 
-### User Blocking for Subscription Enforcement
+### Per-App Access via JWT Custom Claims
 
-When a subscription is cancelled/suspended/expired, the PayPal webhook handler calls `blockUser()`. This:
-- Prevents the user from logging in via Auth0
-- ChatGPT sees auth failure → triggers re-auth → login fails
-- No subscription UI needed inside the MCP flow
+**Claim key:** `https://auth.lobix.ai/apps`
+**Auth0 Action:** `Inject app subscriptions` (Post Login, ID: `6b5fa20f-3b3d-4f2b-82e9-174cc30c2234`)
+
+```javascript
+exports.onExecutePostLogin = async (event, api) => {
+  const apps = event.user.app_metadata?.apps || [];
+  api.accessToken.setCustomClaim("https://auth.lobix.ai/apps", apps);
+};
+```
+
+The Action reads `app_metadata.apps` and injects it into the JWT. Each MCP app checks for its own app ID in `mcpAuth` middleware:
+```typescript
+const apps = auth0Result?.payload?.["https://auth.lobix.ai/apps"] || [];
+if (!apps.includes("tase-market")) {
+  res.status(403).json({ error: "Access not granted for this app" });
+  return;
+}
+```
+
+When user subscribes → `addAppSubscription(userId, "tase-market")` adds to `app_metadata.apps`.
+When user cancels → `removeAppSubscription(userId, "tase-market")` removes it.
+Next JWT refresh (≤24h) reflects the change.
 
 ## DCR App Flooding
 

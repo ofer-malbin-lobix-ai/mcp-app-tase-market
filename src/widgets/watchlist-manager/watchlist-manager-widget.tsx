@@ -8,7 +8,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage, type TFunction } from "../../components/useLanguage";
 import styles from "./watchlist-manager-widget.module.css";
 
@@ -88,7 +88,6 @@ function WatchlistManagerApp() {
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -100,7 +99,6 @@ function WatchlistManagerApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractWatchlistData(result);
           if (extracted) {
             if (extracted.error) {
@@ -137,7 +135,6 @@ function WatchlistManagerApp() {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: "get-watchlist", arguments: {} })
       .then((result) => {
-        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const extracted = extractWatchlistData(result);
         if (extracted) {
           if (extracted.error) {
@@ -162,7 +159,6 @@ function WatchlistManagerApp() {
   const refreshWatchlist = useCallback(async () => {
     if (!app || typeof app.callServerTool !== "function") return;
     const result = await app.callServerTool({ name: "get-watchlist", arguments: {} });
-    if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
     const extracted = extractWatchlistData(result);
     if (extracted) {
       if (extracted.error) {
@@ -254,11 +250,6 @@ function WatchlistManagerApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   const watchlist = data?.watchlist ?? [];
   const isBusy = isSaving || isDeleting !== null;

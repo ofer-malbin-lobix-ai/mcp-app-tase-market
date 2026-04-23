@@ -21,9 +21,6 @@ import type { TaseDataProviders } from "./src/types.js";
 import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
 import { createSignupRouter } from "./src/signup/signup-routes.js";
 import { createLegalRouter } from "./src/legal/legal-routes.js";
-import { checkSubscription } from "./src/paypal/subscription-check.js";
-// @ts-ignore — imported from source at runtime (not compiled by tsc)
-import { ensureUser } from "./src/db/user-db.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { createFetchEndOfDayFromTaseDataHubRouter } from "./src/tase-data-hub/fetch-end-of-day-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -41,7 +38,7 @@ const __main_dirname = path.dirname(fileURLToPath(import.meta.url));
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
  */
 export async function startStreamableHTTPServer(
-  createServer: (options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string; logoutUrl?: string }) => McpServer,
+  createServer: (options: { providers: TaseDataProviders; domain?: string }) => McpServer,
 ): Promise<void> {
   const port = parseInt(process.env.PORT ?? "3001", 10);
 
@@ -96,7 +93,6 @@ export async function startStreamableHTTPServer(
     <p>Tel Aviv Stock Exchange market data for AI assistants.</p>
     <div class="links">
       <a href="/signup">Sign Up</a>
-      <a href="/subscribe">Manage Subscription</a>
     </div>
     <p style="font-size: 0.85rem; margin-top: 1.5rem;">
       <a href="https://www.lobix.ai" style="border: none; padding: 0;">www.lobix.ai</a>
@@ -121,8 +117,6 @@ export async function startStreamableHTTPServer(
   // Auth0 configuration
   const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
   const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE ?? baseUrl;
-  const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
-
   // Auth0 JWT validation middleware
   const auth0Middleware = AUTH0_DOMAIN
     ? auth({
@@ -200,77 +194,13 @@ export async function startStreamableHTTPServer(
   // Mount fetch-last-update-from-tase-data-hub route (backend API, no auth — pass-through to TASE Data Hub)
   app.use(createFetchLastUpdateFromTaseDataHubRouter());
 
-  // Helper to extract userId from request (Auth0 JWT sub claim)
-  const resolveUserId = (req: Request): string | null => {
-    const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
-    const sub = authInfo?.extra?.sub;
-    if (sub && typeof sub === "string") return sub;
-    return null;
-  };
-
-  // Build logout URL once — used by both requireSubscription and mcpHandler
-  const logoutUrl = AUTH0_DOMAIN && AUTH0_CLIENT_ID
-    ? `https://${AUTH0_DOMAIN}/v2/logout?client_id=${AUTH0_CLIENT_ID}&returnTo=${encodeURIComponent(baseUrl)}`
-    : undefined;
-
-  // Subscription check middleware - only checks on tools/call requests
-  const requireSubscription = async (req: Request, res: Response, next: NextFunction) => {
-    // Check if this is a tools/call request (MCP JSON-RPC)
-    const body = req.body as { method?: string; id?: string | number } | undefined;
-    const method = body?.method;
-
-    // Only require subscription for tool calls, not for initialize/list/etc.
-    if (method !== "tools/call") {
-      next();
-      return;
-    }
-
-    // Exempt settings/home tools from subscription check
-    const toolName = (req.body as { params?: { name?: string } })?.params?.name;
-    const EXEMPT_TOOLS = ["get-tase-market-settings-data", "show-tase-market-settings-widget", "show-tase-market-home-widget"];
-    if (toolName && EXEMPT_TOOLS.includes(toolName)) {
-      next();
-      return;
-    }
-
-    const userId = resolveUserId(req);
-
-    if (!userId) {
-      // No user ID - let auth middleware handle 401
-      next();
-      return;
-    }
-
-    // Ensure user exists in DB
-    const authInfo = (req as any).auth as { extra?: Record<string, unknown> } | undefined;
-    const email = authInfo?.extra?.email;
-    if (typeof email === "string") {
-      await ensureUser(userId, email);
-    }
-
-    const hasSubscription = await checkSubscription(userId);
-
-    if (!hasSubscription) {
-      // No active subscription — return 401 to trigger re-auth.
-      // The user's Auth0 account should be blocked, so re-login will show "Account suspended".
-      const prmUrl = `${baseUrl}/.well-known/oauth-protected-resource`;
-      res.status(401).set({
-        "WWW-Authenticate": `Bearer resource_metadata="${prmUrl}", error="invalid_token", scope="openid email profile"`,
-      }).json({ error: "Subscription not active" });
-      return;
-    }
-
-    next();
-  };
-
   // MCP endpoint handler
   const mcpHandler = async (req: Request, res: Response) => {
-    const subscribeUrl = `${baseUrl}/signup`;
     // Detect host to set correct widget domain format
     // ChatGPT sends "openai-mcp/1.0.0" user-agent; others (Claude Desktop) get no domain
     const isChatGPT = req.headers["user-agent"]?.includes("openai-mcp");
     const domain = isChatGPT ? "tase-market-mcp-apps-lobix-ai.oaiusercontent.com" : undefined;
-    const server = createServer({ subscribeUrl, providers: dbProviders, domain, logoutUrl });
+    const server = createServer({ providers: dbProviders, domain });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     });
@@ -334,6 +264,14 @@ export async function startStreamableHTTPServer(
             extra: auth0Result.payload,
           };
         }
+
+        // Check per-app access via custom JWT claim
+        const apps = auth0Result?.payload?.["https://auth.lobix.ai/apps"] as string[] | undefined;
+        if (!apps || !apps.includes("tase-market")) {
+          res.status(403).json({ error: "Access not granted for this app" });
+          return;
+        }
+
         next();
       });
     } else {
@@ -342,8 +280,8 @@ export async function startStreamableHTTPServer(
     }
   };
 
-  // Protected MCP endpoint with subscription check
-  app.post("/mcp", mcpAuth, requireSubscription, mcpHandler);
+  // Protected MCP endpoint
+  app.post("/mcp", mcpAuth, mcpHandler);
   app.get("/mcp", mcpAuth, mcpHandler);
 
   const httpServer = app.listen(port, (err) => {

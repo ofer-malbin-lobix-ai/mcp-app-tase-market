@@ -274,7 +274,7 @@ function formatCandlestickResult(data: CandlestickResponse): CallToolResult {
  * Creates a new MCP server instance.
  * Requires a `providers` object for data fetching (use dbProviders from src/db-api.ts).
  */
-export function createServer(options: { subscribeUrl?: string; providers: TaseDataProviders; domain?: string; logoutUrl?: string }): McpServer {
+export function createServer(options: { providers: TaseDataProviders; domain?: string }): McpServer {
   const { providers } = options;
 
   // Initialize resource UI metadata with optional domain
@@ -338,8 +338,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   const endOfDaySymbolsResourceUri = `ui://tase-end-of-day/my-position-end-of-day-widget-ver-${WIDGET_VERSION}.html`;
   const candlestickResourceUri = `ui://tase-end-of-day/symbol-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsCandlestickResourceUri = `ui://tase-end-of-day/my-position-candlestick-widget-ver-${WIDGET_VERSION}.html`;
-  const subscriptionResourceUri = `ui://tase-end-of-day/tase-market-home-widget-ver-${WIDGET_VERSION}.html`;
-  const settingsResourceUri = `ui://tase-end-of-day/tase-market-settings-widget-ver-${WIDGET_VERSION}.html`;
+  const homeResourceUri = `ui://tase-end-of-day/tase-market-home-widget-ver-${WIDGET_VERSION}.html`;
   const myPositionsManagerResourceUri = `ui://tase-end-of-day/my-positions-manager-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsCandlestickWidgetResourceUri = `ui://tase-end-of-day/symbols-candlestick-widget-ver-${WIDGET_VERSION}.html`;
   const symbolsTableResourceUri = `ui://tase-end-of-day/symbols-table-widget-ver-${WIDGET_VERSION}.html`;
@@ -1443,32 +1442,14 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     "show-tase-market-home-widget",
     {
       title: "Show TASE Market Home",
-      description: "Displays the TASE Data Hub home page with available tools and a subscribe button.",
+      description: "Displays the TASE Data Hub home page with available tools.",
       annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {},
-      _meta: { ui: { resourceUri: subscriptionResourceUri } },
+      _meta: { ui: { resourceUri: homeResourceUri } },
     },
     async (): Promise<CallToolResult> => {
       return {
         content: [{ type: "text", text: "TASE Market Tools home page" }],
-      };
-    },
-  );
-
-  // Data-only tool: Get settings data (subscription URL)
-  registerAppTool(server,
-    "get-tase-market-settings-data",
-    {
-      title: "Get TASE Market Settings Data",
-      description: "Returns TASE Market settings data including subscription URL.",
-      annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: {},
-      _meta: { ui: { visibility: ["model", "app"] } },
-    },
-    async (): Promise<CallToolResult> => {
-      const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
-      return {
-        content: [{ type: "text", text: JSON.stringify({ subscribeUrl, logoutUrl: options?.logoutUrl }) }],
       };
     },
   );
@@ -1800,24 +1781,6 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
     },
   );
 
-  // UI tool: Show Tase Market Settings widget
-  registerAppTool(server,
-    "show-tase-market-settings-widget",
-    {
-      title: "Show TASE Market Settings",
-      description: "Displays the TASE Market settings page with subscription, account info, and app settings.",
-      annotations: READ_ONLY_ANNOTATIONS,
-      inputSchema: {},
-      _meta: { ui: { resourceUri: settingsResourceUri } },
-    },
-    async (): Promise<CallToolResult> => {
-      const subscribeUrl = options?.subscribeUrl ?? `${process.env.APP_URL ?? "http://localhost:3001"}/subscribe`;
-      return {
-        content: [{ type: "text", text: JSON.stringify({ subscribeUrl, logoutUrl: options?.logoutUrl }) }],
-      };
-    },
-  );
-
   // Register resources
   const readWidget = (uri: string, file: string) =>
     async () => resourceContent(uri, await fs.readFile(path.join(DIST_DIR, "src", "widgets", file), "utf-8"));
@@ -1831,8 +1794,7 @@ export function createServer(options: { subscribeUrl?: string; providers: TaseDa
   registerAppResource(server, endOfDaySymbolsResourceUri, endOfDaySymbolsResourceUri, RESOURCE_CONFIG, readWidget(endOfDaySymbolsResourceUri, "my-position-end-of-day/my-position-end-of-day-widget.html"));
   registerAppResource(server, candlestickResourceUri, candlestickResourceUri, RESOURCE_CONFIG, readWidget(candlestickResourceUri, "symbol-candlestick/symbol-candlestick-widget.html"));
   registerAppResource(server, symbolsCandlestickResourceUri, symbolsCandlestickResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickResourceUri, "my-position-candlestick/my-position-candlestick-widget.html"));
-  registerAppResource(server, subscriptionResourceUri, subscriptionResourceUri, RESOURCE_CONFIG, readWidget(subscriptionResourceUri, "tase-market-home/tase-market-home-widget.html"));
-  registerAppResource(server, settingsResourceUri, settingsResourceUri, { ...RESOURCE_CONFIG, _meta: { ui: { ...RESOURCE_UI_META, permissions: { clipboardWrite: {} } } } }, readWidget(settingsResourceUri, "tase-market-settings/tase-market-settings-widget.html"));
+  registerAppResource(server, homeResourceUri, homeResourceUri, RESOURCE_CONFIG, readWidget(homeResourceUri, "tase-market-home/tase-market-home-widget.html"));
   registerAppResource(server, myPositionsManagerResourceUri, myPositionsManagerResourceUri, RESOURCE_CONFIG, readWidget(myPositionsManagerResourceUri, "my-positions-manager/my-positions-manager-widget.html"));
   registerAppResource(server, symbolsCandlestickWidgetResourceUri, symbolsCandlestickWidgetResourceUri, RESOURCE_CONFIG, readWidget(symbolsCandlestickWidgetResourceUri, "symbols-candlestick/symbols-candlestick-widget.html"));
   registerAppResource(server, symbolsTableResourceUri, symbolsTableResourceUri, RESOURCE_CONFIG, readWidget(symbolsTableResourceUri, "symbols-table/symbols-table-widget.html"));

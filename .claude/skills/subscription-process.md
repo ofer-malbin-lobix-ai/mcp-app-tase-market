@@ -93,45 +93,33 @@ model UserSubscription {
 ### New User Signup
 1. User visits `/signup` in browser
 2. Enters email + password → `POST /api/signup/create-account`
-3. Server creates Auth0 user via Management API (`createUser()`)
-4. Server creates DB user via `ensureUser()`
-5. User selects plan → `POST /api/signup/subscribe`
-6. Server creates PayPal subscription → returns approval URL
-7. User redirected to PayPal → approves payment
-8. PayPal redirects to `/api/paypal/success` → DB updated, cache cleared
-9. PayPal webhook `BILLING.SUBSCRIPTION.ACTIVATED` → unblocks Auth0 account
+3. Server creates Auth0 user via Management API (`createUser()`) + creates DB user (`ensureUser()`)
+4. User selects plan → `POST /api/signup/subscribe`
+5. Server creates PayPal subscription → redirects to PayPal
+6. User approves payment → PayPal webhook `ACTIVATED` → DB updated + `addAppSubscription("tase-market")`
 
 ### Sign-in from ChatGPT/Claude
-1. MCP client connects to `/mcp`
-2. No auth header → 401 with PRM metadata → client initiates OAuth
-3. Auth0 login screen (signup disabled) → user logs in
-4. JWT validated → `requireSubscription` checks subscription
-5. Active subscription → tools work
-6. No subscription → 401 → re-auth triggered → blocked user sees "Account suspended"
+1. `POST /mcp` → `mcpAuth`: No auth header → 401 → client starts OAuth
+2. Auth0 login (signup disabled) → JWT returned with `https://auth.lobix.ai/apps` claim
+3. `mcpAuth`: Validates JWT → checks `"tase-market"` is in apps claim → tool works
+4. **No subscription middleware. No DB check. Just JWT auth + apps claim.**
 
 ### Subscription Cancelled
-1. User cancels via `/subscribe` page or PayPal directly
-2. PayPal webhook `BILLING.SUBSCRIPTION.CANCELLED` fires
-3. DB updated with `subscriptionStatus: 'cancelled'`
-4. Auth0 account **blocked** via `blockUser()`
-5. Next ChatGPT tool call → JWT valid but subscription check fails → 401
-6. ChatGPT triggers re-auth → Auth0 login fails (account blocked)
+1. PayPal webhook `CANCELLED`/`SUSPENDED`/`EXPIRED`
+2. DB updated + `removeAppSubscription("tase-market")` removes app from `app_metadata.apps`
+3. User's JWT still works until expiry (max 24h)
+4. When JWT expires → new token won't include `"tase-market"` → 403
 
 ### Resubscribe
-1. User goes to `/signup` or `/subscribe` on website
-2. Completes new PayPal subscription
-3. PayPal webhook `BILLING.SUBSCRIPTION.ACTIVATED` → DB updated, Auth0 account **unblocked**
-4. User can sign in from ChatGPT again
+1. User visits website → completes new PayPal subscription
+2. PayPal webhook `ACTIVATED` → `addAppSubscription("tase-market")` → next JWT includes the app
 
-## Middleware Details
+## Per-App Access via JWT Custom Claims
 
-**Location:** `main.ts`, applied to `/mcp` POST endpoint
+**Claim key:** `https://auth.lobix.ai/apps`
+**Auth0 Action:** `Inject app subscriptions` (Post Login, ID: `6b5fa20f-3b3d-4f2b-82e9-174cc30c2234`)
 
-**Behavior:**
-- Only triggers on `method: "tools/call"` (skips `initialize`, `tools/list`, etc.)
-- Exempt tools: `get-tase-market-settings-data`, `show-tase-market-settings-widget`, `show-tase-market-home-widget`
-- If no active subscription → returns 401 with `WWW-Authenticate` header
-- No auto-trial, no subscribe URL, no in-app commerce
+The Auth0 Action reads `app_metadata.apps` and injects it into the JWT. Each MCP app checks for its own app ID in `mcpAuth` middleware. No per-call DB check needed.
 
 ## Auth0 Management API
 
@@ -142,17 +130,19 @@ model UserSubscription {
 | Function | Purpose |
 |----------|---------|
 | `createUser(email, password, connection)` | Creates Auth0 user via `POST /api/v2/users` |
-| `blockUser(auth0UserId)` | Blocks user via `PATCH /api/v2/users/{id}` — prevents login |
-| `unblockUser(auth0UserId)` | Unblocks user — allows login again |
+| `addAppSubscription(userId, appId)` | Adds app to `app_metadata.apps` array |
+| `removeAppSubscription(userId, appId)` | Removes app from `app_metadata.apps` array |
+| `blockUser(auth0UserId)` | Blocks user entirely (legacy, kept for admin use) |
+| `unblockUser(auth0UserId)` | Unblocks user (legacy, kept for admin use) |
 
 ## Webhook Events
 
 | Event | Handler | DB Action | Auth0 Action |
 |-------|---------|-----------|--------------|
-| `BILLING.SUBSCRIPTION.ACTIVATED` | `handleSubscriptionActivated` | Set `active` | `unblockUser()` |
-| `BILLING.SUBSCRIPTION.CANCELLED` | `handleSubscriptionCancelled` | Set `cancelled` | `blockUser()` |
-| `BILLING.SUBSCRIPTION.SUSPENDED` | `handleSubscriptionSuspended` | Set `suspended` | `blockUser()` |
-| `BILLING.SUBSCRIPTION.EXPIRED` | `handleSubscriptionExpired` | Set `expired` | `blockUser()` |
+| `BILLING.SUBSCRIPTION.ACTIVATED` | `handleSubscriptionActivated` | Set `active` | `addAppSubscription("tase-market")` |
+| `BILLING.SUBSCRIPTION.CANCELLED` | `handleSubscriptionCancelled` | Set `cancelled` | `removeAppSubscription("tase-market")` |
+| `BILLING.SUBSCRIPTION.SUSPENDED` | `handleSubscriptionSuspended` | Set `suspended` | `removeAppSubscription("tase-market")` |
+| `BILLING.SUBSCRIPTION.EXPIRED` | `handleSubscriptionExpired` | Set `expired` | `removeAppSubscription("tase-market")` |
 | `PAYMENT.SALE.COMPLETED` | `handlePaymentCompleted` | Update expiry | — |
 
 ## Environment Variables

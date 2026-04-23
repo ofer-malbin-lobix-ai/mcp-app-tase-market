@@ -7,7 +7,7 @@ import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshButton } from "../../components/RefreshButton";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import { createRoot } from "react-dom/client";
 import styles from "./market-momentum-widget.module.css";
@@ -73,7 +73,6 @@ function MomentumWidget() {
   const [data, setData] = useState<MomentumData | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -90,7 +89,6 @@ function MomentumWidget() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const momentumData = extractMomentumData(result);
           if (momentumData) {
             setData(momentumData);
@@ -118,7 +116,6 @@ function MomentumWidget() {
     try {
       app.callServerTool({ name: "get-market-momentum-data", arguments: toolInput })
         .then((result) => {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const fetchedData = extractMomentumData(result);
           if (fetchedData) {
             setData(fetchedData);
@@ -142,11 +139,6 @@ function MomentumWidget() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   return (
     <MomentumWidgetInner
@@ -194,7 +186,6 @@ function MomentumWidgetInner({ app, data, setData, hostContext }: MomentumWidget
         name: "get-market-momentum-data",
         arguments: args,
       });
-      if (handleSubscriptionRedirect(result, app)) return;
       const momentumData = extractMomentumData(result);
       if (momentumData) {
         setData(momentumData);

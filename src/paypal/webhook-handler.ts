@@ -1,8 +1,7 @@
 import { getUserSubscription, upsertSubscription } from '../db/user-db.js';
 import type { PayPalWebhookEvent } from './types.js';
 import { getSubscription, getPlanTypeFromPlanId, verifyWebhookSignature } from './paypal-service.js';
-import { clearSubscriptionCache } from './subscription-check.js';
-import { blockUser, unblockUser } from '../auth0/auth0-management.js';
+import { addAppSubscription, removeAppSubscription } from '../auth0/auth0-management.js';
 
 export async function handleWebhook(
   headers: Record<string, string>,
@@ -80,13 +79,13 @@ async function handleSubscriptionActivated(
     subscriptionStatus: 'active',
     expiresAt,
   });
-  clearSubscriptionCache(userId);
 
-  // Unblock Auth0 account so user can sign in from ChatGPT
+
+  // Grant app access in Auth0 with expiry
   try {
-    await unblockUser(userId);
+    await addAppSubscription(userId, 'tase-market', expiresAt);
   } catch (error) {
-    console.error(`Failed to unblock Auth0 user ${userId}:`, error);
+    console.error(`Failed to add app for user ${userId}:`, error);
   }
 
   console.log(`Subscription activated for user ${userId}: ${planType}`);
@@ -109,13 +108,13 @@ async function handleSubscriptionCancelled(
     subscriptionStatus: 'cancelled',
     expiresAt: sub.expiresAt ?? new Date().toISOString().split('T')[0],
   });
-  clearSubscriptionCache(userId);
 
-  // Block Auth0 account so ChatGPT triggers re-login (which will fail)
+
+  // Revoke app access in Auth0
   try {
-    await blockUser(userId);
+    await removeAppSubscription(userId, 'tase-market');
   } catch (error) {
-    console.error(`Failed to block Auth0 user ${userId}:`, error);
+    console.error(`Failed to remove app for user ${userId}:`, error);
   }
 
   console.log(`Subscription cancelled for user ${userId}`);
@@ -138,12 +137,12 @@ async function handleSubscriptionSuspended(
     subscriptionStatus: 'suspended',
     expiresAt: sub.expiresAt ?? new Date().toISOString().split('T')[0],
   });
-  clearSubscriptionCache(userId);
+
 
   try {
-    await blockUser(userId);
+    await removeAppSubscription(userId, 'tase-market');
   } catch (error) {
-    console.error(`Failed to block Auth0 user ${userId}:`, error);
+    console.error(`Failed to remove app for user ${userId}:`, error);
   }
 
   console.log(`Subscription suspended for user ${userId}`);
@@ -166,12 +165,12 @@ async function handleSubscriptionExpired(
     subscriptionStatus: 'expired',
     expiresAt: new Date().toISOString().split('T')[0],
   });
-  clearSubscriptionCache(userId);
+
 
   try {
-    await blockUser(userId);
+    await removeAppSubscription(userId, 'tase-market');
   } catch (error) {
-    console.error(`Failed to block Auth0 user ${userId}:`, error);
+    console.error(`Failed to remove app for user ${userId}:`, error);
   }
 
   console.log(`Subscription expired for user ${userId}`);
@@ -200,7 +199,14 @@ async function handlePaymentCompleted(
     subscriptionStatus: 'active',
     expiresAt,
   });
-  clearSubscriptionCache(userId);
+
+  // Update app access expiry in Auth0
+  try {
+    await addAppSubscription(userId, 'tase-market', expiresAt);
+  } catch (error) {
+    console.error(`Failed to update app expiry for user ${userId}:`, error);
+  }
+
   console.log(`Payment completed for user ${userId}, expires: ${expiresAt}`);
 }
 

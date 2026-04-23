@@ -12,7 +12,7 @@ import { createRoot } from "react-dom/client";
 import { SearchableSelect } from "../../components/SearchableSelect";
 import { NavRow } from "../../components/NavRow";
 import { RefreshButton } from "../../components/RefreshButton";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 // @ts-ignore — JSON import
 import indicesData from "../../data/indices.json";
@@ -273,7 +273,6 @@ function IndexHeatmapApp() {
   const [data, setData] = useState<IndexSectorHeatmapResponse | null>(null);
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [toolInput, setToolInput] = useState<Record<string, unknown>>({});
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -287,7 +286,6 @@ function IndexHeatmapApp() {
       };
 
       app.ontoolresult = async (result) => {
-        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const d = extractHeatmapData(result);
         if (d) setData(d);
         else setNeedsAutoFetch(true);
@@ -307,7 +305,6 @@ function IndexHeatmapApp() {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: "get-index-sector-heatmap-data", arguments: toolInput })
       .then((result) => {
-        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const d = extractHeatmapData(result);
         if (d) setData(d);
       })
@@ -330,11 +327,6 @@ function IndexHeatmapApp() {
   if (!app) {
     return <div style={{ color: "var(--t-text-secondary)", padding: 16 }}>{t("layout.connecting")}</div>;
   }
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
   return <IndexHeatmapInner app={app} data={data} setData={setData} hostContext={hostContext} toolInput={toolInput} />;
 }
 
@@ -459,7 +451,6 @@ function IndexHeatmapInner({ app, data, setData, hostContext, toolInput }: Index
       if (period) args.period = period;
       args.indexId = Number(indexId ?? selectedIndexId);
       const result = await app.callServerTool({ name: "get-index-sector-heatmap-data", arguments: args });
-      if (handleSubscriptionRedirect(result, app)) return;
       const d = extractHeatmapData(result);
       if (d) setData(d);
       else setRefreshError(t("spirit.noData"));

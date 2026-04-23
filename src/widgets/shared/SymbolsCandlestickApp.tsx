@@ -19,7 +19,7 @@ import { createRoot } from "react-dom/client";
 import type { NavItem } from "../../components/NavRow";
 import { NavRow } from "../../components/NavRow";
 import { RefreshButton } from "../../components/RefreshButton";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import { SearchableSelect } from "../../components/SearchableSelect";
 // @ts-ignore — JSON import
@@ -549,7 +549,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
   const [showSma50, setShowSma50] = useState(false);
   const [showSma200, setShowSma200] = useState(false);
   const [showEz, setShowEz] = useState(false);
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -561,7 +560,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractEndOfDaySymbolsData(result);
           if (extracted) {
             setEodData(extracted);
@@ -594,7 +592,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
     if (config.showIndexFilter) args.indexId = Number(selectedIndexId);
     app.callServerTool({ name: config.toolName, arguments: args })
       .then((result) => {
-        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const fetched = extractEndOfDaySymbolsData(result);
         if (fetched) setEodData(fetched);
       })
@@ -608,7 +605,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       .then((result) => {
         try {
           if (!result) return;
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           let parsed: unknown;
           if (result.structuredContent) {
             parsed = result.structuredContent;
@@ -694,7 +690,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
         name: "get-symbol-candlestick-data",
         arguments: args,
       });
-      if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
       const fetched = extractCandlestickData(result);
       if (fetched) {
         setChartData(fetched);
@@ -727,7 +722,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
         name: "get-symbol-candlestick-data",
         arguments: args,
       });
-      if (handleSubscriptionRedirect(result, app!, setSubscribeUrl)) return;
       const fetched = extractCandlestickData(result);
       if (fetched) {
         setChartData(fetched);
@@ -756,7 +750,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
       if (eodData.dateTo) args.tradeDate = eodData.dateTo;
       if (config.showIndexFilter) args.indexId = Number(selectedIndexId);
       const result = await app.callServerTool({ name: periodToolName, arguments: args });
-      if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
       const fetched = extractEndOfDaySymbolsData(result);
       if (fetched) setSidebarItems(fetched.items);
     } catch (e) {
@@ -778,7 +771,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
         name: config.toolName,
         arguments: { indexId: Number(val) },
       });
-      if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
       const fetched = extractEndOfDaySymbolsData(result);
       if (fetched) setEodData(fetched);
     } catch (e) {
@@ -797,11 +789,6 @@ function SymbolsCandlestickApp({ config }: { config: SymbolsCandlestickConfig })
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   return (
     <WidgetLayout

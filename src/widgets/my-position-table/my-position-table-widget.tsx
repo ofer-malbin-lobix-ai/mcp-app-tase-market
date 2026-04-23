@@ -9,7 +9,7 @@ import { StrictMode, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { NavRow } from "../../components/NavRow";
 import { SymbolActions } from "../../components/SymbolActions";
-import { WidgetLayout, handleSubscriptionRedirect, SubscriptionBanner } from "../../components/WidgetLayout";
+import { WidgetLayout } from "../../components/WidgetLayout";
 import { useLanguage } from "../../components/useLanguage";
 import styles from "./my-position-table-widget.module.css";
 
@@ -126,7 +126,6 @@ function MyPositionApp() {
   const [needsAutoFetch, setNeedsAutoFetch] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("symbol");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
@@ -138,7 +137,6 @@ function MyPositionApp() {
 
       app.ontoolresult = async (result) => {
         try {
-          if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
           const extracted = extractData(result);
           if (extracted) {
             setBaseData(extracted);
@@ -169,7 +167,6 @@ function MyPositionApp() {
     if (typeof app.callServerTool !== "function") return;
     app.callServerTool({ name: "get-my-position-table-data", arguments: {} })
       .then((result) => {
-        if (handleSubscriptionRedirect(result, app, setSubscribeUrl)) return;
         const extracted = extractData(result);
         if (extracted) setBaseData(extracted);
       })
@@ -246,11 +243,6 @@ function MyPositionApp() {
 
   if (error) return <div className={styles.error}><strong>ERROR:</strong> {error.message}</div>;
   if (!app) return <div className={styles.loading}>{t("layout.connecting")}</div>;
-  if (subscribeUrl !== null) return (
-    <WidgetLayout title="TASE Market" app={app} hostContext={hostContext} language={language} dir={dir} onLanguageToggle={toggle}>
-      <SubscriptionBanner subscribeUrl={subscribeUrl} app={app} />
-    </WidgetLayout>
-  );
 
   const thProps = (col: SortKey, extraClass?: string) => ({
     className: `${styles.th}${extraClass ? ` ${extraClass}` : ""}`,

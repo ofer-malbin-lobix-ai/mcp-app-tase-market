@@ -1,9 +1,5 @@
 const t = {
   // ── Layout ────────────────────────────────────────────────
-  "layout.subscriptionRequired": { en: "Subscription Required", he: "נדרש מנוי" },
-  "layout.subscriptionDescription": { en: "Subscribe to access all Phenomen Investment - TASE Market tools and data.", he: "הירשם למנוי כדי לגשת לכל כלי ונתוני שוק ת\"א." },
-  "layout.subscribe": { en: "Subscribe", he: "הרשמה" },
-  "layout.linkCopied": { en: "Link Copied!", he: "הקישור הועתק!" },
   "layout.switchToLight": { en: "Switch to light mode", he: "מעבר למצב בהיר" },
   "layout.switchToDark": { en: "Switch to dark mode", he: "מעבר למצב כהה" },
   "layout.fullscreen": { en: "Fullscreen", he: "מסך מלא" },
@@ -28,7 +24,6 @@ const t = {
   // ── Home ───────────────────────────────────────────────
   "home.title": { en: "TASE Market Tools", he: "כלי שוק ת\"א" },
   "home.reference": { en: "Reference", he: "מידע טכני" },
-  "home.settings": { en: "Settings", he: "הגדרות" },
   "home.widgets": { en: "Widgets", he: "ווידג'טים" },
   "home.dataTools": { en: "Data Tools", he: "כלי נתונים" },
   "home.guide": { en: "Guide", he: "מדריך" },
@@ -168,13 +163,6 @@ const t = {
   "eod.col.mktCap": { en: "Mkt Cap", he: "שווי שוק" },
   "eod.col.listedCap": { en: "Listed Cap", he: "הון רשום" },
   "eod.col.minCont": { en: "Min Cont", he: "רצף מינ׳" },
-
-  // ── Settings ──────────────────────────────────────────────
-  "settings.title": { en: "TASE Market Settings", he: "הגדרות שוק ת\"א" },
-  "settings.manageSubscription": { en: "Manage Subscription", he: "ניהול מנוי" },
-  "settings.copied": { en: "Copied!", he: "הועתק!" },
-  "settings.notConnected": { en: "Visit our website to manage your subscription.", he: "בקר באתר שלנו לניהול המנוי." },
-  "settings.logout": { en: "Log Out", he: "התנתק" },
 
   // ── Common UI ──────────────────────────────────────────────
   "common.symbol": { en: "Symbol:", he: ":סימול" },

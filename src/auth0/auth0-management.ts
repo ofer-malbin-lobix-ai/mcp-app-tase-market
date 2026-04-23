@@ -149,3 +149,103 @@ export async function unblockUser(auth0UserId: string): Promise<void> {
 
   console.log(`[Auth0] Unblocked user ${auth0UserId}`);
 }
+
+export async function addAppSubscription(auth0UserId: string, appId: string, expiresAt?: string): Promise<void> {
+  const { domain } = getConfig();
+  const token = await getManagementToken();
+
+  // Fetch current app_metadata
+  const getResponse = await fetch(
+    `https://${domain}/api/v2/users/${encodeURIComponent(auth0UserId)}?fields=app_metadata`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+    },
+  );
+
+  if (!getResponse.ok) {
+    const errorText = await getResponse.text();
+    console.error(`[Auth0] Failed to get user ${auth0UserId}: ${getResponse.status} ${errorText}`);
+    throw new Error(`Auth0 get user failed: ${getResponse.status}`);
+  }
+
+  const user = await getResponse.json() as { app_metadata?: { apps?: string[]; expiresAt?: Record<string, string> } };
+  const apps = user.app_metadata?.apps ?? [];
+  const expiresAtMap = user.app_metadata?.expiresAt ?? {};
+
+  const updatedApps = apps.includes(appId) ? apps : [...apps, appId];
+  const updatedExpiresAt = { ...expiresAtMap };
+  if (expiresAt) {
+    updatedExpiresAt[appId] = expiresAt;
+  }
+
+  const response = await fetch(
+    `https://${domain}/api/v2/users/${encodeURIComponent(auth0UserId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ app_metadata: { apps: updatedApps, expiresAt: updatedExpiresAt } }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Auth0] Failed to add app ${appId} for user ${auth0UserId}: ${response.status} ${errorText}`);
+    throw new Error(`Auth0 add app failed: ${response.status}`);
+  }
+
+  console.log(`[Auth0] Added app ${appId} for user ${auth0UserId}${expiresAt ? ` (expires: ${expiresAt})` : ''}`);
+}
+
+export async function removeAppSubscription(auth0UserId: string, appId: string): Promise<void> {
+  const { domain } = getConfig();
+  const token = await getManagementToken();
+
+  // Fetch current app_metadata
+  const getResponse = await fetch(
+    `https://${domain}/api/v2/users/${encodeURIComponent(auth0UserId)}?fields=app_metadata`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` },
+    },
+  );
+
+  if (!getResponse.ok) {
+    const errorText = await getResponse.text();
+    console.error(`[Auth0] Failed to get user ${auth0UserId}: ${getResponse.status} ${errorText}`);
+    throw new Error(`Auth0 get user failed: ${getResponse.status}`);
+  }
+
+  const user = await getResponse.json() as { app_metadata?: { apps?: string[]; expiresAt?: Record<string, string> } };
+  const apps = user.app_metadata?.apps ?? [];
+  const expiresAtMap = user.app_metadata?.expiresAt ?? {};
+  const filtered = apps.filter((a: string) => a !== appId);
+
+  if (filtered.length === apps.length) {
+    console.log(`[Auth0] User ${auth0UserId} doesn't have app ${appId}`);
+    return;
+  }
+
+  const { [appId]: _, ...cleanedExpiresAt } = expiresAtMap;
+
+  const response = await fetch(
+    `https://${domain}/api/v2/users/${encodeURIComponent(auth0UserId)}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ app_metadata: { apps: filtered, expiresAt: cleanedExpiresAt } }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Auth0] Failed to remove app ${appId} for user ${auth0UserId}: ${response.status} ${errorText}`);
+    throw new Error(`Auth0 remove app failed: ${response.status}`);
+  }
+
+  console.log(`[Auth0] Removed app ${appId} for user ${auth0UserId}`);
+}
