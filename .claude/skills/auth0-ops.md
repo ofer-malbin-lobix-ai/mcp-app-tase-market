@@ -42,7 +42,7 @@ In the API's **Machine to Machine Applications** tab:
 | Custom domain | `auth.lobix.ai` |
 | Google OAuth connection | `google-oauth2` (`con_j4L3TiM1gW9zTUR0`) |
 | Username-Password connection | `Username-Password-Authentication` (`con_Or6jyhPr8e1nXxsQ`) |
-| M2M app (Management API) | `UlUezCWZXz576VvoK6dL7nGzmDWiLsp7` |
+| M2M app (Management API) | `UlUezCWZXz576VvoK6dL7nGzmDWiLsp7` (used from lobix-ai-site, not this repo) |
 
 ## Dynamic Client Registration (DCR) Setup
 
@@ -126,40 +126,17 @@ A successful response returns a `client_id` and `client_secret`. Then connect fr
 |----------|-------------|---------|
 | `AUTH0_DOMAIN` | Auth0 custom domain (no `https://`) | `auth.lobix.ai` |
 | `AUTH0_AUDIENCE` | API identifier — must match Auth0 API exactly | `https://tase-market.mcp-apps.lobix.ai` |
-| `AUTH0_CLIENT_ID` | Default App client ID | `2MYlg6Ed1NysOV4jH8DSKoA9ScFxyPgc` |
-| `AUTH0_MGMT_DOMAIN` | Actual tenant domain for Management API | `lobix-ai.us.auth0.com` |
-| `AUTH0_MGMT_CLIENT_ID` | M2M app client ID for Management API | `UlUezCWZXz576VvoK6dL7nGzmDWiLsp7` |
-| `AUTH0_MGMT_CLIENT_SECRET` | M2M app client secret | (stored in .env.local and Railway) |
-| `AUTH0_DB_CONNECTION` | Database connection name | `Username-Password-Authentication` |
 | `APP_URL` | Public URL of this app (used for metadata endpoints) | `https://tase-market.mcp-apps.lobix.ai` |
-
-**Important:** `AUTH0_MGMT_DOMAIN` must be the actual tenant domain (`lobix-ai.us.auth0.com`), NOT the custom domain (`auth.lobix.ai`). The Management API returns 403 with custom domains.
 
 When `AUTH0_DOMAIN` is unset, auth is disabled entirely (local dev mode).
 
-## Auth0 Management API
+This app is purely a resource server — it validates incoming JWTs against Auth0's public JWKS and does not call any Auth0 Management API itself. No client_id/client_secret needed here. MCP clients (ChatGPT, Claude Desktop) register themselves via DCR.
 
-**File:** `src/auth0/auth0-management.ts`
+## Auth0 Management API — elsewhere
 
-Used for server-side user management (signup flow + per-app subscription lifecycle):
+User creation and per-app subscription management (`createUser`, `addAppSubscription`, `removeAppSubscription`) happen in **lobix-ai-site**, not this repo. The signup page, PayPal webhook handler, and Auth0 Management client live there and write to `app_metadata.apps`. The Auth0 Post Login Action reads that array at login time and mints the JWT claim this app checks.
 
-| Function | Purpose | API Endpoint |
-|----------|---------|--------------|
-| `createUser(email, password, connection)` | Create new user during signup | `POST /api/v2/users` |
-| `addAppSubscription(userId, appId)` | Add app to `app_metadata.apps` array | `GET + PATCH /api/v2/users/{id}` |
-| `removeAppSubscription(userId, appId)` | Remove app from `app_metadata.apps` array | `GET + PATCH /api/v2/users/{id}` |
-| `blockUser(auth0UserId)` | Block user entirely (legacy, for admin use) | `PATCH /api/v2/users/{id}` |
-| `unblockUser(auth0UserId)` | Unblock user (legacy, for admin use) | `PATCH /api/v2/users/{id}` |
-
-**M2M app scopes:** `read:clients`, `update:clients`, `read:connections`, `update:connections`, `create:users`, `read:users`, `update:users`
-
-**Token caching:** Management API tokens are cached with 60-second safety margin before expiry.
-
-### Signup Flow (Disable Sign Ups is ON)
-
-Auth0's "Disable Sign Ups" toggle is ON on the database connection. This means:
-- ChatGPT/Claude OAuth flow → sign-in only, no account creation
-- `/api/signup/create-account` → creates users via Management API (bypasses the restriction)
+Auth0's "Disable Sign Ups" is ON on the DB connection — ChatGPT/Claude's OAuth flow can only sign in; new accounts must be created via lobix-ai-site.
 
 ### Per-App Access via JWT Custom Claims
 
@@ -182,9 +159,7 @@ if (!apps.includes("tase-market")) {
 }
 ```
 
-When user subscribes → `addAppSubscription(userId, "tase-market")` adds to `app_metadata.apps`.
-When user cancels → `removeAppSubscription(userId, "tase-market")` removes it.
-Next JWT refresh (≤24h) reflects the change.
+Subscribe/cancel mutations happen in lobix-ai-site (which calls the Auth0 Management API to update `app_metadata.apps`). Next JWT refresh (≤24h) reflects the change.
 
 ## DCR App Flooding
 
@@ -261,16 +236,7 @@ Handles the full auth flow on the `/mcp` endpoint:
 
 ### 6. Extracting User ID
 
-```typescript
-const resolveUserId = (req: Request): string | null => {
-  const authInfo = (req as any).auth;
-  const sub = authInfo?.extra?.sub;
-  if (sub && typeof sub === "string") return sub;
-  return null;
-};
-```
-
-The `sub` claim from Auth0 (e.g., `auth0|abc123`) is used as the `AppUser.id` in the database.
+The `sub` claim from Auth0 (e.g., `auth0|abc123`) is read off `req.auth.extra.sub` inside MCP tool handlers and used as the `AppUser.id` in the database.
 
 ## Known Gotchas
 
