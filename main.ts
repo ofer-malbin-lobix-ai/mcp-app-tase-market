@@ -18,9 +18,6 @@ import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import { createServer } from "./server.js";
 import type { TaseDataProviders } from "./src/types.js";
-import { createSubscriptionRouter } from "./src/paypal/subscription-routes.js";
-import { createSignupRouter } from "./src/signup/signup-routes.js";
-import { createLegalRouter } from "./src/legal/legal-routes.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
 import { createFetchEndOfDayFromTaseDataHubRouter } from "./src/tase-data-hub/fetch-end-of-day-from-tase-data-hub.js";
 // @ts-ignore — imported from source at runtime (not compiled by tsc)
@@ -50,10 +47,7 @@ export async function startStreamableHTTPServer(
   // CORS with WWW-Authenticate header exposed for OAuth
   app.use(cors({ exposedHeaders: ["WWW-Authenticate"] }));
 
-  // Raw body parser for PayPal webhooks (must be before json parser)
-  app.use("/api/paypal/webhook", express.raw({ type: "application/json" }));
-
-  // JSON body parser for other routes
+  // JSON body parser for MCP endpoint
   app.use(express.json());
 
   // Serve static files (favicon, etc.)
@@ -92,11 +86,8 @@ export async function startStreamableHTTPServer(
     <h1>TASE Market</h1>
     <p>Tel Aviv Stock Exchange market data for AI assistants.</p>
     <div class="links">
-      <a href="/signup">Sign Up</a>
+      <a href="https://www.lobix.ai">www.lobix.ai</a>
     </div>
-    <p style="font-size: 0.85rem; margin-top: 1.5rem;">
-      <a href="https://www.lobix.ai" style="border: none; padding: 0;">www.lobix.ai</a>
-    </p>
   </div>
 </body>
 </html>`);
@@ -173,14 +164,13 @@ export async function startStreamableHTTPServer(
     });
   }
 
-  // Mount subscription routes
-  app.use(createSubscriptionRouter());
-
-  // Mount signup routes (web pages for account creation + subscription — NOT part of MCP)
-  app.use(createSignupRouter());
-
-  // Mount legal pages (terms, privacy)
-  app.use(createLegalRouter());
+  // Redirect legacy commerce URLs to lobix.ai (signup/subscription now live there)
+  const redirectToSite = (_req: Request, res: Response) => {
+    res.redirect(302, "https://www.lobix.ai");
+  };
+  app.get("/signup", redirectToSite);
+  app.get("/subscribe", redirectToSite);
+  app.get("/paypal/result", redirectToSite);
 
   // Mount fetch-end-of-day-from-tase-data-hub route (backend API, no auth — callable by cron or direct URL)
   app.use(createFetchEndOfDayFromTaseDataHubRouter());
