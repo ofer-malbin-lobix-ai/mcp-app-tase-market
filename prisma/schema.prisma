@@ -77,7 +77,6 @@ model AppUser {
   updatedAt     DateTime            @updatedAt
   positions     UserPosition[]
   watchlist     UserWatchlistItem[]
-  subscription  UserSubscription?
 }
 
 model UserPosition {
@@ -111,17 +110,3 @@ model UserWatchlistItem {
   @@index([userId])
 }
 
-model UserSubscription {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  plan                 String?
-  paypalSubscriptionId String?
-  subscriptionStatus   String?
-  expiresAt            String?
-  manualSubscription   Boolean  @default(false)
-  freeTrial            Boolean  @default(false)
-  freeTrialUsed        Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  user                 AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
